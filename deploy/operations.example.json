@@ -1,0 +1,28 @@
+{
+  "project": "/mnt/spektr/server/data/arkhiv",
+  "archive": "/mnt/spektr/server/data/arkhiv/pilot",
+  "staging": "/mnt/spektr/server/data/arkhiv/backups-staging",
+  "state": "/mnt/spektr/server/data/arkhiv/operations/state",
+  "backup_host": "nuc",
+  "backup_root": "/home/onnwee/backups/arkhiv",
+  "remote_script": "/home/onnwee/backups/arkhiv/operations/runner.py",
+  "minimum_free_bytes": 2147483648,
+  "timeout_seconds": 900,
+  "revision": "SET_TO_FULL_COMMIT",
+  "retention": {
+    "daily": 7,
+    "weekly": 4,
+    "monthly": 6,
+    "pinned": []
+  },
+  "stale_seconds": {
+    "audit": 129600,
+    "backup": 129600
+  },
+  "schedules": {
+    "audit": "daily 02:00 America/Chicago",
+    "backup": "daily 03:00 America/Chicago",
+    "retention": "daily 03:40 America/Chicago",
+    "monitor": "every 15 minutes"
+  }
+}

@@ -1,10 +1,12 @@
 # Managed archive, public release, and second-archive plan
 
-Status: planned; Gitea issues created on 2026-10-02. No new jobs or public ingress
-were activated by this planning change.
+Status: implementation in progress. The merged private pilot was deployed on
+2026-10-02. Audit, backup, monitoring and dry-run retention runners are implemented;
+timer activation and live job qualification remain pending. Public ingress remains
+unconfigured.
 
 The first private pilot is qualified. PRs #18, #19 and #20 are merged; the
-homelab runtime still identified `5ad2573` when checked on October 2. The working
+homelab runtime identifies merged revision `6470472`, verified on October 2. The working
 archive remains on Almaz at `/mnt/spektr/server/data/arkhiv/pilot`, with independent
 backups on NUC at `/home/onnwee/backups/arkhiv`.
 
@@ -90,15 +92,16 @@ partial evidence, unrelated paths or the last known-good backup. Off-site storag
 is an option to evaluate, not a selected or activated third copy.
 
 Public-serving decisions are separate from private publication. #30 reviews the
-record/variant subset and chooses the domain, identity and contact destination.
+record/variant subset. The owner selected `https://arkhiv.subcult.tv` and
+`info@subcult.tv` for correction/removal requests.
 #31 conservatively backfills public approval and tests every catalog/asset route
 against private, unknown, revoked and unapproved records. #33 prepares the exact
 release and scoped ingress; public activation requires the separate release action.
 #34 verifies the actual public domain and defines an initial observation window.
 
 The second-source gate #35 selects a bounded real archive with a different structure,
-access/reuse evidence and explicit update policy. It is not implicitly selected by
-this plan. #38 requires actual ingestion, source-unreachable reading, and independent
+access/reuse evidence and explicit update policy. The owner requested another zine collection; the exact bounded source is
+still being researched. #38 requires actual ingestion, source-unreachable reading, and independent
 fresh restoration while the first archive continues working. Epic #15 owns that
 outcome. Immediate operations are in the managed phase; epic #16 retains later
 curator UI/accounts and evidence-driven OCR/search improvements.
@@ -106,8 +109,8 @@ curator UI/accounts and evidence-driven OCR/search improvements.
 ## Verification and delivery
 
 Existing gates are `make verify`, `make test-integration`, `make test-browser`,
-and `make test-recovery`. The planned `make test-operations` target is introduced
-by #22; `make test-updates` is introduced by #27 and reused downstream. These
+and `make test-recovery`. `make test-operations` runs job, backup, notification and retention checks
+and is included in `make verify`; `make test-updates` is introduced by #27 and reused downstream. These
 commands are deliverables, not capabilities already implemented by this plan.
 
 Fixture checks cover job interruption, overlap, disk/transport/checksum failure,

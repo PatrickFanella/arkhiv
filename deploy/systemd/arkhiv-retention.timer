@@ -1,0 +1,12 @@
+[Unit]
+Description=Schedule Arkhiv retention
+
+[Timer]
+OnCalendar=03:40 America/Chicago
+OnActiveSec=120s
+Persistent=true
+AccuracySec=1s
+Unit=arkhiv-retention.service
+
+[Install]
+WantedBy=timers.target

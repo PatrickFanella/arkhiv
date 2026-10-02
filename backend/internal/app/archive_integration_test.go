@@ -255,6 +255,30 @@ func TestArchiveIntegration(t *testing.T) {
 	if e = store.Verify(asset.SHA, asset.Size); e != nil {
 		t.Fatal("rebuild changed original", e)
 	}
+	// The scheduled audit must detect missing reader manifests, not only originals.
+	if result, err := recovery.Inspect(ctx, db, store); err != nil || result.Published != 2 {
+		t.Fatal("readable audit", result, err)
+	}
+	manifestPath := filepath.Join(store.Path, "derivatives", asset.SHA, "manifest.json")
+	manifestBytes, err := os.ReadFile(manifestPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = os.WriteFile(manifestPath, []byte(`{"input_sha256":"wrong","pages":2}`), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = recovery.Inspect(ctx, db, store); err == nil {
+		t.Fatal("audit accepted wrong derivative input")
+	}
+	if err = os.Remove(manifestPath); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = recovery.Inspect(ctx, db, store); err == nil {
+		t.Fatal("audit accepted missing reader manifest")
+	}
+	if err = os.WriteFile(manifestPath, manifestBytes, 0600); err != nil {
+		t.Fatal(err)
+	}
 	if e = db.Edit(ctx, id, map[string]any{"title": "Reviewed title"}, "", "", nil); e != nil {
 		t.Fatal(e)
 	}
