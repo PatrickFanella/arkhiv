@@ -1,6 +1,7 @@
 # Milestone 1: a preserved, readable Anarchist Zine Archive
 
-Status: implementation under verification; actual pilot acquired, independent restore qualification in progress.
+Status: private pilot qualified; implementation is in PR #19 pending review and merge.
+Evidence: [October 2 qualification report](../reports/pilot-qualification-20261002.md).
 Date: 2026-10-02. Source: https://archive.org/details/ZineArchive.
 
 ## Outcome
@@ -189,5 +190,6 @@ The reviewed manifest selects 25 documents, 26 PDF variants, and 17 OCR companio
 `/home/onnwee/backups/arkhiv`. The current pilot is private. Item-level rights and
 a public release decision remain open. All 26 PDF variants passed extraction; 24 documents
 have page text and one has document-level OCR without page mapping. See the
-[operator runbook](../runbooks/pilot-operations.md). Qualification requires the
-final independent restore, rendered reader checks, and hosted CI receipts.
+[operator runbook](../runbooks/pilot-operations.md). The independent NUC restore, rendered reader checks with Archive.org blocked,
+and hosted CI passed; evidence is in the qualification report. Public ingress and
+scheduled preservation operations remain follow-up work.
