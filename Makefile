@@ -29,7 +29,7 @@ test:
 	pnpm --dir web run test
 
 build:
-	cd backend && go build -o bin/arkhiv ./cmd/app
+	cd backend && go build -o bin/api ./cmd/app && go build -o bin/arkhiv ./cmd/arkhiv
 	pnpm --dir web run build
 
 compose-config:
@@ -45,3 +45,13 @@ dev-api: ## Start the Go service
 
 dev-web: ## Start Vite with the API proxy
 	pnpm --dir web dev
+
+.PHONY: test-integration test-recovery test-browser
+test-integration: ## Catalog, search, asset and recovery checks against disposable PostgreSQL
+	@test -n "$$TEST_DATABASE_URL" || (echo 'Run with t3-dev --profile arkhiv test --command "make test-integration"'; exit 1)
+	cd backend && go test -race ./internal/app -run TestArchiveIntegration -count=1
+
+test-recovery: test-integration ## Restore and integrity checks in the integration suite
+
+test-browser: ## Synthetic desktop and narrow-screen browser suite on an isolated network
+	bash scripts/test-browser.sh

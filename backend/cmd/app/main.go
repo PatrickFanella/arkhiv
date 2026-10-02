@@ -10,6 +10,9 @@ import (
 	"syscall"
 	"time"
 
+	"git.subcult.tv/subculture-collective/arkhiv/internal/catalog"
+	"git.subcult.tv/subculture-collective/arkhiv/internal/storage"
+
 	"git.subcult.tv/subculture-collective/arkhiv/internal/app"
 )
 
@@ -18,7 +21,28 @@ func main() {
 	if addr == "" {
 		addr = ":8080"
 	}
-	server := &http.Server{Addr: addr, Handler: app.Handler(), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: 30 * time.Second, IdleTimeout: 60 * time.Second}
+	handler := app.Handler()
+	if url := os.Getenv("DATABASE_URL"); url != "" {
+		db, err := catalog.Open(context.Background(), url)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer db.Pool.Close()
+		migrations := os.Getenv("MIGRATIONS_DIR")
+		if migrations == "" {
+			migrations = "../migrations"
+		}
+		if err = db.Migrate(context.Background(), migrations); err != nil {
+			log.Fatal(err)
+		}
+		store, err := storage.Open(os.Getenv("ARKHIV_ARCHIVE"))
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer store.Close()
+		handler = app.ArchiveHandler(db, store)
+	}
+	server := &http.Server{Addr: addr, Handler: handler, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: 30 * time.Second, IdleTimeout: 60 * time.Second}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	done := make(chan error, 1)

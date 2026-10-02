@@ -8,16 +8,20 @@
     "dev": "vite --host 0.0.0.0",
     "build": "tsc --noEmit -p tsconfig.json && vite build",
     "lint": "eslint .",
-    "test": "vitest run",
+    "test": "vitest run src",
     "preview": "vite preview --host 0.0.0.0",
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "predev": "node scripts/copy-pdf-assets.mjs",
+    "prebuild": "node scripts/copy-pdf-assets.mjs"
   },
   "dependencies": {
+    "pdfjs-dist": "5.4.624",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@playwright/test": "1.56.1",
     "@tailwindcss/vite": "^4.1.17",
     "@types/react": "^19.2.15",
     "@types/react-dom": "^19.2.3",

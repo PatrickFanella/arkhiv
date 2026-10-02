@@ -5,6 +5,7 @@ This directory is the current project knowledge base.
 ## Current work
 
 - [Milestone 1: Anarchist Zine Archive](plans/0001-anarchist-zine-archive.md)
+- [Pilot operations and recovery](runbooks/pilot-operations.md)
 - [Application stack](reference/stack.md)
 
 The template-maintenance documents below are inherited reference material.

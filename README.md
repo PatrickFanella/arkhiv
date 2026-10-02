@@ -1,55 +1,59 @@
 # Arkhiv
 
-A framework for preserving document collections and publishing branded archives
-with an on-site reader. The first planned collection is the Anarchist Zine Archive.
+Arkhiv acquires explicitly selected document files, preserves their original bytes,
+and serves branded catalogs with local PDF reading and downloads. The first
+collection is the Anarchist Zine Archive.
 
-**Current status: bootstrapped, not an operational document archive.** The Go API
-serves process health; the React frontend shows the collection preparation page.
-Acquisition, catalog persistence, search, and document reading are milestone 1 work.
+The implementation includes a PostgreSQL catalog, operator CLI, bounded resumable
+acquisition, editorial review, text and cover extraction, metadata/page search,
+and backup/restore. The initial manifest selects 25 documents, 26 PDF variants,
+and 17 matching OCR companions from Internet Archive's `ZineArchive` item.
+Pilot qualification evidence is tracked in [the milestone plan](docs/plans/0001-anarchist-zine-archive.md)
+and Gitea issue #14. Public release is a separate decision.
 
 ## Development
 
 Stack: Go 1.26+, Node 24, pnpm 10.33.0, React/Vite, PostgreSQL 17, Docker Compose.
-Install the pinned pnpm version rather than regenerating its lockfile with a
-new major version.
-
-On a configured T3 host, from this checkout:
 
 ```sh
 t3-dev --profile arkhiv start
-t3-dev --profile arkhiv verify
 t3-dev --profile arkhiv sync
+t3-dev --profile arkhiv verify
+t3-dev --profile arkhiv test --command 'make test-integration'
 t3-dev --profile arkhiv stop
+make test-browser
 ```
 
-The launcher copies the source into an isolated environment. Run `sync` after
-edits, or use its Watch Changes action. See the installed
-[agent guide](/home/onnwee/.local/share/t3-dev-environments/AGENT-GUIDE.md).
+The T3 preview seeds two clearly labeled synthetic collections. Its application
+and test networks cannot reach Archive.org. The integration snapshot uses
+PostgreSQL 15 to match the shared tools image's backup client; the isolated browser
+suite and homelab pilot use PostgreSQL 17 with a matching client. Browser tests
+run in a separate disposable Compose project and clean up their own containers.
+`make test-recovery` runs the recovery assertions in the integration suite.
 
-For manual development with the toolchains installed:
+`make verify` checks formatting, TypeScript, lint, Go/web tests, both Go binaries,
+web build, Compose configuration, and the retained Open Pilot template. Database
+integration runs when `TEST_DATABASE_URL` points to the disposable launcher DB;
+the explicit integration target refuses to run without it. Hosted CI and rendered
+pilot/restore evidence remain separate checks.
 
-```sh
-make deps
-make dev-api # terminal 1, port 8080
-make dev-web # terminal 2, port 5173; proxies /api to Go
-make verify
-```
+For a manual container build, `docker compose up --build` serves loopback port
+5173. The API applies checksum-locked migrations and requires a managed archive
+root when a database is configured. The sample database password is for disposable
+local development. `/api/health` checks process health; `/api/ready` checks database
+connectivity. Catalog and asset routes are read-only; mutations use the CLI.
 
-For the containerized build, `docker compose up --build` serves the site on
-`http://127.0.0.1:5173`. PostgreSQL and the API also bind to loopback. The sample
-password is for disposable local development. PostgreSQL exists in Compose but
-is not used by the application yet. No migrations run automatically.
-
-`GET /api/health` confirms the process responds; it does not assert database or
-archive readiness. The Vite and Nginx configurations both proxy this route.
+The [operator runbook](docs/runbooks/pilot-operations.md) covers planning, acquisition,
+review, extraction, integrity checks, backup, and restore. Acquired documents,
+credentials, generated data, and binaries stay outside Git. Original source
+metadata remains independent of editorial overrides.
 
 ## Project documents
 
-- [Milestone 1: Anarchist Zine Archive](docs/plans/0001-anarchist-zine-archive.md)
+- [Anarchist Zine Archive milestone](docs/plans/0001-anarchist-zine-archive.md)
+- [Pilot operations and recovery](docs/runbooks/pilot-operations.md)
 - [Stack and development boundaries](docs/reference/stack.md)
 - [Documentation index](docs/README.md)
 - [Open Pilot](docs/open-pilot.md)
 
-The inherited Open Pilot issue and pull-request templates are retained. The
-canonical remote is `https://git.subcult.tv/subculture-collective/arkhiv.git`.
-Source code is GPL-3.0-only; this does not license acquired archive documents.
+Source code is GPL-3.0-only; that license does not apply to acquired documents.

@@ -16,9 +16,13 @@ services:
       retries: 5
 
   api:
-    build: ./backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:-change-me}@postgres:5432/${POSTGRES_DB:-app}?sslmode=disable
+    volumes:
+      - ${ARKHIV_ARCHIVE_PATH:-./var/archive}:/data/archive
     depends_on:
       postgres:
         condition: service_healthy

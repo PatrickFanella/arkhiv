@@ -2,7 +2,7 @@
 
 Arkhiv preserves document collections and serves branded catalogs and local
 readers. The first planned collection is the Anarchist Zine Archive. This checkout
-is currently a bootstrap, derived from the SUBCULT Go/Vite/PostgreSQL template.
+implements the private pilot, derived from the SUBCULT Go/Vite/PostgreSQL template.
 
 ## Conventions
 
