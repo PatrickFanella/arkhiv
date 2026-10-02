@@ -157,7 +157,7 @@ type Document struct {
 	Metadata   map[string]any `json:"metadata"`
 	Published  bool           `json:"published"`
 	Rights     string         `json:"rights"`
-	Review     string         `json:"review"`
+	Review     string         `json:"review,omitempty"`
 	Variants   []Variant      `json:"variants"`
 	Hits       []Hit          `json:"hits"`
 }
@@ -176,6 +176,9 @@ func (d *DB) Get(ctx context.Context, id string, public bool) (Document, error) 
 	}
 	if e = json.Unmarshal(b, &doc.Metadata); e != nil {
 		return doc, e
+	}
+	if public {
+		doc.Review = ""
 	}
 	doc.Variants = []Variant{}
 	doc.Hits = []Hit{}

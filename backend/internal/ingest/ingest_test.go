@@ -74,7 +74,7 @@ func TestDownloadRejectsBadChecksumAndOversize(t *testing.T) {
 }
 
 func TestResumeRestartsOrRejectsUnsafeRanges(t *testing.T) {
-	for _, mode := range []string{"ignored", "changed-etag", "wrong-range"} {
+	for _, mode := range []string{"ignored", "oversized-part", "changed-etag", "wrong-range"} {
 		t.Run(mode, func(t *testing.T) {
 			payload := "abcdefghij"
 			m := md5.Sum([]byte(payload))
@@ -84,8 +84,18 @@ func TestResumeRestartsOrRejectsUnsafeRanges(t *testing.T) {
 			base := "jobs/" + catalog.ID("item", f.Name)
 			s.Root.MkdirAll("jobs", 0700)
 			os.WriteFile(s.Path+"/"+base+".part", []byte("abc"), 0600)
+			if mode == "oversized-part" {
+				os.WriteFile(s.Path+"/"+base+".part", []byte("oversized partial data"), 0600)
+			}
 			s.WriteJSON(base+".json", Checkpoint{Version: catalog.ID(f.Name, f.Size, f.MD5, f.SHA1), ETag: `"old"`})
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if mode == "oversized-part" {
+					if r.Header.Get("Range") != "" {
+						t.Error("resumed invalid partial")
+					}
+					fmt.Fprint(w, payload)
+					return
+				}
 				if r.Header.Get("Range") != "bytes=3-" {
 					t.Error("did not attempt bounded resume")
 				}
@@ -107,7 +117,7 @@ func TestResumeRestartsOrRejectsUnsafeRanges(t *testing.T) {
 			defer server.Close()
 			c := &ia.Client{HTTP: server.Client(), Base: server.URL}
 			hash, n, _, e := Download(context.Background(), c, s, "item", f, 20)
-			if mode == "ignored" {
+			if mode == "ignored" || mode == "oversized-part" {
 				if e != nil || n != 10 || s.Verify(hash, n) != nil {
 					t.Fatal("failed safe restart", e)
 				}

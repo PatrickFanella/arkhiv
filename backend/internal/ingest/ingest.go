@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -111,7 +110,9 @@ func Download(ctx context.Context, client *ia.Client, store *storage.Store, item
 	offset := int64(0)
 	if cp.Version == version && cp.ETag != "" && !strings.HasPrefix(cp.ETag, "W/") {
 		if info, e := store.Root.Stat(part); e == nil {
-			offset = info.Size()
+			if info.Size() > 0 && info.Size() < f.Bytes() && info.Size() <= limit {
+				offset = info.Size()
+			}
 		}
 	}
 	headers := map[string]string{}
@@ -130,10 +131,10 @@ func Download(ctx context.Context, client *ia.Client, store *storage.Store, item
 	if resp.StatusCode == 200 {
 		offset = 0
 	} else {
-		prefix := fmt.Sprintf("bytes %d-", offset)
 		cr := resp.Header.Get("Content-Range")
-		parts := strings.Split(cr, "/")
-		if offset == 0 || !strings.HasPrefix(cr, prefix) || len(parts) != 2 || parts[1] != strconv.FormatInt(f.Bytes(), 10) || resp.Header.Get("ETag") != cp.ETag {
+		var start, end, total int64
+		fields, parseErr := fmt.Sscanf(cr, "bytes %d-%d/%d", &start, &end, &total)
+		if offset == 0 || parseErr != nil || fields != 3 || start != offset || end < start || end >= total || total != f.Bytes() || (resp.ContentLength >= 0 && resp.ContentLength != end-start+1) || resp.Header.Get("ETag") != cp.ETag {
 			return "", 0, false, fmt.Errorf("unsafe partial response")
 		}
 	}
