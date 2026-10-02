@@ -1,6 +1,6 @@
 # Milestone 1: a preserved, readable Anarchist Zine Archive
 
-Status: proposed implementation plan, following the working application bootstrap.
+Status: implementation under verification; actual pilot acquired, independent restore qualification in progress.
 Date: 2026-10-02. Source: https://archive.org/details/ZineArchive.
 
 ## Outcome
@@ -183,7 +183,11 @@ complete document-preservation and reading path.
 
 ## Remaining operational decisions
 
-Select the exact pilot documents after inventory review; choose the persistent
-archive location and independent backup destination before the real batch; decide
-which reviewed documents may be publicly served. The framework can be implemented
-and verified with synthetic fixtures while those destination decisions remain open.
+The reviewed manifest selects 25 documents, 26 PDF variants, and 17 OCR companions
+(31,039,265 planned bytes). Originals live on Almaz at
+`/mnt/spektr/server/data/arkhiv/pilot`; independent backups live on NUC at
+`/home/onnwee/backups/arkhiv`. The current pilot is private. Item-level rights and
+a public release decision remain open. All 26 PDF variants passed extraction; 24 documents
+have page text and one has document-level OCR without page mapping. See the
+[operator runbook](../runbooks/pilot-operations.md). Qualification requires the
+final independent restore, rendered reader checks, and hosted CI receipts.

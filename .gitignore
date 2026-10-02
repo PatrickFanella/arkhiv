@@ -82,3 +82,8 @@ postgres-data/
 # Historical template build output and acquired document payloads
 /backend/app
 /archive/
+
+web/public/pdfjs/
+var/
+web/test-results/
+web/playwright-report/

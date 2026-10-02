@@ -1,0 +1,30 @@
+services:
+  db:
+    image: postgres:17
+    environment: {POSTGRES_USER: dev, POSTGRES_PASSWORD: disposable-dev-only, POSTGRES_DB: dev}
+    tmpfs: [/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U dev -d dev"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+  api:
+    build: {context: .., dockerfile: backend/Dockerfile}
+    environment:
+      DATABASE_URL: postgres://dev:disposable-dev-only@db:5432/dev?sslmode=disable
+      ARKHIV_FIXTURE: '1'
+    tmpfs: [/data/archive]
+    command: [sh, -ec, '/app/arkhiv migrate --migrations /app/migrations && /app/arkhiv seed-fixture && exec /app/api']
+    depends_on: {db: {condition: service_healthy}}
+  web:
+    build: {context: ../web}
+    depends_on: [api]
+  checks:
+    build: {context: .., dockerfile: web/Dockerfile.browser}
+    depends_on: [web]
+    init: true
+    mem_limit: 2g
+    pids_limit: 256
+    cpus: 2
+networks:
+  default: {internal: true}
