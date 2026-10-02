@@ -2,8 +2,10 @@ import { renderToString } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import App from './App';
 
-describe('App', () => {
-  it('renders the template heading', () => {
-expect(renderToString(<App />)).toContain('Vite React TypeScript');
+describe('bootstrap page', () => {
+  it('states that the catalog has not been imported', () => {
+    const html = renderToString(<App />);
+    expect(html).toContain('No documents have been imported yet.');
+    expect(html).toContain('role="status"');
   });
 });

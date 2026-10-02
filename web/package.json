@@ -1,16 +1,16 @@
 {
-  "name": "@subculture/project-template-go-vite-react-ts-postgres-docker-web",
+  "name": "@subculture/arkhiv-web",
   "version": "0.1.0",
-  "private": false,
+  "private": true,
   "type": "module",
   "packageManager": "pnpm@10.33.0",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "build": "tsc -p tsconfig.json && vite build",
+    "build": "tsc --noEmit -p tsconfig.json && vite build",
     "lint": "eslint .",
     "test": "vitest run",
-    "format": "tsc -p tsconfig.json --noEmit",
-    "preview": "vite preview --host 0.0.0.0"
+    "preview": "vite preview --host 0.0.0.0",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
     "react": "^19.2.0",
@@ -28,5 +28,8 @@
     "typescript-eslint": "^8.46.3",
     "vite": "^7.2.7",
     "vitest": "^4.0.8"
+  },
+  "engines": {
+    "node": ">=22.12.0"
   }
 }
