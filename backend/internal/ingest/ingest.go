@@ -10,6 +10,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
+	"sort"
 	"strings"
 	"time"
 
@@ -21,14 +23,22 @@ import (
 
 type Candidate struct {
 	ia.File
-	Selected bool   `json:"selected"`
-	Reason   string `json:"reason"`
+	Selected     bool   `json:"selected"`
+	Reason       string `json:"reason"`
+	CompanionFor string `json:"companion_for,omitempty"`
 }
 type Plan struct {
-	Item       string      `json:"item"`
-	Candidates []Candidate `json:"candidates"`
-	Bytes      int64       `json:"selected_bytes"`
-	Documents  int         `json:"documents"`
+	Item                string               `json:"item"`
+	Candidates          []Candidate          `json:"candidates"`
+	Bytes               int64                `json:"selected_bytes"`
+	Documents           int                  `json:"documents"`
+	GroupingSuggestions []GroupingSuggestion `json:"grouping_suggestions"`
+}
+
+type GroupingSuggestion struct {
+	Stem           string   `json:"stem"`
+	Files          []string `json:"files"`
+	RequiresReview bool     `json:"requires_review"`
 }
 
 func Inventory(c config.Collection, m ia.Metadata) (Plan, error) {
@@ -41,6 +51,37 @@ func Inventory(c config.Collection, m ia.Metadata) (Plan, error) {
 		keys[s.Key] = true
 	}
 	p.Documents = len(keys)
+	companionFor := map[string]string{}
+	for _, f := range m.Files {
+		files[f.Name] = f
+	}
+	for _, sel := range c.Selection {
+		name := strings.TrimSuffix(sel.File, ".pdf") + "_djvu.txt"
+		if _, ok := files[name]; ok {
+			selected[name] = true
+			companionFor[name] = sel.File
+		}
+	}
+	groups := map[string][]string{}
+	variantSuffix := regexp.MustCompile(`(?i)([-_](print|read|screen|imposed|text|printing|reading))+$`)
+	for _, f := range m.Files {
+		if strings.HasSuffix(strings.ToLower(f.Name), ".pdf") {
+			stem := strings.ToLower(variantSuffix.ReplaceAllString(strings.TrimSuffix(f.Name, ".pdf"), ""))
+			groups[stem] = append(groups[stem], f.Name)
+		}
+	}
+	p.GroupingSuggestions = []GroupingSuggestion{}
+	stems := []string{}
+	for stem, names := range groups {
+		if len(names) > 1 {
+			stems = append(stems, stem)
+		}
+	}
+	sort.Strings(stems)
+	for _, stem := range stems {
+		sort.Strings(groups[stem])
+		p.GroupingSuggestions = append(p.GroupingSuggestions, GroupingSuggestion{stem, groups[stem], true})
+	}
 	for _, f := range m.Files {
 		files[f.Name] = f
 		reason := "not selected"
@@ -57,7 +98,10 @@ func Inventory(c config.Collection, m ia.Metadata) (Plan, error) {
 			reason = "selected"
 			p.Bytes += f.Bytes()
 		}
-		p.Candidates = append(p.Candidates, Candidate{f, selected[f.Name], reason})
+		if companionFor[f.Name] != "" {
+			reason = "selected OCR companion"
+		}
+		p.Candidates = append(p.Candidates, Candidate{File: f, Selected: selected[f.Name], Reason: reason, CompanionFor: companionFor[f.Name]})
 	}
 	for _, s := range c.Selection {
 		f, ok := files[s.File]
@@ -74,7 +118,6 @@ func Inventory(c config.Collection, m ia.Metadata) (Plan, error) {
 				return p, fmt.Errorf("invalid OCR companion: %s", name)
 			}
 			if !companions[name] {
-				p.Bytes += f.Bytes()
 				companions[name] = true
 			}
 		}

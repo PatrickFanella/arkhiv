@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"git.subcult.tv/subculture-collective/arkhiv/internal/catalog"
+	"git.subcult.tv/subculture-collective/arkhiv/internal/config"
 	ia "git.subcult.tv/subculture-collective/arkhiv/internal/source/internetarchive"
 	"git.subcult.tv/subculture-collective/arkhiv/internal/storage"
 	"net/http"
@@ -125,5 +126,24 @@ func TestResumeRestartsOrRejectsUnsafeRanges(t *testing.T) {
 				t.Fatal("accepted unsafe partial response")
 			}
 		})
+	}
+}
+
+func TestInventoryShowsSelectedCompanionsAndReviewSuggestions(t *testing.T) {
+	c := config.Collection{Item: "item", Selection: []config.Selection{{File: "book-read.pdf", Key: "book", Title: "Book"}}, Limits: config.Limits{Documents: 1, TotalBytes: 20, FileBytes: 10, Concurrency: 1}}
+	m := ia.Metadata{Files: []ia.File{{Name: "book-read.pdf", Size: "10"}, {Name: "book-print.pdf", Size: "10"}, {Name: "book-read_djvu.txt", Size: "5"}}}
+	p, e := Inventory(c, m)
+	if e != nil || p.Bytes != 15 || p.Documents != 1 {
+		t.Fatal("inventory total", e, p)
+	}
+	if !p.Candidates[2].Selected || p.Candidates[2].CompanionFor != "book-read.pdf" {
+		t.Fatal("companion selection is hidden")
+	}
+	if len(p.GroupingSuggestions) != 1 || !p.GroupingSuggestions[0].RequiresReview {
+		t.Fatal("grouping suggestion did not require review")
+	}
+	c.Limits.TotalBytes = 12
+	if _, e = Inventory(c, m); e == nil {
+		t.Fatal("companion exceeded batch cap")
 	}
 }
