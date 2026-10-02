@@ -199,7 +199,11 @@ func run(ctx context.Context, args []string) error {
 	case "extract":
 		return index.All(ctx, db, s)
 	case "audit":
-		return recovery.Audit(ctx, db, s)
+		report, err := recovery.Inspect(ctx, db, s)
+		if encodeErr := json.NewEncoder(os.Stdout).Encode(report); encodeErr != nil {
+			return encodeErr
+		}
+		return err
 	case "backup":
 		if *destination == "" {
 			return errors.New("new backup destination required")

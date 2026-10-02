@@ -44,6 +44,56 @@ func Audit(ctx context.Context, db *catalog.DB, s *storage.Store) error {
 	}
 	return nil
 }
+
+type AuditResult struct {
+	Assets    int `json:"assets"`
+	Variants  int `json:"variants"`
+	Published int `json:"published"`
+}
+
+// Inspect checks preserved originals and the readable derivative references used
+// by published documents. Unpublished unreadable sources remain preservable.
+func Inspect(ctx context.Context, db *catalog.DB, s *storage.Store) (AuditResult, error) {
+	var result AuditResult
+	if err := Audit(ctx, db, s); err != nil {
+		return result, err
+	}
+	if err := db.Pool.QueryRow(ctx, `SELECT (SELECT count(*) FROM assets), (SELECT count(*) FROM variants), (SELECT count(*) FROM documents WHERE published)`).Scan(&result.Assets, &result.Variants, &result.Published); err != nil {
+		return result, err
+	}
+	rows, err := db.Pool.Query(ctx, `SELECT DISTINCT v.asset_sha FROM variants v JOIN documents d ON d.id=v.document_id LEFT JOIN derivatives x ON x.asset_sha=v.asset_sha WHERE d.published AND (x.pages IS NULL OR x.pages<1 OR x.status='failed')`)
+	if err != nil {
+		return result, err
+	}
+	missing := rows.Next()
+	err = rows.Err()
+	rows.Close()
+	if err != nil {
+		return result, err
+	}
+	if missing {
+		return result, fmt.Errorf("published document has unavailable derivative")
+	}
+	rows, err = db.Pool.Query(ctx, `SELECT DISTINCT v.asset_sha FROM variants v JOIN documents d ON d.id=v.document_id WHERE d.published`)
+	if err != nil {
+		return result, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var hash string
+		if err = rows.Scan(&hash); err != nil {
+			return result, err
+		}
+		var manifest struct {
+			Input string `json:"input_sha256"`
+			Pages int    `json:"pages"`
+		}
+		if err = s.JSON("derivatives/"+hash+"/manifest.json", &manifest); err != nil || manifest.Input != hash || manifest.Pages < 1 {
+			return result, fmt.Errorf("published derivative manifest unavailable")
+		}
+	}
+	return result, rows.Err()
+}
 func copyTree(source, destination string) error {
 	root, e := os.OpenRoot(source)
 	if e != nil {

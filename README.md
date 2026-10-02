@@ -66,3 +66,8 @@ metadata remains independent of editorial overrides.
 - [Open Pilot](docs/open-pilot.md)
 
 Source code is GPL-3.0-only; that license does not apply to acquired documents.
+
+The public release will use `https://arkhiv.subcult.tv`, with correction and removal
+requests directed to `info@subcult.tv`. Public access remains gated by the reviewed
+allowlist work in [the roadmap](docs/plans/0002-managed-archive-and-public-release.md).
+Managed job runners are documented in [the operations runbook](docs/runbooks/managed-operations.md).

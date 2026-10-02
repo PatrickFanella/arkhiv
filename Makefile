@@ -24,7 +24,7 @@ lint:
 	cd backend && go vet ./...
 	pnpm --dir web run lint
 
-test:
+test: test-operations
 	cd backend && go test ./...
 	pnpm --dir web run test
 
@@ -55,3 +55,7 @@ test-recovery: test-integration ## Restore and integrity checks in the integrati
 
 test-browser: ## Synthetic desktop and narrow-screen browser suite on an isolated network
 	bash scripts/test-browser.sh
+
+.PHONY: test-operations
+test-operations: ## Isolated job, manifest, retention and failure checks
+	python3 -m unittest discover -s scripts/operations -v
