@@ -11,8 +11,13 @@ and 17 matching OCR companions from Internet Archive's `ZineArchive` item.
 The [private pilot qualification](docs/reports/pilot-qualification-20261002.md) passed:
 all originals were verified, the independent NUC backup was restored, and on-site
 reading/search/downloads worked with Archive.org blocked. The initial implementation merged in PR #19; hardening and the qualification
-report are in [PR #20](https://git.subcult.tv/subculture-collective/arkhiv/pulls/20),
-pending review and merge. Public release is a separate decision.
+report merged in [PR #20](https://git.subcult.tv/subculture-collective/arkhiv/pulls/20).
+Public release is a separate decision.
+
+The [next delivery plan](docs/plans/0002-managed-archive-and-public-release.md)
+covers merged-revision rollout, scheduled preservation and active-source updates,
+public release, and a second real archive. Those jobs and release steps are planned
+in Gitea issues #21–#38; they are not activated by the plan.
 
 ## Development
 
@@ -54,6 +59,7 @@ metadata remains independent of editorial overrides.
 ## Project documents
 
 - [Anarchist Zine Archive milestone](docs/plans/0001-anarchist-zine-archive.md)
+- [Managed operations, public release, and second archive](docs/plans/0002-managed-archive-and-public-release.md)
 - [Pilot operations and recovery](docs/runbooks/pilot-operations.md)
 - [Stack and development boundaries](docs/reference/stack.md)
 - [Documentation index](docs/README.md)

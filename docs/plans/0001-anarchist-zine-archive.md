@@ -1,6 +1,8 @@
 # Milestone 1: a preserved, readable Anarchist Zine Archive
 
-Status: private pilot qualified; initial implementation merged in PR #19; qualification follow-up is in PR #20.
+Status: private pilot qualified; implementation and qualification merged in PRs #19/#20.
+Delivery closeout: Gitea #21 aligns the private runtime and reconciles completed issues.
+Next phases: [managed operations, public release, and second archive](0002-managed-archive-and-public-release.md).
 Evidence: [October 2 qualification report](../reports/pilot-qualification-20261002.md).
 Date: 2026-10-02. Source: https://archive.org/details/ZineArchive.
 

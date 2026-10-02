@@ -5,6 +5,7 @@ This directory is the current project knowledge base.
 ## Current work
 
 - [Milestone 1: Anarchist Zine Archive](plans/0001-anarchist-zine-archive.md)
+- [Managed archive, public release, and second archive](plans/0002-managed-archive-and-public-release.md)
 - [Private pilot qualification, October 2](reports/pilot-qualification-20261002.md)
 - [Pilot operations and recovery](runbooks/pilot-operations.md)
 - [Application stack](reference/stack.md)
