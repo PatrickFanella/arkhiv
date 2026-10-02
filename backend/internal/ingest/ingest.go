@@ -10,7 +10,8 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strconv"
+	"regexp"
+	"sort"
 	"strings"
 	"time"
 
@@ -22,14 +23,22 @@ import (
 
 type Candidate struct {
 	ia.File
-	Selected bool   `json:"selected"`
-	Reason   string `json:"reason"`
+	Selected     bool   `json:"selected"`
+	Reason       string `json:"reason"`
+	CompanionFor string `json:"companion_for,omitempty"`
 }
 type Plan struct {
-	Item       string      `json:"item"`
-	Candidates []Candidate `json:"candidates"`
-	Bytes      int64       `json:"selected_bytes"`
-	Documents  int         `json:"documents"`
+	Item                string               `json:"item"`
+	Candidates          []Candidate          `json:"candidates"`
+	Bytes               int64                `json:"selected_bytes"`
+	Documents           int                  `json:"documents"`
+	GroupingSuggestions []GroupingSuggestion `json:"grouping_suggestions"`
+}
+
+type GroupingSuggestion struct {
+	Stem           string   `json:"stem"`
+	Files          []string `json:"files"`
+	RequiresReview bool     `json:"requires_review"`
 }
 
 func Inventory(c config.Collection, m ia.Metadata) (Plan, error) {
@@ -42,6 +51,37 @@ func Inventory(c config.Collection, m ia.Metadata) (Plan, error) {
 		keys[s.Key] = true
 	}
 	p.Documents = len(keys)
+	companionFor := map[string]string{}
+	for _, f := range m.Files {
+		files[f.Name] = f
+	}
+	for _, sel := range c.Selection {
+		name := strings.TrimSuffix(sel.File, ".pdf") + "_djvu.txt"
+		if _, ok := files[name]; ok {
+			selected[name] = true
+			companionFor[name] = sel.File
+		}
+	}
+	groups := map[string][]string{}
+	variantSuffix := regexp.MustCompile(`(?i)([-_](print|read|screen|imposed|text|printing|reading))+$`)
+	for _, f := range m.Files {
+		if strings.HasSuffix(strings.ToLower(f.Name), ".pdf") {
+			stem := strings.ToLower(variantSuffix.ReplaceAllString(strings.TrimSuffix(f.Name, ".pdf"), ""))
+			groups[stem] = append(groups[stem], f.Name)
+		}
+	}
+	p.GroupingSuggestions = []GroupingSuggestion{}
+	stems := []string{}
+	for stem, names := range groups {
+		if len(names) > 1 {
+			stems = append(stems, stem)
+		}
+	}
+	sort.Strings(stems)
+	for _, stem := range stems {
+		sort.Strings(groups[stem])
+		p.GroupingSuggestions = append(p.GroupingSuggestions, GroupingSuggestion{stem, groups[stem], true})
+	}
 	for _, f := range m.Files {
 		files[f.Name] = f
 		reason := "not selected"
@@ -58,7 +98,10 @@ func Inventory(c config.Collection, m ia.Metadata) (Plan, error) {
 			reason = "selected"
 			p.Bytes += f.Bytes()
 		}
-		p.Candidates = append(p.Candidates, Candidate{f, selected[f.Name], reason})
+		if companionFor[f.Name] != "" {
+			reason = "selected OCR companion"
+		}
+		p.Candidates = append(p.Candidates, Candidate{File: f, Selected: selected[f.Name], Reason: reason, CompanionFor: companionFor[f.Name]})
 	}
 	for _, s := range c.Selection {
 		f, ok := files[s.File]
@@ -75,7 +118,6 @@ func Inventory(c config.Collection, m ia.Metadata) (Plan, error) {
 				return p, fmt.Errorf("invalid OCR companion: %s", name)
 			}
 			if !companions[name] {
-				p.Bytes += f.Bytes()
 				companions[name] = true
 			}
 		}
@@ -111,7 +153,9 @@ func Download(ctx context.Context, client *ia.Client, store *storage.Store, item
 	offset := int64(0)
 	if cp.Version == version && cp.ETag != "" && !strings.HasPrefix(cp.ETag, "W/") {
 		if info, e := store.Root.Stat(part); e == nil {
-			offset = info.Size()
+			if info.Size() > 0 && info.Size() < f.Bytes() && info.Size() <= limit {
+				offset = info.Size()
+			}
 		}
 	}
 	headers := map[string]string{}
@@ -130,10 +174,10 @@ func Download(ctx context.Context, client *ia.Client, store *storage.Store, item
 	if resp.StatusCode == 200 {
 		offset = 0
 	} else {
-		prefix := fmt.Sprintf("bytes %d-", offset)
 		cr := resp.Header.Get("Content-Range")
-		parts := strings.Split(cr, "/")
-		if offset == 0 || !strings.HasPrefix(cr, prefix) || len(parts) != 2 || parts[1] != strconv.FormatInt(f.Bytes(), 10) || resp.Header.Get("ETag") != cp.ETag {
+		var start, end, total int64
+		fields, parseErr := fmt.Sscanf(cr, "bytes %d-%d/%d", &start, &end, &total)
+		if offset == 0 || parseErr != nil || fields != 3 || start != offset || end < start || end >= total || total != f.Bytes() || (resp.ContentLength >= 0 && resp.ContentLength != end-start+1) || resp.Header.Get("ETag") != cp.ETag {
 			return "", 0, false, fmt.Errorf("unsafe partial response")
 		}
 	}

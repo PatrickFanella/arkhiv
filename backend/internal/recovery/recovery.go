@@ -104,7 +104,10 @@ func tool(ctx context.Context, name, path, urlValue string) error {
 	}
 	cmd := exec.CommandContext(ctx, name, args...)
 	sslMode := "prefer"
-	parsed, _ := url.Parse(urlValue)
+	parsed, parseErr := url.Parse(urlValue)
+	if parseErr != nil || (parsed.Scheme != "postgres" && parsed.Scheme != "postgresql") {
+		return fmt.Errorf("backup tools require a PostgreSQL URL")
+	}
 	if value := parsed.Query().Get("sslmode"); value != "" {
 		sslMode = value
 	}

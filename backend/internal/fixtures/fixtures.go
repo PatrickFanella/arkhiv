@@ -45,7 +45,7 @@ func Seed(ctx context.Context, db *catalog.DB, s *storage.Store) error {
 		return fmt.Errorf("fixture seed requires ARKHIV_FIXTURE=1")
 	}
 	for i, id := range []string{"fixture-zines", "fixture-second"} {
-		c := config.Collection{ID: id, Item: "synthetic", Name: "Synthetic verification collection", Introduction: "Synthetic documents for local verification; these are not archive acquisitions.", Accent: []string{"#8c2921", "#245c42"}[i], Limits: config.Limits{Documents: 50, TotalBytes: 2 << 30, FileBytes: 250 << 20, Concurrency: 2}}
+		c := config.Collection{ID: id, Item: "synthetic", Name: []string{"Synthetic verification collection", "Second synthetic archive"}[i], Introduction: []string{"Synthetic documents for local verification; these are not archive acquisitions.", "A different editorial introduction for the second synthetic collection."}[i], Accent: []string{"#8c2921", "#245c42"}[i], Limits: config.Limits{Documents: 50, TotalBytes: 2 << 30, FileBytes: 250 << 20, Concurrency: 2}}
 		if e := db.Collection(ctx, c); e != nil {
 			return e
 		}

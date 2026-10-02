@@ -8,8 +8,11 @@ The implementation includes a PostgreSQL catalog, operator CLI, bounded resumabl
 acquisition, editorial review, text and cover extraction, metadata/page search,
 and backup/restore. The initial manifest selects 25 documents, 26 PDF variants,
 and 17 matching OCR companions from Internet Archive's `ZineArchive` item.
-Pilot qualification evidence is tracked in [the milestone plan](docs/plans/0001-anarchist-zine-archive.md)
-and Gitea issue #14. Public release is a separate decision.
+The [private pilot qualification](docs/reports/pilot-qualification-20261002.md) passed:
+all originals were verified, the independent NUC backup was restored, and on-site
+reading/search/downloads worked with Archive.org blocked. The initial implementation merged in PR #19; hardening and the qualification
+report are in [PR #20](https://git.subcult.tv/subculture-collective/arkhiv/pulls/20),
+pending review and merge. Public release is a separate decision.
 
 ## Development
 

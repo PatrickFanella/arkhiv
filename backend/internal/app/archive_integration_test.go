@@ -3,6 +3,7 @@ package app
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"git.subcult.tv/subculture-collective/arkhiv/internal/catalog"
@@ -17,6 +18,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 )
@@ -62,6 +64,18 @@ func TestArchiveIntegration(t *testing.T) {
 	if e = db.Migrate(ctx, migrations); e != nil {
 		t.Fatal(e)
 	}
+	var concurrent sync.WaitGroup
+	errors := make(chan error, 2)
+	for range 2 {
+		concurrent.Go(func() { errors <- db.Migrate(ctx, migrations) })
+	}
+	concurrent.Wait()
+	close(errors)
+	for err := range errors {
+		if err != nil {
+			t.Fatal("concurrent migration", err)
+		}
+	}
 	if e = db.Migrate(ctx, migrations); e != nil {
 		t.Fatal(e)
 	}
@@ -73,6 +87,35 @@ func TestArchiveIntegration(t *testing.T) {
 	t.Setenv("ARKHIV_FIXTURE", "1")
 	if e = fixtures.Seed(ctx, db, store); e != nil {
 		t.Fatal(e)
+	}
+	// Generated with pypdf: a blank page locked with a synthetic test password.
+	encrypted, e := base64.StdEncoding.DecodeString("JVBERi0xLjMKJeLjz9MKMSAwIG9iago8PAovUHJvZHVjZXIgPGVlMTEyNjg1ZWQ+Cj4+CmVuZG9iagoyIDAgb2JqCjw8Ci9UeXBlIC9QYWdlcwovQ291bnQgMQovS2lkcyBbIDQgMCBSIF0KPj4KZW5kb2JqCjMgMCBvYmoKPDwKL1R5cGUgL0NhdGFsb2cKL1BhZ2VzIDIgMCBSCj4+CmVuZG9iago0IDAgb2JqCjw8Ci9UeXBlIC9QYWdlCi9SZXNvdXJjZXMgPDwKPj4KL01lZGlhQm94IFsgMC4wIDAuMCA2MTIgNzkyIF0KL1BhcmVudCAyIDAgUgo+PgplbmRvYmoKNSAwIG9iago8PAovViAyCi9SIDMKL0xlbmd0aCAxMjgKL1AgNDI5NDk2NzI5MgovRmlsdGVyIC9TdGFuZGFyZAovTyA8YWJhNjE5NGY5ODI5ZWRhOTM3MTk0NDJjMjE5NTUwMTU3ZWQwNTBjMDRhZjRiYWMyZTEwOTkyMzY2MDcyZGU0MD4KL1UgPDFhNDk2NzU4YTg3MzQ2YzY5ZTU2YjkxM2U0NjQxM2ZkMjhiZjRlNWU0ZTc1OGE0MTY0MDA0ZTU2ZmZmYTAxMDg+Cj4+CmVuZG9iagp4cmVmCjAgNgowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAwMTUgMDAwMDAgbiAKMDAwMDAwMDA1OSAwMDAwMCBuIAowMDAwMDAwMTE4IDAwMDAwIG4gCjAwMDAwMDAxNjcgMDAwMDAgbiAKMDAwMDAwMDI2MSAwMDAwMCBuIAp0cmFpbGVyCjw8Ci9TaXplIDYKL1Jvb3QgMyAwIFIKL0luZm8gMSAwIFIKL0lEIFsgPDM1NjEzMTMyNjIzNzY0MzczODM1NjEzNjY0MzUzNTM3MzUzNjM5NjI2MjM3MzA2NDMyMzQzMjMyNjEzNzMwMzk+IDwzNTYxMzEzMjYyMzc2NDM3MzgzNTYxMzY2NDM1MzUzNzM1MzYzOTYyNjIzNzMwNjQzMjM0MzIzMjYxMzczMDM5PiBdCi9FbmNyeXB0IDUgMCBSCj4+CnN0YXJ0eHJlZgo0NzYKJSVFT0YK")
+	if e != nil {
+		t.Fatal(e)
+	}
+	for _, malformed := range [][]byte{[]byte("%PDF-1.4\ninvalid synthetic document"), encrypted} {
+		mh, mn, _ := storage.Digest(bytes.NewReader(malformed))
+		if e = os.WriteFile(filepath.Join(store.Path, "malformed.part"), malformed, 0600); e != nil {
+			t.Fatal(e)
+		}
+		if e = store.Promote("malformed.part", mh, mn); e != nil {
+			t.Fatal(e)
+		}
+		ms, _ := db.Snapshot(ctx, "synthetic", []byte(`{"malformed":true}`))
+		if e = db.Import(ctx, config.Collection{ID: "fixture-zines", Item: "synthetic"}, config.Selection{Key: "Unreadable fixture " + mh, File: "malformed.pdf", Title: "Malformed fixture"}, mh, mn, ms); e != nil {
+			t.Fatal(e)
+		}
+		if index.Extract(ctx, db, store, mh) == nil {
+			t.Fatal("malformed PDF extracted successfully")
+		}
+		var failedStatus string
+		if e = db.Pool.QueryRow(ctx, `SELECT status FROM derivatives WHERE asset_sha=$1`, mh).Scan(&failedStatus); e != nil || failedStatus != "failed" {
+			t.Fatal("missing explicit failed extraction state", e)
+		}
+		if e = store.Verify(mh, mn); e != nil {
+			t.Fatal("failed extraction changed original", e)
+		}
+
 	}
 
 	blank, e := db.Get(ctx, catalog.ID("fixture-zines", "synthetic", "No-text fixture"), false)
@@ -151,8 +194,23 @@ func TestArchiveIntegration(t *testing.T) {
 		t.Fatal("range contract", w.Code, w.Body.String())
 	}
 	w = request("HEAD", "/api/assets/"+asset.ID, "")
-	if w.Code != 200 || w.Body.Len() != 0 || w.Header().Get("Content-Type") != "application/pdf" {
+	if w.Code != 200 || w.Body.Len() != 0 || w.Header().Get("Content-Type") != "application/pdf" || w.Header().Get("Content-Length") != fmt.Sprint(asset.Size) || w.Header().Get("Cache-Control") != "no-store" {
 		t.Fatal("HEAD contract")
+	}
+	etag := w.Header().Get("ETag")
+	if etag != `"`+asset.SHA+`"` {
+		t.Fatal("original ETag contract")
+	}
+	conditional := httptest.NewRequest("GET", "/api/assets/"+asset.ID, nil)
+	conditional.Header.Set("If-None-Match", etag)
+	w = httptest.NewRecorder()
+	handler.ServeHTTP(w, conditional)
+	if w.Code != 304 || w.Body.Len() != 0 {
+		t.Fatal("conditional request contract")
+	}
+	w = request("GET", "/api/assets/"+asset.ID, fmt.Sprintf("bytes=%d-", asset.Size))
+	if w.Code != 416 || w.Header().Get("Content-Range") != fmt.Sprintf("bytes */%d", asset.Size) {
+		t.Fatal("invalid range contract")
 	}
 	w = request("GET", "/api/assets/"+asset.ID+"?download=1", "")
 	if w.Code != 200 || !strings.HasPrefix(w.Header().Get("Content-Disposition"), "attachment") {
@@ -161,6 +219,41 @@ func TestArchiveIntegration(t *testing.T) {
 	h, n, _ := storage.Digest(strings.NewReader(w.Body.String()))
 	if h != asset.SHA || n != asset.Size {
 		t.Fatal("download differs from original")
+	}
+	for _, query := range []string{"collection=fixture-zines&q=absentunique", "collection=missing", "collection=fixture-zines&offset=1"} {
+		w = request("GET", "/api/documents?"+query, "")
+		if w.Code != 200 || json.Unmarshal(w.Body.Bytes(), &result) != nil || len(result.Documents) != 0 {
+			t.Fatal("empty/scoped/paginated catalog contract", query, w.Body.String())
+		}
+	}
+	if e = db.Edit(ctx, privateID, map[string]any{"subjects": []string{"private-only"}}, "", "", nil); e != nil {
+		t.Fatal(e)
+	}
+	w = request("GET", "/api/facets?collection=fixture-zines", "")
+	if w.Code != 200 || strings.Contains(w.Body.String(), "private-only") || !strings.Contains(w.Body.String(), "mutual aid") {
+		t.Fatal("published-only facets contract")
+	}
+	if e = db.Edit(ctx, id, map[string]any{"creators": "Émilie Solidarität", "date": "unknown"}, "", "", nil); e != nil {
+		t.Fatal(e)
+	}
+	w = request("GET", "/api/documents?collection=fixture-zines&q="+urlpkg.QueryEscape("Solidarität"), "")
+	if w.Code != 200 || json.Unmarshal(w.Body.Bytes(), &result) != nil || result.Total != 1 {
+		t.Fatal("Unicode metadata search contract", w.Body.String())
+	}
+	// Rebuild the searchable derivative from the preserved original.
+	if _, e = db.Pool.Exec(ctx, `DELETE FROM page_text WHERE asset_sha=$1`, asset.SHA); e != nil {
+		t.Fatal(e)
+	}
+	if e = index.Extract(ctx, db, store, asset.SHA); e != nil {
+		t.Fatal(e)
+	}
+	w = request("GET", "/api/assets/"+asset.ID+"/search?q=knownword", "")
+	var hits []catalog.Hit
+	if w.Code != 200 || json.Unmarshal(w.Body.Bytes(), &hits) != nil || len(hits) != 1 || hits[0].Page != 2 {
+		t.Fatal("rebuilt page search contract")
+	}
+	if e = store.Verify(asset.SHA, asset.Size); e != nil {
+		t.Fatal("rebuild changed original", e)
 	}
 	if e = db.Edit(ctx, id, map[string]any{"title": "Reviewed title"}, "", "", nil); e != nil {
 		t.Fatal(e)

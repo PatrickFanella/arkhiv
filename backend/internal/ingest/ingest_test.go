@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"git.subcult.tv/subculture-collective/arkhiv/internal/catalog"
+	"git.subcult.tv/subculture-collective/arkhiv/internal/config"
 	ia "git.subcult.tv/subculture-collective/arkhiv/internal/source/internetarchive"
 	"git.subcult.tv/subculture-collective/arkhiv/internal/storage"
 	"net/http"
@@ -74,7 +75,7 @@ func TestDownloadRejectsBadChecksumAndOversize(t *testing.T) {
 }
 
 func TestResumeRestartsOrRejectsUnsafeRanges(t *testing.T) {
-	for _, mode := range []string{"ignored", "changed-etag", "wrong-range"} {
+	for _, mode := range []string{"ignored", "oversized-part", "changed-etag", "wrong-range"} {
 		t.Run(mode, func(t *testing.T) {
 			payload := "abcdefghij"
 			m := md5.Sum([]byte(payload))
@@ -84,8 +85,18 @@ func TestResumeRestartsOrRejectsUnsafeRanges(t *testing.T) {
 			base := "jobs/" + catalog.ID("item", f.Name)
 			s.Root.MkdirAll("jobs", 0700)
 			os.WriteFile(s.Path+"/"+base+".part", []byte("abc"), 0600)
+			if mode == "oversized-part" {
+				os.WriteFile(s.Path+"/"+base+".part", []byte("oversized partial data"), 0600)
+			}
 			s.WriteJSON(base+".json", Checkpoint{Version: catalog.ID(f.Name, f.Size, f.MD5, f.SHA1), ETag: `"old"`})
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if mode == "oversized-part" {
+					if r.Header.Get("Range") != "" {
+						t.Error("resumed invalid partial")
+					}
+					fmt.Fprint(w, payload)
+					return
+				}
 				if r.Header.Get("Range") != "bytes=3-" {
 					t.Error("did not attempt bounded resume")
 				}
@@ -107,7 +118,7 @@ func TestResumeRestartsOrRejectsUnsafeRanges(t *testing.T) {
 			defer server.Close()
 			c := &ia.Client{HTTP: server.Client(), Base: server.URL}
 			hash, n, _, e := Download(context.Background(), c, s, "item", f, 20)
-			if mode == "ignored" {
+			if mode == "ignored" || mode == "oversized-part" {
 				if e != nil || n != 10 || s.Verify(hash, n) != nil {
 					t.Fatal("failed safe restart", e)
 				}
@@ -115,5 +126,24 @@ func TestResumeRestartsOrRejectsUnsafeRanges(t *testing.T) {
 				t.Fatal("accepted unsafe partial response")
 			}
 		})
+	}
+}
+
+func TestInventoryShowsSelectedCompanionsAndReviewSuggestions(t *testing.T) {
+	c := config.Collection{Item: "item", Selection: []config.Selection{{File: "book-read.pdf", Key: "book", Title: "Book"}}, Limits: config.Limits{Documents: 1, TotalBytes: 20, FileBytes: 10, Concurrency: 1}}
+	m := ia.Metadata{Files: []ia.File{{Name: "book-read.pdf", Size: "10"}, {Name: "book-print.pdf", Size: "10"}, {Name: "book-read_djvu.txt", Size: "5"}}}
+	p, e := Inventory(c, m)
+	if e != nil || p.Bytes != 15 || p.Documents != 1 {
+		t.Fatal("inventory total", e, p)
+	}
+	if !p.Candidates[2].Selected || p.Candidates[2].CompanionFor != "book-read.pdf" {
+		t.Fatal("companion selection is hidden")
+	}
+	if len(p.GroupingSuggestions) != 1 || !p.GroupingSuggestions[0].RequiresReview {
+		t.Fatal("grouping suggestion did not require review")
+	}
+	c.Limits.TotalBytes = 12
+	if _, e = Inventory(c, m); e == nil {
+		t.Fatal("companion exceeded batch cap")
 	}
 }
