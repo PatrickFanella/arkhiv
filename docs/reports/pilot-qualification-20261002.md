@@ -2,7 +2,8 @@
 
 The Anarchist Zine Archive passed its private preservation, catalog, reader, and
 independent restore qualification. Public release remains a separate decision.
-Implementation is proposed in [PR #19](https://git.subcult.tv/subculture-collective/arkhiv/pulls/19);
+The initial implementation merged in [PR #19](https://git.subcult.tv/subculture-collective/arkhiv/pulls/19);
+hardening and qualification are in [PR #20](https://git.subcult.tv/subculture-collective/arkhiv/pulls/20).
 [issue #14](https://git.subcult.tv/subculture-collective/arkhiv/issues/14) holds
 qualification receipts. Issues remain open for review and merge.
 
@@ -94,7 +95,7 @@ not a public ingress or production release check.
   automated browser suite, not a native device test.
 - [Hosted CI run 11960](https://git.subcult.tv/subculture-collective/arkhiv/actions/runs/11960)
   passed for exact runtime revision `5ad2573`, including the separate browser/PG17
-  gate. Later source-head CI is linked from PR #19 and issue #14.
+  gate. Later source-head CI is linked from PR #20 and issue #14.
 - The companion [T3 environment PR #3](https://git.subcult.tv/PatrickFanella/t3-dev-environments/pulls/3)
   adds isolated Arkhiv fixture/database gates. Eleven launcher regression tests
   passed locally. This does not claim hosted CI for that tools repository.

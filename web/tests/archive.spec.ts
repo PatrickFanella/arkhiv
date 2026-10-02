@@ -8,7 +8,8 @@ test("catalog, page search, local PDF rendering, navigation and download", async
   request,
 }) => {
   await page.goto("/?collection=fixture-zines");
- await page.keyboard.press("Tab");await expect(page.getByRole("link",{name:"Arkhiv home"})).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(page.getByRole("link", { name: "Arkhiv home" })).toBeFocused();
   await expect(
     page.getByRole("heading", { name: "Mutual aid fixture" }),
   ).toBeVisible();
@@ -57,6 +58,14 @@ test("empty, error, loading and second configuration", async ({ page }) => {
   await page.goto("/?collection=fixture-second");
   await expect(
     page.getByRole("heading", { name: "Mutual aid fixture" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Second synthetic archive" }),
+  ).toBeVisible();
+  await expect(
+    page.getByText(
+      "A different editorial introduction for the second synthetic collection.",
+    ),
   ).toBeVisible();
   expect(
     await page

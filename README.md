@@ -10,9 +10,9 @@ and backup/restore. The initial manifest selects 25 documents, 26 PDF variants,
 and 17 matching OCR companions from Internet Archive's `ZineArchive` item.
 The [private pilot qualification](docs/reports/pilot-qualification-20261002.md) passed:
 all originals were verified, the independent NUC backup was restored, and on-site
-reading/search/downloads worked with Archive.org blocked. Implementation is in
-[PR #19](https://git.subcult.tv/subculture-collective/arkhiv/pulls/19), pending review
-and merge. Public release is a separate decision.
+reading/search/downloads worked with Archive.org blocked. The initial implementation merged in PR #19; hardening and the qualification
+report are in [PR #20](https://git.subcult.tv/subculture-collective/arkhiv/pulls/20),
+pending review and merge. Public release is a separate decision.
 
 ## Development
 

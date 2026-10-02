@@ -1,6 +1,6 @@
 # Milestone 1: a preserved, readable Anarchist Zine Archive
 
-Status: private pilot qualified; implementation is in PR #19 pending review and merge.
+Status: private pilot qualified; initial implementation merged in PR #19; qualification follow-up is in PR #20.
 Evidence: [October 2 qualification report](../reports/pilot-qualification-20261002.md).
 Date: 2026-10-02. Source: https://archive.org/details/ZineArchive.
 
