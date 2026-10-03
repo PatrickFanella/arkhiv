@@ -231,7 +231,8 @@ class Runner:
             if not readiness.startswith(('https://', 'http://127.0.0.1:')):
                 raise ValueError('invalid public readiness destination')
             try:
-                with urllib.request.urlopen(readiness, timeout=5) as response:
+                request = urllib.request.Request(readiness, headers={'User-Agent': 'Arkhiv/0.1 (+https://arkhiv.subcult.tv; preservation readiness monitor)', 'Accept': 'application/json'})
+                with urllib.request.urlopen(request, timeout=5) as response:
                     ready = json.loads(response.read(16384))
                     healthy = response.status == 200 and ready.get('status') == 'ok' and ready.get('public') is True and ready.get('revision') == self.c['public_revision']
                 if not healthy:
