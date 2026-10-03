@@ -16,8 +16,9 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
-    if subprocess.check_output(['git', 'status', '--porcelain'], cwd=root):
-        raise SystemExit('Release requires a clean committed source revision')
+    status = subprocess.check_output(['git', 'status', '--porcelain'], cwd=root, text=True)
+    if status:
+        raise SystemExit('Release requires a clean committed source revision:\n' + status)
     contract = json.loads((root / 'docs/reference/release-contract.json').read_text())
     if not re.fullmatch(re.escape(contract['engine_repository']) + r'@sha256:[0-9a-f]{64}', args.engine_digest):
         raise SystemExit('Supply the immutable registry engine digest, not a mutable tag or local image ID')

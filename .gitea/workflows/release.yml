@@ -49,6 +49,9 @@ jobs:
           [[ "$test_db_ip" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]
           export TEST_DATABASE_URL="postgres://vhness:disposable-release-only@$test_db_ip:5432/vhness_release?sslmode=disable"
           make verify
+          # Fail before a registry push if verification changed the release tree.
+          release_status=$(git status --porcelain)
+          test -z "$release_status" || { printf 'Verification changed release paths:\n%s\n' "$release_status" >&2; exit 1; }
       - name: Publish immutable package and engine artifacts
         env:
           ARCHIVE_PACKAGE_TOKEN: ${{ secrets.ARCHIVE_PACKAGE_TOKEN }}
