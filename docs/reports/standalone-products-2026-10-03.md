@@ -166,7 +166,7 @@ schedules, unavailable source media and autoplay restrictions remain visible.
 Public domains, ingress, approved asset/source use and concurrency remain
 [#22](https://git.subcult.tv/subculture-collective/VHNESS/issues/22).
 Optional remux/transcode and locally preserved captions remain extensions in
-[#20](https://git.subcult.tv/subculture-collective/VHNESS/issues/20); the selected
+[#34](https://git.subcult.tv/subculture-collective/VHNESS/issues/34); the selected
 compatible source MP4s do not require processing. There is no automatic deletion
 of originals, history or backups.
 
@@ -174,3 +174,5 @@ The old port-47071 qualification API was stopped after its metadata job and
 receipts completed; its database, media, logs and immutable evidence remain.
 The three standalone previews are the current review targets. Raw machine
 receipts and screenshots live under `~/.local/state/vhness/standalone`.
+
+Final release checks: a reviewed template-image rollback and forward upgrade preserved all 6,582 catalog entries and the exact ongoing program. The final pinned Bill Nye image repeated NUC source-blocked decoding/seeking for episodes 1, 2 and 100. All 27 final release artifacts passed independent NUC SHA-256 verification. Compatible-MP4 adapter #20 and independent preservation qualification #21 are closed; their optional processing criteria were moved intact to #34.

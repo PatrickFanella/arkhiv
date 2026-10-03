@@ -135,3 +135,5 @@ Update this roadmap and the design plan when milestone scope changes. Update
 the tracking issue when work is qualified; do not close tasks merely because
 their code merged. No live discovery job, scheduler, acquisition, or public
 service is activated by creating these planning records.
+
+The completed unchanged-MP4 adapter and recovery tasks (#20/#21) are closed. Optional remux/transcode and preserved local captions remain [extension #34](https://git.subcult.tv/subculture-collective/VHNESS/issues/34), with the original unchecked criteria retained. All three product PRs and the shared-engine stack are reviewable and mergeable; public ingress remains #22.
