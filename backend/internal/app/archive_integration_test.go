@@ -335,6 +335,15 @@ func TestArchiveIntegration(t *testing.T) {
 		t.Fatal("approved a mismatched original")
 	}
 	deny(asset.ID)
+	if err := os.Remove(manifestPath); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.ApprovePublic(ctx, store, raw, "owner review"); err == nil {
+		t.Fatal("approved missing readable derivative")
+	}
+	if err := os.WriteFile(manifestPath, manifestBytes, 0600); err != nil {
+		t.Fatal(err)
+	}
 	if count, err := db.ApprovePublic(ctx, store, raw, "owner reviewed fixture"); err != nil || count != 1 {
 		t.Fatal("public approval", count, err)
 	}
