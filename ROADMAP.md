@@ -5,6 +5,12 @@ streaming, shared schedules, and manifest-bounded local preservation are
 implemented in the review stack. Complete collection coverage and sustained
 qualification remain open. No public deployment is authorized. Updated 2026-10-03.
 
+The owner selected separate Democracy Now! and Bill Nye app repositories with
+a shared engine. Each app owns its design system and deployment; VHNESS naming
+and visual design remain deferred. The [standalone product plan](docs/plans/0002-standalone-products.md)
+records runtime isolation, asset intake, visual directions, and delivery gates.
+This extends the pilot roadmap without expanding either delivery policy.
+
 VHNESS starts with Democracy Now! on Internet Archive. The first private version
 includes a browsable episode library, on-demand viewing, and a shared scheduled
 replay channel. It stores complete metadata and streams video directly from the
