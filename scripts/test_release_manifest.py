@@ -72,6 +72,16 @@ class ReleaseManifestTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn('Packed bytes differ', result.stderr)
 
+    def test_accepts_packer_metadata_formatting_without_accepting_changes(self):
+        with tarfile.open(self.package, 'w:gz') as archive:
+            data = json.dumps(json.loads((self.root / 'packages/viewer/package.json').read_text()), indent=2).encode()
+            info = tarfile.TarInfo('package/package.json')
+            info.size = len(data)
+            archive.addfile(info, io.BytesIO(data))
+            archive.add(self.root / 'packages/viewer/dist/index.js', arcname='package/dist/index.js')
+        result = self.run_manifest()
+        self.assertEqual(result.returncode, 0, result.stderr)
+
 
 if __name__ == '__main__':
     unittest.main()

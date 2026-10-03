@@ -34,15 +34,23 @@ def main():
     # Bind every shipped file to the built source; tarball metadata can vary.
     with tarfile.open(args.package) as archive:
         for member in archive.getmembers():
-            if not member.isfile():
+            if member.isdir():
                 continue
+            if not member.isfile():
+                raise SystemExit('Package contains an unsupported link or special file')
             name = Path(member.name)
             if name.parts[0] != 'package' or '..' in name.parts:
                 raise SystemExit('Invalid package member')
             relative = Path(*name.parts[1:])
             expected = root / 'packages/viewer' / relative
             actual = archive.extractfile(member)
-            if actual is None or not expected.is_file() or actual.read() != expected.read_bytes():
+            if actual is None or not expected.is_file():
+                raise SystemExit('Packed bytes differ from built source: ' + str(relative))
+            data = actual.read()
+            # pnpm normalizes package.json formatting during packing. Compare
+            # its complete metadata, while executable/other files remain exact.
+            matches = json.loads(data) == json.loads(expected.read_bytes()) if relative == Path('package.json') else data == expected.read_bytes()
+            if not matches:
                 raise SystemExit('Packed bytes differ from built source: ' + str(relative))
     manifest = {
         **contract,
