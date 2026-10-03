@@ -103,4 +103,30 @@ func checkAutomaticAccess(t *testing.T, ctx context.Context, db *catalog.DB, sto
 	if err = db.Pool.QueryRow(ctx, `SELECT count(*) FROM public_access_events WHERE variant_id=$1 AND approved`, variants["allowed"]).Scan(&events); err != nil || events != 1 {
 		t.Fatal("duplicate or missing access event", events, err)
 	}
+	for _, name := range []string{"allowed", "withdrawn"} {
+		pdf := fixtures.PDF("New source revision after withdrawal: " + name)
+		sha, size, e := storage.Digest(bytes.NewReader(pdf))
+		if e != nil {
+			t.Fatal(e)
+		}
+		part := "auto-revision-" + name + ".part"
+		if e = os.WriteFile(filepath.Join(store.Path, part), pdf, 0600); e != nil {
+			t.Fatal(e)
+		}
+		if e = store.Promote(part, sha, size); e != nil {
+			t.Fatal(e)
+		}
+		selected := config.Selection{Key: "revision-" + name, File: name + ".pdf", Title: "New edition " + name, Rights: "unknown"}
+		if e = db.Import(ctx, c, selected, sha, size, snapshot); e != nil {
+			t.Fatal(e)
+		}
+		if e = index.Extract(ctx, db, store, sha); e != nil {
+			t.Fatal(e)
+		}
+	}
+	again, err = db.ApproveAutomatic(ctx, store, c)
+	if err != nil || again.Approved != 0 || again.Published != 0 {
+		t.Fatal("new source hash bypassed prior withdrawal", again, err)
+	}
+
 }

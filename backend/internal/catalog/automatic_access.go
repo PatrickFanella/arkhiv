@@ -84,7 +84,7 @@ func (d *DB) approveAutomaticDocument(ctx context.Context, store *storage.Store,
 	if withdrawn {
 		return 0, false, "explicit document withdrawal", nil
 	}
-	rows, err := tx.Query(ctx, `SELECT v.id,v.filename,v.asset_sha,a.size,COALESCE(x.pages,0),COALESCE(x.status,'failed'),v.public_approved,EXISTS(SELECT 1 FROM public_access_events WHERE variant_id=v.id AND NOT approved),EXISTS(SELECT 1 FROM source_changes WHERE collection_id=$2 AND source_item=$3 AND decision IN ('hold','reject') AND filename=v.filename) FROM variants v JOIN assets a ON a.sha256=v.asset_sha LEFT JOIN derivatives x ON x.asset_sha=v.asset_sha WHERE v.document_id=$1 ORDER BY v.id FOR UPDATE OF v`, id, c.ID, item)
+	rows, err := tx.Query(ctx, `SELECT v.id,v.filename,v.asset_sha,a.size,COALESCE(x.pages,0),COALESCE(x.status,'failed'),v.public_approved,EXISTS(SELECT 1 FROM variants prior JOIN documents prior_doc ON prior_doc.id=prior.document_id WHERE prior.filename=v.filename AND prior_doc.collection_id=$2 AND prior_doc.source_item=$3 AND (EXISTS(SELECT 1 FROM public_access_events WHERE variant_id=prior.id AND NOT approved) OR EXISTS(SELECT 1 FROM review_events WHERE document_id=prior_doc.id AND detail->>'published'='false'))),EXISTS(SELECT 1 FROM source_changes WHERE collection_id=$2 AND source_item=$3 AND decision IN ('hold','reject') AND filename=v.filename) FROM variants v JOIN assets a ON a.sha256=v.asset_sha LEFT JOIN derivatives x ON x.asset_sha=v.asset_sha WHERE v.document_id=$1 ORDER BY v.id FOR UPDATE OF v`, id, c.ID, item)
 	if err != nil {
 		return 0, false, "", err
 	}
@@ -146,7 +146,7 @@ func (d *DB) approveAutomaticDocument(ctx context.Context, store *storage.Store,
 		}
 	}
 	if len(eligible) == 0 {
-		return 0, false, "all remaining variants explicitly revoked", nil
+		return 0, false, "remaining variants or prior source editions explicitly withdrawn", nil
 	}
 	if rights == "" {
 		rights = "unknown"
