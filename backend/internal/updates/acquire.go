@@ -46,7 +46,7 @@ func Acquire(ctx context.Context, c config.Collection, client *ia.Client, store 
 		}
 	}()
 
-	rows, e := db.Pool.Query(ctx, `SELECT id,source_item,snapshot_id,detail FROM source_changes WHERE collection_id=$1 AND kind IN ('added','content') AND (decision='approve' OR ($2 AND decision='pending')) ORDER BY created_at,id LIMIT 500`, c.ID, c.Updates.Policy == "acquire")
+	rows, e := db.Pool.Query(ctx, `SELECT id,source_item,snapshot_id,detail FROM source_changes WHERE collection_id=$1 AND kind IN ('added','content') AND lower(filename) LIKE '%.pdf' AND (decision='approve' OR ($2 AND decision='pending')) ORDER BY created_at,id LIMIT 500`, c.ID, c.Updates.Policy == "acquire")
 	if e != nil {
 		return result, e
 	}

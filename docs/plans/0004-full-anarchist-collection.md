@@ -13,3 +13,5 @@ Qualification order: isolated policy/budget tests and make verify; commit and li
 The source preflight found two zero-byte OCR companions (`ars-print-pdf-final1_djvu.txt` and `ars-read-pdf-final2_djvu.txt`). They are excluded as unavailable optional text while their PDF originals remain selected. The inventory records this exclusion; no text coverage is invented. Usable OCR companions retain the same size, access and checksum checks.
 
 The all-document reader probe disposes each downloaded response after hashing so qualification does not retain the entire multi-gigabyte corpus in memory.
+
+Scheduled acquisition filters PDF filenames before applying its 500-event batch bound. Non-PDF source files remain in the review inventory and cannot permanently fill the acquisition page ahead of eligible PDFs. The regression check places 500 older non-PDF events ahead of a reviewed PDF.

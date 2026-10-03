@@ -174,11 +174,23 @@ func TestRefreshIntegration(t *testing.T) {
 	if err = Review(ctx, db, eventID, "approve", "Fixture acquisition review"); err != nil {
 		t.Fatal(err)
 	}
+	// Non-PDF source files must not consume the bounded acquisition page and
+	// permanently starve a later reviewed PDF.
+	if _, err = db.Pool.Exec(ctx, `INSERT INTO source_changes(id,collection_id,source_item,filename,kind,snapshot_id,detail,decision,created_at) SELECT 'nonpdf-'||n,$1,$2,'unrelated-'||n||'.xml','added',snapshot_id,'{}'::jsonb,'approve',now()-interval '1 day' FROM source_inventories CROSS JOIN generate_series(1,500) n WHERE collection_id=$1 AND source_item=$2`, c.ID, c.Item); err != nil {
+		t.Fatal(err)
+	}
 	c.Limits = config.Limits{Documents: 10, TotalBytes: 1 << 20, FileBytes: 1 << 20, Concurrency: 1}
 	c.Updates.MinimumFreeBytes = 1
 	acquired, err := Acquire(ctx, c, client, store, db)
 	if err != nil || acquired.Acquired != 1 {
 		t.Fatal("reviewed acquisition", acquired, err)
+	}
+	var unrelatedAcquired int
+	if err = db.Pool.QueryRow(ctx, `SELECT count(*) FROM source_changes WHERE id LIKE 'nonpdf-%' AND decision='acquired'`).Scan(&unrelatedAcquired); err != nil || unrelatedAcquired != 0 {
+		t.Fatal("non-PDF files were acquired", unrelatedAcquired, err)
+	}
+	if _, err = db.Pool.Exec(ctx, `DELETE FROM source_changes WHERE id LIKE 'nonpdf-%'`); err != nil {
+		t.Fatal(err)
 	}
 	var originalID string
 	db.Pool.QueryRow(ctx, `SELECT document_id FROM source_changes WHERE id=$1`, eventID).Scan(&originalID)
