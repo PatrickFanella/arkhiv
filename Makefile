@@ -64,3 +64,7 @@ test-operations: ## Isolated job, manifest, retention and failure checks
 test-updates: ## Complete source inventory and durable refresh integration checks
 	@test -n "$$TEST_DATABASE_URL" || (echo 'Run with t3-dev --profile arkhiv test --command "make test-updates"'; exit 1)
 	cd backend && go test -race ./internal/updates -count=1
+
+.PHONY: test-restore-browser
+test-restore-browser: ## Scheduled reader probe against an isolated synthetic stack
+	bash scripts/test-reader-probe.sh

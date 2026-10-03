@@ -60,6 +60,10 @@ func Load(path string) (Collection, error) {
 	if e = d.Decode(&c); e != nil {
 		return c, e
 	}
+	var extra any
+	if err := d.Decode(&extra); err != io.EOF {
+		return c, fmt.Errorf("collection configuration must contain exactly one document")
+	}
 	return c, c.Validate()
 }
 func (c Collection) Validate() error {

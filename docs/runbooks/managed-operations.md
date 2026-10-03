@@ -57,3 +57,34 @@ unsafe paths, overlaps, disk exhaustion, retained last-success timestamps, notif
 retry/deduplication and dry-run retention. `make verify` includes this suite plus the
 catalog integration checks that detect missing or mismatched reader manifests.
 Recurring restore drills and source-refresh jobs remain separate roadmap work.
+
+## Recurring fresh restore
+
+`scripts/operations/restore_drill.py` fetches the latest independently verified
+NUC snapshot into a new qualification directory. It validates the snapshot name,
+destination and manifest, then creates a separate Compose project with a fresh
+PostgreSQL 17 database and archive destination. The drill network is internal,
+with no published ports or access to Archive.org. It uses synthetic credentials
+for the isolated temporary database; primary database credentials are not copied.
+
+A CLI restore and full audit run before browser qualification. The reader-probe
+image compares the restored published count, checks every PDF download against
+its catalog SHA-256, renders every published variant, checks configured queries,
+and confirms source requests are blocked. Screenshots and JSON receipts remain
+in the drill's `proof/` directory. The exact generated project is stopped after
+qualification, including on a partial startup failure; the primary and earlier
+restored services are not cleanup targets. Fetched snapshots and restored archive
+bytes remain evidence.
+
+Build `web/Dockerfile.readerprobe` into a versioned image labeled with the exact
+committed source revision. Configure `reader_probe_image`, `restore_script` and
+`restore_queries` in the private operations configuration. Add restore to monitoring
+with an appropriate monthly staleness threshold. Install the supplied restore
+service/timer after verifying these inputs. It schedules the first of each month
+at 05:00 America/Chicago, with a 240-second initial activation delay. A first scheduled
+proof does not establish a full month of unattended operation.
+
+`make test-restore-browser` verifies the scheduled browser probe against the
+isolated two-collection synthetic stack. The ordinary operations suite checks
+backup destination confinement and cleanup after partial stack creation. A real
+NUC restore still requires its independent live receipt.

@@ -1,0 +1,7 @@
+FROM mcr.microsoft.com/playwright:v1.56.1-noble
+WORKDIR /tests
+RUN npm install -g pnpm@10.33.0
+COPY web/package.json web/pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+COPY scripts/operations/reader-probe.cjs ./reader-probe.cjs
+CMD ["node", "reader-probe.cjs"]

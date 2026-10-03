@@ -60,3 +60,30 @@ Private readback receipts are `natural-jobs.json` and `notification-receiver.jso
 in the execution state directory. The monitored jobs have 36-hour staleness limits,
 with a 15-minute monitoring cadence. The original private reader/API revision remains
 `6470472`; only the operator/job implementation uses `88933b5`.
+
+## Update timer qualification in progress
+
+PR #41 merged after hosted checks passed. Operator revision `5bdf863` was installed
+following another independently verified NUC snapshot, `auto-20261003T000214Z`.
+Migration 0004 applied without restarting the reader or primary database.
+The first update timer trigger at 00:06:10 UTC returned `disabled`, revealing
+that the existing JSON-format collection file had a trailing YAML settings block
+outside the decoded document. The operator configuration was rewritten as a single
+JSON document with updates enabled and review-only acquisition. The timer was
+restarted to schedule another initial trigger. The config loader now rejects
+trailing/multiple documents, with regression coverage. The disabled run does not
+establish a completed source inventory.
+
+The corrected timer triggered at 00:12:00 UTC and completed a real source inventory
+at 00:12:14 UTC: 5,337 files, 5,338 pending review events including item metadata,
+and no acquisition under the review-only policy. A separate repeat refresh completed
+with zero added/content/metadata/removed/uncertain files. This is unchanged-source
+proof; evolving additions and editions are proven separately by fixtures.
+
+The post-inventory NUC snapshot `auto-20261003T001300Z` independently verified
+149 archive files and a 2,236,230-byte dump with SHA-256
+`379c5f1aeb05bd42ecbb48c3ee1b6e7b2dd305a432902e4be6c59baa43ea0c30`.
+The additional archive file is the retained raw source snapshot. The reader remains
+at revision `6470472`; operator image `0fd557f` supplies the stricter configuration
+reader. The restore runner source is `d6e2669`, while its unchanged probe image
+identifies `0fd557f`. The first restore timer trigger is scheduled for 00:17:21 UTC.

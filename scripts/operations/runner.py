@@ -16,7 +16,7 @@ import tempfile
 import time
 import urllib.request
 
-JOBS = ('audit', 'backup', 'monitor', 'retention', 'update')
+JOBS = ('audit', 'backup', 'monitor', 'retention', 'update', 'restore')
 
 
 def atomic(path, value):
@@ -218,6 +218,9 @@ class Runner:
         value = self.remote('python3', self.c['remote_script'], 'retain', '--root', self.c['backup_root'], '--policy', json.dumps(self.c.get('retention', {})))
         return json.loads(value)
 
+    def restore(self):
+        return json.loads(self.execute(['python3', self.c['restore_script'], self.c['config_path']]))
+
     def monitor(self):
         problems = []
         for job, max_age in self.c.get('stale_seconds', {}).items():
@@ -265,7 +268,9 @@ def main():
         print(shutil.disk_usage(args.root).free)
         return 0
     else:
-        runner = Runner(json.loads(Path(args.config).read_text()))
+        config = json.loads(Path(args.config).read_text())
+        config['config_path'] = str(Path(args.config).resolve())
+        runner = Runner(config)
         result = runner.run(args.action)
     print(json.dumps(result))
     return 1 if result.get('status') == 'failed' else 0
