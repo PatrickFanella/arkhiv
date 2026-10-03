@@ -17,9 +17,14 @@ const (
 func (m Media) Valid() bool { return m == PrintMedia || m == AudioMedia || m == VideoMedia }
 
 type PrintExtension struct {
-	DocumentID string `json:"document_id"`
-	Variant    string `json:"variant"`
-	Pages      int    `json:"pages"`
+	DocumentID string           `json:"document_id"`
+	Variant    string           `json:"variant"`
+	Pages      int              `json:"pages"`
+	Companions []PrintCompanion `json:"companions,omitempty"`
+}
+type PrintCompanion struct {
+	File string `json:"file"`
+	Role string `json:"role"` // ocr or cover, never an independent catalog item.
 }
 type AudioTrack struct {
 	ID          string `json:"id"`
@@ -95,6 +100,16 @@ func (r Representation) Validate() error {
 		p := r.Extension.Print
 		if p == nil || !ValidID(p.DocumentID) || strings.TrimSpace(p.Variant) == "" || p.Pages < 0 {
 			return fmt.Errorf("invalid print extension")
+		}
+		seen := map[string]bool{r.File: true}
+		if len(p.Companions) > 16 {
+			return fmt.Errorf("too many print companions")
+		}
+		for _, companion := range p.Companions {
+			if !SafeFile(companion.File) || seen[companion.File] || (companion.Role != "ocr" && companion.Role != "cover") {
+				return fmt.Errorf("invalid print companion")
+			}
+			seen[companion.File] = true
 		}
 	case AudioMedia:
 		a := r.Extension.Audio

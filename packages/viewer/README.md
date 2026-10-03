@@ -38,3 +38,9 @@ consumer adopts released packages. Edit these sources; web compatibility barrels
 and legacy exported copies are not separate editing authorities.
 
 GPL-3.0-only software. Media and identity assets retain their separate owners.
+
+The unreleased `0.2.0` print entry exports `PrintReader` from
+`@subcult/archive-viewer/print`. Consumers supply its PDF backend and worker
+assets; importing the root entry does not load a PDF runtime. See the engine's
+[print module contract](../../docs/reference/print-module.md) for indexing and
+access requirements.

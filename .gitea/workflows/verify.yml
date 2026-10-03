@@ -23,6 +23,13 @@ jobs:
         with:
           node-version: '24'
       - run: npm install --global pnpm@10.33.0 --force
+      - name: Install bounded print extraction tools
+        run: |
+          if [ "$(id -u)" = 0 ]; then
+            apt-get update && apt-get install --yes --no-install-recommends poppler-utils util-linux
+          else
+            sudo -n apt-get update && sudo -n apt-get install --yes --no-install-recommends poppler-utils util-linux
+          fi
       - name: Verify with this run's disposable database
         env:
           TEST_DATABASE_RUN: ${{ github.run_id }}-${{ github.run_attempt }}

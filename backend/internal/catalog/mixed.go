@@ -45,6 +45,11 @@ func (d *DB) InsertCatalog(ctx context.Context, item domain.CatalogItem, notes s
 			return fmt.Errorf("snapshot does not belong to representation source")
 		}
 		files := []string{rep.File}
+		if rep.Extension.Print != nil {
+			for _, companion := range rep.Extension.Print.Companions {
+				files = append(files, companion.File)
+			}
+		}
 		if rep.Extension.Audio != nil {
 			for _, track := range rep.Extension.Audio.Tracks {
 				files = append(files, track.File)

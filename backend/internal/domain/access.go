@@ -135,6 +135,13 @@ func AuthorizeTransport(collection Collection, rep Representation, raw []byte, r
 			}
 		}
 	}
+	if rep.Extension.Print != nil {
+		for _, companion := range rep.Extension.Print.Companions {
+			if companion.File == file {
+				belongs = true
+			}
+		}
+	}
 	if !belongs {
 		return fmt.Errorf("file outside representation edition")
 	}
