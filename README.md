@@ -19,7 +19,9 @@ on-demand viewing and scheduled playback. Democracy Now! will use source-hosted
 streaming only because local video storage is unavailable. Its video files will
 not be downloaded, cached by VHNESS, or transcoded locally.
 
-Status: design only. This repository has no application or running channel.
+Status: metadata foundation implemented and under verification. The isolated
+preview shows synthetic metadata; real source playback and channel qualification
+are not complete. See [development instructions](DEVELOPMENT.md).
 Both viewing modes and both delivery designs are in scope; Democracy Now!'s
 streaming-only policy is confirmed. Local preservation remains an explicit,
 budgeted choice for other collections.
