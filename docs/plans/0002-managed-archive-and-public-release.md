@@ -3,8 +3,8 @@
 Status: implementation in progress. The merged private pilot was deployed on
 2026-10-02. Audit, backup, monitoring and dry-run retention runners are implemented;
 the four timers have completed initial scheduled runs, and NUC recorded
-notification qualification messages. Recurring restore and refresh qualification
-remain pending. Public ingress remains
+notification qualification messages. The recurring restore runner and browser probe are implemented; live restore and
+source-refresh qualification remain pending. Public ingress remains
 unconfigured.
 
 The first private pilot is qualified. PRs #18, #19 and #20 are merged; the

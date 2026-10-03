@@ -60,3 +60,16 @@ Private readback receipts are `natural-jobs.json` and `notification-receiver.jso
 in the execution state directory. The monitored jobs have 36-hour staleness limits,
 with a 15-minute monitoring cadence. The original private reader/API revision remains
 `6470472`; only the operator/job implementation uses `88933b5`.
+
+## Update timer qualification in progress
+
+PR #41 merged after hosted checks passed. Operator revision `5bdf863` was installed
+following another independently verified NUC snapshot, `auto-20261003T000214Z`.
+Migration 0004 applied without restarting the reader or primary database.
+The first update timer trigger at 00:06:10 UTC returned `disabled`, revealing
+that the existing JSON-format collection file had a trailing YAML settings block
+outside the decoded document. The operator configuration was rewritten as a single
+JSON document with updates enabled and review-only acquisition. The timer was
+restarted to schedule another initial trigger. The config loader now rejects
+trailing/multiple documents, with regression coverage. The disabled run does not
+establish a completed source inventory.
