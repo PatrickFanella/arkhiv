@@ -1,12 +1,12 @@
 {
   "id": "anarchist-zines",
   "name": "The Anarchist Zine Archive",
-  "introduction": "Zines on mutual aid, abolition, ecology, work, and anarchist thought. This initial selection preserves original files and their source history.",
+  "introduction": "Zines on mutual aid, abolition, ecology, work, and anarchist thought. Original files and source history are preserved; verified documents are available for archival reading and downloads with unknown rights and no asserted reuse license.",
   "accent": "#8c2921",
   "item": "ZineArchive",
   "limits": {
-    "documents": 50,
-    "total_bytes": 2147483648,
+    "documents": 1000,
+    "total_bytes": 8589934592,
     "file_bytes": 262144000,
     "concurrency": 2
   },
@@ -322,6 +322,6759 @@
         "ecology"
       ],
       "rights": "Source uploader describes this collection as ready to print and distribute; item-level licenses have not been independently established. Private pilot review only."
+    },
+    {
+      "file": "01-LittleGreenSongbook-SCREEN.pdf",
+      "key": "source-7631257780d0a1f38b1f557b",
+      "title": "01 LittleGreenSongbook SCREEN",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "02-LittleGreenSongbook-PRINT.pdf",
+      "key": "source-9563c095fc65121af113a20c",
+      "title": "02 LittleGreenSongbook PRINT",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "0gb6n3.pdf",
+      "key": "source-aa69543301dc15dfe9a072a0",
+      "title": "0gb6n3",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "1856-Battle-in-Seattle-Print.pdf",
+      "key": "source-e40fbbd6c755d5d164dd48d1",
+      "title": "1856 Battle in Seattle Print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "2016strikeaccountszine.pdf",
+      "key": "source-0ba63b860b41c30180108946",
+      "title": "2016strikeaccountszine",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "2017_nov_atubes_reading.pdf",
+      "key": "source-62284676f9e61e401770cfda",
+      "title": "2017 nov atubes reading",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "215_heroes_print.pdf",
+      "key": "source-3f18afdb27d5598b59f60e18",
+      "title": "215 heroes print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "215_heroes_read.pdf",
+      "key": "source-751d43b4a4dcf5a4042d8525",
+      "title": "215 heroes read",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "224613_Pan_10.1_Internet_Version_Final.pdf",
+      "key": "source-5993ecec6125dba931757943",
+      "title": "224613 Pan 10.1 Internet Version Final",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "224613_Pan_10.1_Print_Version_Final.pdf",
+      "key": "source-384727243dc999fed38f4a51",
+      "title": "224613 Pan 10.1 Print Version Final",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "225914_Pan_11.1_Print_Version_FINAL.pdf",
+      "key": "source-d373f596182da248161580bb",
+      "title": "225914 Pan 11.1 Print Version FINAL",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "2BB_Intro_edition.pdf",
+      "key": "source-6c10490d4efbdbe895438152",
+      "title": "2BB Intro edition",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "2k18_july.pdf",
+      "key": "source-9a3175d73593856698e4aa7f",
+      "title": "2k18 july",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "2k18_july_imposed.pdf",
+      "key": "source-0022ae3b73d32f811de2ab6c",
+      "title": "2k18 july imposed",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "3-print.pdf",
+      "key": "source-492b77ccd47efeabd85e9e05",
+      "title": "3 print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "3-read.pdf",
+      "key": "source-771347bceb8a2f00f3bb2abd",
+      "title": "3 read",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "323206020-ARA-South-side-2016-zine.pdf",
+      "key": "source-07898ff1766c63873acfd922",
+      "title": "323206020 ARA South side 2016 zine",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "3n5vsb.pdf",
+      "key": "source-4fad5f3175521086c7c75a28",
+      "title": "3n5vsb",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "4-print.pdf",
+      "key": "source-5f11c130dd3cb3c4042f89b2",
+      "title": "4 print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "4-read.pdf",
+      "key": "source-4bd85029f17fe4e571ebadf8",
+      "title": "4 read",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "4xgzhw.pdf",
+      "key": "source-18328b9ce7934e6ef22bb523",
+      "title": "4xgzhw",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "5-print.pdf",
+      "key": "source-0e5c870b9a14baa95d35cd42",
+      "title": "5 print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "5-read.pdf",
+      "key": "source-061029e88dd3d49f3770717e",
+      "title": "5 read",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "6-engprint.pdf",
+      "key": "source-e2d88ab806e4c0b473be4460",
+      "title": "6 engprint",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "7-engfinal-print.pdf",
+      "key": "source-98194dea7552324fc9a9ac22",
+      "title": "7 engfinal print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "7-theses-on-the-threeway-fight.pdf",
+      "key": "source-9b5ceb43bb33af378b5949b0",
+      "title": "7 theses on the threeway fight",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "9-10-screen.pdf",
+      "key": "source-3dfe68db658770e2b1cc3442",
+      "title": "9 10 screen",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "A-Crime-Called-Freedom-2022-Print.pdf",
+      "key": "source-8aa322f35b86d8dac610b85d",
+      "title": "A Crime Called Freedom 2022 Print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "A-Web-of-Relations-Tensions-IMPOSED.pdf",
+      "key": "source-ebc4b276a1b28d3c44f1cfd7",
+      "title": "A Web of Relations Tensions IMPOSED",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "A-Web-of-Relations-Tensions-PRINT.pdf",
+      "key": "source-49bd5e629e31bbdbc773bbb5",
+      "title": "A Web of Relations Tensions PRINT",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "ABC-Zine-Pages-High-Res.pdf",
+      "key": "source-62868ed3df5f4c45e7f89445",
+      "title": "ABC Zine Pages High Res",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "ABC-Zine-Small-for-Download.pdf",
+      "key": "source-42f6c8a24197efdb8d444cb3",
+      "title": "ABC Zine Small for Download",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "ACTFORFREEDOMNOW-1-8-BOOK-full-front-cover3.pdf",
+      "key": "source-4d87e088f3a1ab13e91d3cc4",
+      "title": "ACTFORFREEDOMNOW 1 8 BOOK full front cover3",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "ACT_booklet.pdf",
+      "key": "source-f3d40e1307639d516dd38bf5",
+      "title": "ACT booklet",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "AGDAP_print.pdf",
+      "key": "source-8799524fcaf973155c11345b",
+      "title": "AGDAP print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "AGDAP_web.pdf",
+      "key": "source-d313e4969fdf1e44b375d365",
+      "title": "AGDAP web",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "ARNW-Starter-Kit.pdf",
+      "key": "source-0a4ffe18f29ef6ffd81cd86d",
+      "title": "ARNW Starter Kit",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "AWSM-Street-Patrol-Zine-imposed.pdf",
+      "key": "source-481f18cefda080b164bcb961",
+      "title": "AWSM Street Patrol Zine imposed",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Acrid-Black-Smoke-Print.pdf",
+      "key": "source-2d2a15dd8f5dd8da7b87202c",
+      "title": "Acrid Black Smoke Print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Acrid-Black-Smoke-Read.pdf",
+      "key": "source-4fc3c57c289fd71756e8be1a",
+      "title": "Acrid Black Smoke Read",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Act.pdf",
+      "key": "source-12caff1f1d5a7d877d2d0b2a",
+      "title": "Act",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Against.Social.Networks.pdf",
+      "key": "source-c5791d63722985f2186de8fe",
+      "title": "Against.Social.Networks",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Against_the_Production_Ethic-print.pdf",
+      "key": "source-95b51a42fef266e1d3c47d3d",
+      "title": "Against the Production Ethic print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "An-Introduction-to-Antifascism-booklet.pdf",
+      "key": "source-a522fbdb19b08eb4f42773fa",
+      "title": "An Introduction to Antifascism booklet",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "An_anarchist_free_herbal-2nd_edition-imposed.pdf",
+      "key": "source-f2a7806e8a59f6ffd47e692f",
+      "title": "An anarchist free herbal 2nd edition imposed",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Anathema-AUG21-PRINT.pdf",
+      "key": "source-5e907344d3cdf374624df5b2",
+      "title": "Anathema AUG21 PRINT",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Anathema-AUG21-PRINT_text.pdf",
+      "key": "source-dba4d44d20488c8ef08edb76",
+      "title": "Anathema AUG21 PRINT text",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Anathema-AUG21.pdf",
+      "key": "source-3e122877c2108b584e18d52e",
+      "title": "Anathema AUG21",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Anathema-Sept22-print.pdf",
+      "key": "source-de1a14f1a5af93651d474ab7",
+      "title": "Anathema Sept22 print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Anathema-Sept22.pdf",
+      "key": "source-32bd7e4f3e3070f59a5c9770",
+      "title": "Anathema Sept22",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Anathema-v7i6-print.pdf",
+      "key": "source-74134cd62a02c5ede61382bb",
+      "title": "Anathema v7i6 print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Anathema-v7i6-read.pdf",
+      "key": "source-b5c70a1319ff80e0512cf3ac",
+      "title": "Anathema v7i6 read",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Animals-thirsting-for-freedom_booklet.pdf",
+      "key": "source-9bc02ad92900eac06837bb1d",
+      "title": "Animals thirsting for freedom booklet",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "AntifaSelfDefense.pdf",
+      "key": "source-f61f1f3588201a20dcdd3a73",
+      "title": "AntifaSelfDefense",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "AntifaSelfDefense_imposed.pdf",
+      "key": "source-36a8fb5d622f05496a4463a6",
+      "title": "AntifaSelfDefense imposed",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Aphorisms-Against-Work-Print.pdf",
+      "key": "source-e1742ef983d89db48e9efc51",
+      "title": "Aphorisms Against Work Print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Aphorisms-Against-Work-Read.pdf",
+      "key": "source-0798fa8b8f7518a47f175648",
+      "title": "Aphorisms Against Work Read",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Art-Mechanical-Reproduction-Print.pdf",
+      "key": "source-1788e1527429b54dc713ccf4",
+      "title": "Art Mechanical Reproduction Print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Art-Mechanical-Reproduction.pdf",
+      "key": "source-211106a30945fb583cf7880f",
+      "title": "Art Mechanical Reproduction",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Autonomous-Resistance-Slavey-and-Colonization.pdf",
+      "key": "source-158fe684e86299f9260fc7ff",
+      "title": "Autonomous Resistance Slavey and Colonization",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Avalanche-EN-12.pdf",
+      "key": "source-26324c2b6501987e4b1f3a20",
+      "title": "Avalanche EN 12",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Avalanche-EN-13.pdf",
+      "key": "source-ca863996489b2af3dcf722fb",
+      "title": "Avalanche EN 13",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Avalanche-EN-7.pdf",
+      "key": "source-f9e68077b1e4f2b4b134e353",
+      "title": "Avalanche EN 7",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Avalanche-EN-8.pdf",
+      "key": "source-5cfba4c687480b441b531ce8",
+      "title": "Avalanche EN 8",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Avalanche-EN-9.pdf",
+      "key": "source-4c03a530e176fb49effb24dd",
+      "title": "Avalanche EN 9",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "BEYOND-THE-DARK-HORIZON-2.pdf",
+      "key": "source-d9b09a5b7389663fadbbedf3",
+      "title": "BEYOND THE DARK HORIZON 2",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "BEYOND-THE-DARK-HORIZON.pdf",
+      "key": "source-e7439431162dbb17c2d437a1",
+      "title": "BEYOND THE DARK HORIZON",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "BRB-BRN-Anthology.pdf",
+      "key": "source-deb966094f46650ef53403c7",
+      "title": "BRB BRN Anthology",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "BandII-enbooklet.pdf",
+      "key": "source-64a320969b92c3785f4c92fa",
+      "title": "BandII enbooklet",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Below-and-Beyond-Trump-Power-and-Counter-Power-in-2017.pdf",
+      "key": "source-6b7b3bea791225981f61b4ed",
+      "title": "Below and Beyond Trump Power and Counter Power in 2017",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Best-Practices-for-Tips-and-Info-Sharing-booklet.pdf",
+      "key": "source-0ccd4ee43227b9ca201a1575",
+      "title": "Best Practices for Tips and Info Sharing booklet",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Best-Practices-for-Tips-and-Info-Sharing.pdf",
+      "key": "source-b75f296e61a1584e752ff930",
+      "title": "Best Practices for Tips and Info Sharing",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "BetweenStorms-print.pdf",
+      "key": "source-afd9186a14104a2fcd25cdd8",
+      "title": "BetweenStorms print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "BetweenStorms-read.pdf",
+      "key": "source-84cd57f28abe44432fccfddc",
+      "title": "BetweenStorms read",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Black-Armed-Joy-Imposed.pdf",
+      "key": "source-da5b9193d47675ab42109907",
+      "title": "Black Armed Joy Imposed",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Black-Armed-Joy.pdf",
+      "key": "source-902e94ffa4d90b4c90a28f75",
+      "title": "Black Armed Joy",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Bless_final_reading.pdf",
+      "key": "source-c71ccf74b5d18146d2b8f2c5",
+      "title": "Bless final reading",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Burying_the_Anarchist_Movement.pdf",
+      "key": "source-3d3e09844a805c7308a1ae44",
+      "title": "Burying the Anarchist Movement",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "CLODO-Communiques_from_the_War_on_Computers.pdf",
+      "key": "source-dcdcd3decf2545d1b5d97ec2",
+      "title": "CLODO Communiques from the War on Computers",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "CaseyZineTabling.pdf",
+      "key": "source-96d7d4911e666cd4d45d3622",
+      "title": "CaseyZineTabling",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Central-Texas-Least-Wanted.pdf",
+      "key": "source-01d13f4e8dd1f095922d143d",
+      "title": "Central Texas Least Wanted",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Centralia-IWW-Print.pdf",
+      "key": "source-162e12017b2e04fd6d00bf37",
+      "title": "Centralia IWW Print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "CommuneAgainstCivilizationImposed.pdf",
+      "key": "source-91f89dc92092bddd3e70a977",
+      "title": "CommuneAgainstCivilizationImposed",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Community-Struggle-Eloxochitlan-print.pdf",
+      "key": "source-6e9e0f4cc911900613c0afc0",
+      "title": "Community Struggle Eloxochitlan print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Community-Struggle-Eloxochitlan-read.pdf",
+      "key": "source-be910d38422902b58a74fdc5",
+      "title": "Community Struggle Eloxochitlan read",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Consent-basedPoliticsZine_pdfvers.pdf",
+      "key": "source-f2a607cd68fb443490c5770d",
+      "title": "Consent basedPoliticsZine pdfvers",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "ContraLaLgicaDeLaSumisinwolfiLandstreicher.pdf",
+      "key": "source-60b6508d3c75793255dadaac",
+      "title": "ContraLaLgicaDeLaSumisinwolfiLandstreicher",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Cop_City_Will_Never_Be_Built.pdf",
+      "key": "source-3e4da8d71b3e682d77c0d380",
+      "title": "Cop City Will Never Be Built",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Critical-Metaphysics-PRINT.pdf",
+      "key": "source-ce32e2f417118425fdc53ddc",
+      "title": "Critical Metaphysics PRINT",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Critical-Metaphysics-READ.pdf",
+      "key": "source-4608384f531c0807798cd233",
+      "title": "Critical Metaphysics READ",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "DesobedienciaVoluntariawolfiLandstreicher.pdf",
+      "key": "source-b5c5b260954edf71fc773b07",
+      "title": "DesobedienciaVoluntariawolfiLandstreicher",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Dispatches_from_Triangulum-print.pdf",
+      "key": "source-80624280a7e8ab067825084e",
+      "title": "Dispatches from Triangulum print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Dispatches_from_Triangulum-screen.pdf",
+      "key": "source-d5d5929182755a5ddffdb10c",
+      "title": "Dispatches from Triangulum screen",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Do_It_Ourselves_Bodily_Autonomy-imposed.pdf",
+      "key": "source-84ec954d54b61c2f382b0bb1",
+      "title": "Do It Ourselves Bodily Autonomy imposed",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Do_It_Ourselves_Bodily_Autonomy-screen.pdf",
+      "key": "source-1be271732a1034062b7d6e7e",
+      "title": "Do It Ourselves Bodily Autonomy screen",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Dustbin_Manifesto.pdf",
+      "key": "source-04bea1cf0bcc5ef306d2dbe2",
+      "title": "Dustbin Manifesto",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Dustbin_Manifesto_text.pdf",
+      "key": "source-021dff3ddf8b1d6f87b611aa",
+      "title": "Dustbin Manifesto text",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "EFN-Brigid-2017-reduced-size.pdf",
+      "key": "source-db65fc81fd300d42462fe17c",
+      "title": "EFN Brigid 2017 reduced size",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "EN-Bure-History-and-context-conv.pdf",
+      "key": "source-26d82fcb76713a400d51c43f",
+      "title": "EN Bure History and context conv",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "EN-Bure-History-and-context.pdf",
+      "key": "source-53d4add7e52116d097539934",
+      "title": "EN Bure History and context",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Earth-First-News-Lughna-2017-for-print-small.pdf",
+      "key": "source-6cc3b14a62078253e173d8c5",
+      "title": "Earth First News Lughna 2017 for print small",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Edition1Version1.6.pdf",
+      "key": "source-de0fe6704dbc9ccbb163be06",
+      "title": "Edition1Version1.6",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Emmanuel-Barthelemy_screen.pdf",
+      "key": "source-bdcc1ae8c115a3b9b0ce18ab",
+      "title": "Emmanuel Barthelemy screen",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Eyes-of-a-Monster-Print.pdf",
+      "key": "source-8957de25ccc70162bb56e6ed",
+      "title": "Eyes of a Monster Print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "F2print.pdf",
+      "key": "source-77f53c14611855339041bf1a",
+      "title": "F2print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Fantasma-Newspaper-Nr.-1-the-update-one.pdf",
+      "key": "source-ecdfa15b1bdd55d2290ed708",
+      "title": "Fantasma Newspaper Nr. 1 the update one",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Fanzine-EN-1.pdf",
+      "key": "source-fd18e2dbe27e9f8f570df3d2",
+      "title": "Fanzine EN 1",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Fascism-Ecology-and-the-Tangled-Roots-of-Anti-Modernism-printing.pdf",
+      "key": "source-04ba540144fddc30b2e14174",
+      "title": "Fascism Ecology and the Tangled Roots of Anti Modernism printing",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Fat_Mutual_Aid-Print.pdf",
+      "key": "source-b220d98b4a7069746f96dee3",
+      "title": "Fat Mutual Aid Print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Fire-Ant-1-PRINT.pdf",
+      "key": "source-657ef1f01baaecb3ac46fe54",
+      "title": "Fire Ant 1 PRINT",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Fire-Ant-1-READ.pdf",
+      "key": "source-f4451cfd1ee50b7ecab2612f",
+      "title": "Fire Ant 1 READ",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Fire-Ant-10.pdf",
+      "key": "source-de83ef468aaf2f409f4f1132",
+      "title": "Fire Ant 10",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Fire-Ant-11.pdf",
+      "key": "source-93493a436a31ce811bdab418",
+      "title": "Fire Ant 11",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Fire-Ant-12.pdf",
+      "key": "source-63a75d89bc76862172aef5ca",
+      "title": "Fire Ant 12",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Fire-Ant-13.pdf",
+      "key": "source-a6341b74e8709141370cbe55",
+      "title": "Fire Ant 13",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Fire-Ant-14.pdf",
+      "key": "source-7b38ffe1f28f3ec20ac5e7ed",
+      "title": "Fire Ant 14",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Fire-Ant-15.pdf",
+      "key": "source-ab50fd9a26e2e3aa5ba8e2d4",
+      "title": "Fire Ant 15",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Fire-Ant-2.pdf",
+      "key": "source-95cd740657cea3d810ef24fd",
+      "title": "Fire Ant 2",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Fire-Ant-9.pdf",
+      "key": "source-600f6c8005a7c041538cc8b7",
+      "title": "Fire Ant 9",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "From-Antiglobe-to-Antifa-booklet.pdf",
+      "key": "source-1c2bf5c83aacd916402420f0",
+      "title": "From Antiglobe to Antifa booklet",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "From-Antiglobe-to-Antifa-reading.pdf",
+      "key": "source-8175185984b109cdf8ede921",
+      "title": "From Antiglobe to Antifa reading",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Go_Kits_for_AntiFascist_Community_Defense.pdf",
+      "key": "source-3abdbe33f714707e96c2db7c",
+      "title": "Go Kits for AntiFascist Community Defense",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Green-Desperation-Fuels-Red-Fascism-Return-Fire-vol.6-chap.3-supplement-IMPOSED.pdf",
+      "key": "source-281209c824b36eae5db4a347",
+      "title": "Green Desperation Fuels Red Fascism Return Fire vol.6 chap.3 supplement IMPOSED",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Green-Desperation-Fuels-Red-Fascism-screen.pdf",
+      "key": "source-46b40ab852199731ba4685a2",
+      "title": "Green Desperation Fuels Red Fascism screen",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Handful-of-Objections_A-Response-to-a-Proposal-for-Desertion.pdf",
+      "key": "source-76d7b69a315df1085d99132d",
+      "title": "Handful of Objections A Response to a Proposal for Desertion",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Heart_of_a_Warrior.pdf",
+      "key": "source-a235fd1bf84de84744f982f4",
+      "title": "Heart of a Warrior",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "How_to_Start_Your_Own_Study_Group_in_Prison.pdf",
+      "key": "source-26df8ab561134890bf3a55c9",
+      "title": "How to Start Your Own Study Group in Prison",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "ISSUE-I-PRINT.pdf",
+      "key": "source-ff6daca69179e12570858cd0",
+      "title": "ISSUE I PRINT",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "ISSUE-I-PRINT_text.pdf",
+      "key": "source-1527eef814bce1d41174da73",
+      "title": "ISSUE I PRINT text",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "ISSUE-II-PRINT.pdf",
+      "key": "source-919dd320aa635180345f9a39",
+      "title": "ISSUE II PRINT",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "ISSUE-II-PRINT_text.pdf",
+      "key": "source-7150f73a673274d0601476f5",
+      "title": "ISSUE II PRINT text",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "ISSUE-III-PRINT.pdf",
+      "key": "source-63f975644c06f9e36f7f7929",
+      "title": "ISSUE III PRINT",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "ISSUE-III-PRINT_text.pdf",
+      "key": "source-83f29298c7091e8671c9e098",
+      "title": "ISSUE III PRINT text",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "ISSUE-IX-PRINT.pdf",
+      "key": "source-ab259b93a4a200ee7538634f",
+      "title": "ISSUE IX PRINT",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "ISSUE-IX-PRINT_text.pdf",
+      "key": "source-0df9de0177e27775b5441b9b",
+      "title": "ISSUE IX PRINT text",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "ISSUE-X-PRINT.pdf",
+      "key": "source-5d24462d934f4c34072d1f51",
+      "title": "ISSUE X PRINT",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "ITSinterview.pdf",
+      "key": "source-ebe46be3c22981b237951073",
+      "title": "ITSinterview",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "IV-PRINT.pdf",
+      "key": "source-119233011e982ab9ebdbebca",
+      "title": "IV PRINT",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "IV-PRINT_text.pdf",
+      "key": "source-c68467a016b76c0327355278",
+      "title": "IV PRINT text",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "IWOC-issue-4-for-printing.pdf",
+      "key": "source-86a4ad2d7ead3991f2bbe9c7",
+      "title": "IWOC issue 4 for printing",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "IWOC-issue-5-for-reading.pdf",
+      "key": "source-60ae861a3e083b13e70a7638",
+      "title": "IWOC issue 5 for reading",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "IWOC-issue-6-for-reading.pdf",
+      "key": "source-bcf84a3d2feb4fe072bc7f8a",
+      "title": "IWOC issue 6 for reading",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "In-Seach-of-Freedom-Digital-Read.pdf",
+      "key": "source-1285fe51e9fd93f924686727",
+      "title": "In Seach of Freedom Digital Read",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "In-Seach-of-Freedom-Print-Letter-Print.pdf",
+      "key": "source-d7a3b523c34b38e79f391bc5",
+      "title": "In Seach of Freedom Print Letter Print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "In-the-Blistering-Heat-Print.pdf",
+      "key": "source-88a6e2c2f87de59271d1589e",
+      "title": "In the Blistering Heat Print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "In-the-Blistering-Heat-Read.pdf",
+      "key": "source-8efbb91a55eaecda3222c8d2",
+      "title": "In the Blistering Heat Read",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Invisible-Committee-NOW-PRINT-bw.pdf",
+      "key": "source-0df6bfc49bc8da3d97c0abaf",
+      "title": "Invisible Committee NOW PRINT bw",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Invisible-Committee-NOW-PRINT-color.pdf",
+      "key": "source-d78dfc9153f281445f76fdf5",
+      "title": "Invisible Committee NOW PRINT color",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Invisible-Committee-NOW-READ.pdf",
+      "key": "source-605ec71c67f619322fee4aec",
+      "title": "Invisible Committee NOW READ",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Invisible-Committee-To-Our-Friends-IWE-US-LETTER-REVISED-COVER.pdf",
+      "key": "source-8705fcd795d90556e4eeed65",
+      "title": "Invisible Committee To Our Friends IWE US LETTER REVISED COVER",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Issue-VI-PRINT-final.pdf",
+      "key": "source-93cf48465daf98729edb7ce6",
+      "title": "Issue VI PRINT final",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Issue-VI-PRINT-final_text.pdf",
+      "key": "source-da02ba6a2ee3675991356f25",
+      "title": "Issue VI PRINT final text",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "IwSpring2018.pdf",
+      "key": "source-9416116a452808bc610f6c3a",
+      "title": "IwSpring2018",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "JACKPINE-ZINE_imposed.pdf",
+      "key": "source-b769cf30aa324ef324466f3a",
+      "title": "JACKPINE ZINE imposed",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "JACKPINE-ZINE_screen.pdf",
+      "key": "source-24f37bcf49e15616eb7b612e",
+      "title": "JACKPINE ZINE screen",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "JANread.pdf",
+      "key": "source-95530db29cb8a986472f42f2",
+      "title": "JANread",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Jesi-The-Suspension-of-Historical-Time-PRINT.pdf",
+      "key": "source-a4b722f31c9eca61449f34c5",
+      "title": "Jesi The Suspension of Historical Time PRINT",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "June-11-2021-print.pdf",
+      "key": "source-2246fff4e70ecc692a542f56",
+      "title": "June 11 2021 print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "June-11-2021-read.pdf",
+      "key": "source-fa434c9e62b94fbd469723cb",
+      "title": "June 11 2021 read",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "June112018-print.pdf",
+      "key": "source-fc09895ff9fe3277c29a65db",
+      "title": "June112018 print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "June112018-read.pdf",
+      "key": "source-29b0386a6ca45f6b7ac54d8b",
+      "title": "June112018 read",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "KilltheCoupleinyourHead_PRINT-1.0.pdf",
+      "key": "source-ad9c7b4065c031c2a7f5c3ab",
+      "title": "KilltheCoupleinyourHead PRINT 1.0",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "KilltheCoupleinyourHead_READ-1.0.pdf",
+      "key": "source-111af7f663fc76fb691e72b0",
+      "title": "KilltheCoupleinyourHead READ 1.0",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Kitsap-Ferry-Riot-Print-1.pdf",
+      "key": "source-440f4c13f6e877072d66ab7f",
+      "title": "Kitsap Ferry Riot Print 1",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Lexicon_Full.pdf",
+      "key": "source-54d2500aff898e9891b3f3f2",
+      "title": "Lexicon Full",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Libertarian_Socialism_Intro_Compressed_v3.0.pdf",
+      "key": "source-17e2edc0cfc9b753a2a5df69",
+      "title": "Libertarian Socialism Intro Compressed v3.0",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "MITGuideLockpicking-Print.pdf",
+      "key": "source-205a68417c774b169b2371f1",
+      "title": "MITGuideLockpicking Print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "MITGuideLockpicking-Read.pdf",
+      "key": "source-9f34ba78740576725b0c2646",
+      "title": "MITGuideLockpicking Read",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "NIGHTFALL-EIGHT.pdf",
+      "key": "source-a37b4c5d11cb9e9988d2d5d9",
+      "title": "NIGHTFALL EIGHT",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "NIGHTFALL-ELEVEN.pdf",
+      "key": "source-e19032575ac05bdcd915f95c",
+      "title": "NIGHTFALL ELEVEN",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "NIGHTFALL-ONE.pdf",
+      "key": "source-5da08b7f1cacdb0641cd43eb",
+      "title": "NIGHTFALL ONE",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "NIGHTFALL-TEN.pdf",
+      "key": "source-bf1998e83e6c83cc08cca1a6",
+      "title": "NIGHTFALL TEN",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "NIGHTFALL-TWO.pdf",
+      "key": "source-b08498114e55d0f296e9edbd",
+      "title": "NIGHTFALL TWO",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "NMI_3_final.pdf",
+      "key": "source-02f41144dcc27787d64ac53e",
+      "title": "NMI 3 final",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "NMI_4_final_lighter.pdf",
+      "key": "source-4ad63c8a118b364ee5c71409",
+      "title": "NMI 4 final lighter",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "NMI_5_Final.pdf",
+      "key": "source-e740dbbbb1f7cc8107056159",
+      "title": "NMI 5 Final",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "NMI_6_draft4.pdf",
+      "key": "source-431e714d2ce04b678178a353",
+      "title": "NMI 6 draft4",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "NOV22.pdf",
+      "key": "source-2c901959544c810d0406b595",
+      "title": "NOV22",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Never-Surrender.pdf",
+      "key": "source-065d33683b5e706847ce2345",
+      "title": "Never Surrender",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Nevermore-Feb-22.pdf",
+      "key": "source-136514f5b0d7ae28175e0bb9",
+      "title": "Nevermore Feb 22",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Night_Owls_4.pdf",
+      "key": "source-8736d0b760c369360b3c1dd3",
+      "title": "Night Owls 4",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Nihilism-Anarchy-21st-Century-Print.pdf",
+      "key": "source-20e9069e2554374771ac8e62",
+      "title": "Nihilism Anarchy 21st Century Print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Nihilism-Anarchy-21st-Century-Read.pdf",
+      "key": "source-280e9806fbf8cfed78b039ec",
+      "title": "Nihilism Anarchy 21st Century Read",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Notes_on_Mutuald_Aid_Vol_1.pdf",
+      "key": "source-3028f6ce3fe759e49f8932f0",
+      "title": "Notes on Mutuald Aid Vol 1",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Number-2-engl.pdf",
+      "key": "source-9c546d41d8fe5039b94200cd",
+      "title": "Number 2 engl",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Os-Cangaceiros-A-Crime-Called-Freedom-PRINT.pdf",
+      "key": "source-ce533d1a847b6102674752d6",
+      "title": "Os Cangaceiros A Crime Called Freedom PRINT",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Paper-Chainned-Issue-1-digital.pdf",
+      "key": "source-6cd110880c03145578f721d2",
+      "title": "Paper Chainned Issue 1 digital",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Peter_the_Painter.pdf",
+      "key": "source-97003ae7dca0252dc64dd9a2",
+      "title": "Peter the Painter",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Plain-Words-3-Print.pdf",
+      "key": "source-b5e688d0438780005e71e43a",
+      "title": "Plain Words 3 Print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Plain-Words-4-Print.pdf",
+      "key": "source-71693f1346112956dce909da",
+      "title": "Plain Words 4 Print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Plain-Words-5-Print.pdf",
+      "key": "source-4c2077767d5bd65551375740",
+      "title": "Plain Words 5 Print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Plain-Words-5.pdf",
+      "key": "source-cfd4e83de847fc4c2a7fe3ea",
+      "title": "Plain Words 5",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Plain-Words-6-Print.pdf",
+      "key": "source-b55ef062b9a783f3a81fc879",
+      "title": "Plain Words 6 Print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Plain-Words-6.pdf",
+      "key": "source-6af600fb0abc2d7e7d29daab",
+      "title": "Plain Words 6",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Please-Riot-Retrospectives-print.pdf",
+      "key": "source-a45cdc2a1258df79a88a8b91",
+      "title": "Please Riot Retrospectives print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Please-Riot-Retrospectives-screen.pdf",
+      "key": "source-97586f9eeaa7231947e78f60",
+      "title": "Please Riot Retrospectives screen",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Printable_-_Interventions_Hermes_Jail_Solidarity.pdf",
+      "key": "source-f720e4d898e22e1d38c0beab",
+      "title": "Printable Interventions Hermes Jail Solidarity",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "ProtectOurFarmlandZine-a5-spread.pdf",
+      "key": "source-cd8e7656b23c1ed29c378562",
+      "title": "ProtectOurFarmlandZine a5 spread",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Protest101zine-bklt.pdf",
+      "key": "source-1abe358af2a8cea661b35be0",
+      "title": "Protest101zine bklt",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "REBEL_CITY_No9.pdf",
+      "key": "source-a6571205383b5ae30eff50d7",
+      "title": "REBEL CITY No9",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "RUMOER-5.5-Nl-EN.pdf",
+      "key": "source-1d7fd2530089f503a54b8383",
+      "title": "RUMOER 5.5 Nl EN",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "RUMOER-6-online-english.pdf",
+      "key": "source-700d0c0964c534001bb2b0ce",
+      "title": "RUMOER 6 online english",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Rank-And-File-Antiracism.pdf",
+      "key": "source-ef44fded14a7f28e147cdae0",
+      "title": "Rank And File Antiracism",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Reach-For-The-Sky-PRINT-1.pdf",
+      "key": "source-743e3a17a5edbf0ef542f86c",
+      "title": "Reach For The Sky PRINT 1",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Reflections_on_the_Setting_Sun-Print.pdf",
+      "key": "source-33eedc8601937dba06be2ab7",
+      "title": "Reflections on the Setting Sun Print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Reflections_on_the_Setting_Sun-Read.pdf",
+      "key": "source-55cee09435f8c7c3ec6ea01c",
+      "title": "Reflections on the Setting Sun Read",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Relentless_final.pdf",
+      "key": "source-20f44a9e40d42ca54aca0546",
+      "title": "Relentless final",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Relentless_imposed.pdf",
+      "key": "source-df33e72dbcf169ae1bea22f9",
+      "title": "Relentless imposed",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "ResistGrandJuries.pdf",
+      "key": "source-9a7c16d843a7da1d6478859d",
+      "title": "ResistGrandJuries",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "ResistGrandJuries_imposed.pdf",
+      "key": "source-582089c33a025a55bde375bf",
+      "title": "ResistGrandJuries imposed",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Return-Fire-vol.6-chap.2-pg71-pg150.pdf",
+      "key": "source-149103411118e3cc1d7a201e",
+      "title": "Return Fire vol.6 chap.2 pg71 pg150",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Return-Fire-vol.6-chap.4-pg235-pg318.pdf",
+      "key": "source-bbe3f5ef238d59af276ed159",
+      "title": "Return Fire vol.6 chap.4 pg235 pg318",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Return-Fire-vol.6-chap.5-pg319-pg398.pdf",
+      "key": "source-f69744e5eb82db04ea093ed0",
+      "title": "Return Fire vol.6 chap.5 pg319 pg398",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Return-Fire-vol6-chap3.pdf",
+      "key": "source-7e78fb794ed04d9406d374bb",
+      "title": "Return Fire vol6 chap3",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "RevolucinSalvajeferalFaun.pdf",
+      "key": "source-4a6375b11fb9923e56ab6d21",
+      "title": "RevolucinSalvajeferalFaun",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "RoseThornsPRINT.pdf",
+      "key": "source-79822308be9e70fdf4393909",
+      "title": "RoseThornsPRINT",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Rumoer-5.pdf",
+      "key": "source-697bdb6ac476bd249de5670e",
+      "title": "Rumoer 5",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Rupture-2018_Autumn-SCREEN.pdf",
+      "key": "source-4aeb8bd75b6b700613c8ab76",
+      "title": "Rupture 2018 Autumn SCREEN",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "SLAP-Issue-8.pdf",
+      "key": "source-80c125317b86097712c4d59f",
+      "title": "SLAP Issue 8",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "SLAP-Issue-9-1.pdf",
+      "key": "source-ecdff82b8a9380506ed8d956",
+      "title": "SLAP Issue 9 1",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Semillas-Communicado-EN-IWE-READ.pdf",
+      "key": "source-2b728c435a94717e4a4e3ae9",
+      "title": "Semillas Communicado EN IWE READ",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Setting-Fire-to-the-Church-of-Social-Justice.pdf",
+      "key": "source-04ce981aa49927924b1fde0e",
+      "title": "Setting Fire to the Church of Social Justice",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "SettlersontheRedRoad_PRINT.pdf",
+      "key": "source-3b0feafb7d56da0f38fbddfe",
+      "title": "SettlersontheRedRoad PRINT",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "SettlersontheRedRoad_SCREEN.pdf",
+      "key": "source-9b340a6f47fc111b739c33d5",
+      "title": "SettlersontheRedRoad SCREEN",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "SeverPrint.pdf",
+      "key": "source-fbf5cac1d8dae2ad53921688",
+      "title": "SeverPrint",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "SeverRead.pdf",
+      "key": "source-e66ecb2753d10e16059c2016",
+      "title": "SeverRead",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "ShootfirstBooklet.pdf",
+      "key": "source-b5a719658324e9e61f380bbe",
+      "title": "ShootfirstBooklet",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Smarter-Prison-A5-imposed.pdf",
+      "key": "source-9c3918117e0832f54af36681",
+      "title": "Smarter Prison A5 imposed",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Smashing-the-Orderly-Party-Print.pdf",
+      "key": "source-908ee7d5a1518ef9e4ade9ef",
+      "title": "Smashing the Orderly Party Print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Smashing-the-Orderly-Party-Read.pdf",
+      "key": "source-302d2bd8c82f4bfb2131a72c",
+      "title": "Smashing the Orderly Party Read",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "SofiFinal.pdf",
+      "key": "source-24d056619e2b479e0b872089",
+      "title": "SofiFinal",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "StormWarnings57_58_print_letter.cleaned.pdf",
+      "key": "source-ee537e0e6395b7d87b9a64f4",
+      "title": "StormWarnings57 58 print letter.cleaned",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "StormWarnings57_58_read_a5.cleaned.pdf",
+      "key": "source-3017a9d36740df897cc6217c",
+      "title": "StormWarnings57 58 read a5.cleaned",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Stormwarnings-42-print.pdf",
+      "key": "source-e59dacd0fa03b4b2a9a17fad",
+      "title": "Stormwarnings 42 print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Stormwarnings-42-read.pdf",
+      "key": "source-e8423fce0dfbc697b48366ab",
+      "title": "Stormwarnings 42 read",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Stormwarnings-45-print.pdf",
+      "key": "source-f99725d9a847fd6ccb3b186a",
+      "title": "Stormwarnings 45 print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Stormwarnings-45-read.pdf",
+      "key": "source-b7eae3f1308f15bad70b2105",
+      "title": "Stormwarnings 45 read",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Stormwarnings_43_44-print.pdf",
+      "key": "source-10e3eb875678d84f818c40e7",
+      "title": "Stormwarnings 43 44 print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Stormwarnings_43_44-read.pdf",
+      "key": "source-805f9f73a3308661cf540cd7",
+      "title": "Stormwarnings 43 44 read",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "StrangeConstellationsprint.pdf",
+      "key": "source-48c275d602308c092e3ab267",
+      "title": "StrangeConstellationsprint",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "StrangeConstellationsread.pdf",
+      "key": "source-6a7acb65746cd982699f2302",
+      "title": "StrangeConstellationsread",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Street-Warfare-in-Portland-PRINT.pdf",
+      "key": "source-9ceea9131c8c211ef3069c0c",
+      "title": "Street Warfare in Portland PRINT",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "TOPF-VOL-2-READ.pdf",
+      "key": "source-6b05f9e08cd1a27dacdd28dc",
+      "title": "TOPF VOL 2 READ",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "TRESPASS-THREE.pdf",
+      "key": "source-4f06feccce69b08632cc0fa6",
+      "title": "TRESPASS THREE",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "TamarasolTabling.pdf",
+      "key": "source-47d12d4dc1e6b388bd5190d2",
+      "title": "TamarasolTabling",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Targets_That_Exist_Everywhere-Read.pdf",
+      "key": "source-250f389145a7a3393d69c708",
+      "title": "Targets That Exist Everywhere Read",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Tari-There-is-no-Unhappy-Revolution-Prologue-PRINT.pdf",
+      "key": "source-3c6df8c238585dd9a2aee089",
+      "title": "Tari There is no Unhappy Revolution Prologue PRINT",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Tari-There-is-no-Unhappy-Revolution-prologue-IWE-READ.pdf",
+      "key": "source-ec65ef421ffdd364fb6546e0",
+      "title": "Tari There is no Unhappy Revolution prologue IWE READ",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Tear-Down-the-Bastille.pdf",
+      "key": "source-9cb3be27f73e58d36931a141",
+      "title": "Tear Down the Bastille",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "The-Dude-Print.pdf",
+      "key": "source-09d1f61c47a91c68e3bbd29d",
+      "title": "The Dude Print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "The-Olympia-Communard.pdf",
+      "key": "source-f86c7f00f1cf0efd091aa7ca",
+      "title": "The Olympia Communard",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "TheInvisibleGround.pdf",
+      "key": "source-6c9ae024b24fbefa6b40d6ea",
+      "title": "TheInvisibleGround",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "TheThingsWeCannotFace_impo.pdf",
+      "key": "source-1ff7d0449b670fbb6b975c0f",
+      "title": "TheThingsWeCannotFace impo",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "The_Baldies_and_ARA-imposed.pdf",
+      "key": "source-bed3d1afc5b21d4b821465a1",
+      "title": "The Baldies and ARA imposed",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "The_Case_Against_Coddling_Anti-Maskers-screen.pdf",
+      "key": "source-890b95caa3838f28dd1afbb6",
+      "title": "The Case Against Coddling Anti Maskers screen",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "The_Case_Against_Coddling_Anti-Maskers.pdf",
+      "key": "source-c28a5224d116fbc2f427f09b",
+      "title": "The Case Against Coddling Anti Maskers",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "This-is-Parkdale-Volume2-Issue-2.pdf",
+      "key": "source-d9883911de04a130d42da468",
+      "title": "This is Parkdale Volume2 Issue 2",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Tough_Mind_Soft_Heart.pdf",
+      "key": "source-c3d24319b03ce62f6f43bf1e",
+      "title": "Tough Mind Soft Heart",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Towards_Insurrection-Print.pdf",
+      "key": "source-92e6b9347265e4d1bfc9b1dd",
+      "title": "Towards Insurrection Print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Towards_Insurrection-Read.pdf",
+      "key": "source-04e69326a362309e0eba90dd",
+      "title": "Towards Insurrection Read",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Training_Martial_Arts_for_Anti-Fascism-Imposed.pdf",
+      "key": "source-c1410cc293353332dd0a6e54",
+      "title": "Training Martial Arts for Anti Fascism Imposed",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "VAUGHN-PRINT.pdf",
+      "key": "source-ae25628c30dd97bd7d8814c6",
+      "title": "VAUGHN PRINT",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "VAUGHN-READ.pdf",
+      "key": "source-0465d665c6d0845f7e629de5",
+      "title": "VAUGHN READ",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "VOL-IV-ISSUE-VI-READ.pdf",
+      "key": "source-28acd62daea440da93d48a33",
+      "title": "VOL IV ISSUE VI READ",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "VOL-IV-ISSUE-VI-READ_text.pdf",
+      "key": "source-4451dc066392dfb09fdfbc4c",
+      "title": "VOL IV ISSUE VI READ text",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "VOL-IV-ISSUE-VII-PRINT.pdf",
+      "key": "source-94df6c944b5b7ef1073aa65b",
+      "title": "VOL IV ISSUE VII PRINT",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "VOL-IV-ISSUE-VII-PRINT_text.pdf",
+      "key": "source-7caa2e5235508267e3d0f531",
+      "title": "VOL IV ISSUE VII PRINT text",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "VOL-IV-ISSUE-VII-READ.pdf",
+      "key": "source-d22c7bbe55baf20cbb2b8353",
+      "title": "VOL IV ISSUE VII READ",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "VOL-IV-ISSUE-VII-READ_text.pdf",
+      "key": "source-2a5b10b88ab6396dab98e3fa",
+      "title": "VOL IV ISSUE VII READ text",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "VOL-IV-ISSUE-VIII-PRINT.pdf",
+      "key": "source-e41f1f313df18d9f3f7d9277",
+      "title": "VOL IV ISSUE VIII PRINT",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "VOL-IV-ISSUE-VIII-PRINT_text.pdf",
+      "key": "source-e61589e8308929cf22c68d36",
+      "title": "VOL IV ISSUE VIII PRINT text",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "VOL-IV-ISSUE-VIII-READ.pdf",
+      "key": "source-ff061319bc253f6dfc7be799",
+      "title": "VOL IV ISSUE VIII READ",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "VOL-IV-ISSUE-VIII-READ_text.pdf",
+      "key": "source-ee500ceba24051b3b140bb22",
+      "title": "VOL IV ISSUE VIII READ text",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Varieties-of-Islamic-Anarchism-Print.pdf",
+      "key": "source-2368d6127bb22b541a9759c9",
+      "title": "Varieties of Islamic Anarchism Print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Vaughn17-zine-print-version.pdf",
+      "key": "source-6647670fb802696d453410d4",
+      "title": "Vaughn17 zine print version",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Vaughn17-zine-reading-version.pdf",
+      "key": "source-41e935f2df61b9a292676e77",
+      "title": "Vaughn17 zine reading version",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Veganism-From-A-Nihilist-and-Anti-Civ-Perspective.pdf",
+      "key": "source-0f93f4be1f09e77e67747d85",
+      "title": "Veganism From A Nihilist and Anti Civ Perspective",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Violence-Non-Violence-Diversity-of-Tactics-IMPOSED.pdf",
+      "key": "source-8a7ede254e609fe5c4657d01",
+      "title": "Violence Non Violence Diversity of Tactics IMPOSED",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Violence-Non-Violence-Diversity-of-Tactics-Print.pdf",
+      "key": "source-ee2999e54c8fbe13df3f0dec",
+      "title": "Violence Non Violence Diversity of Tactics Print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Voices-From-Behind-Wisconsin-Prison-Gates-Issue-3D.pdf",
+      "key": "source-a9efcdc4bf66ef5bae9a9bd3",
+      "title": "Voices From Behind Wisconsin Prison Gates Issue 3D",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Voices-from-Behind-Wisconsin-Prison-Gates-Issue-1.pdf",
+      "key": "source-a94c4889761f533aa581a99b",
+      "title": "Voices from Behind Wisconsin Prison Gates Issue 1",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Voices-from-Behind-Wisconsin-Prison-Gates-Issue-1_text.pdf",
+      "key": "source-1a70d9ebf3561b957ee3adbb",
+      "title": "Voices from Behind Wisconsin Prison Gates Issue 1 text",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Vprint.pdf",
+      "key": "source-22c908825975d1184a1d4433",
+      "title": "Vprint",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Vprint_text.pdf",
+      "key": "source-e93858969c4e27bb45e3bad0",
+      "title": "Vprint text",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "WOF9-2017-05-06-ForWeb.pdf",
+      "key": "source-fae409a3eca61b88df00a3df",
+      "title": "WOF9 2017 05 06 ForWeb",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Wager-on-the-Future-Print.pdf",
+      "key": "source-1ba8ade26ce538a99b878ea6",
+      "title": "Wager on the Future Print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Wager-on-the-Future-Read.pdf",
+      "key": "source-4fcae547ccd6864293ae89f6",
+      "title": "Wager on the Future Read",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "War-in-the-streets-revised-print.pdf",
+      "key": "source-bcc26ae6736675516214d4c5",
+      "title": "War in the streets revised print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "WhotfWe_PRINT.pdf",
+      "key": "source-3b9542b7a05026460d8e114d",
+      "title": "WhotfWe PRINT",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "WhotfWe_read.pdf",
+      "key": "source-94b97cb15bdd8a4a0e3ae4f8",
+      "title": "WhotfWe read",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Why_Part_1.pdf",
+      "key": "source-68fafcb9b79bdf835b66422c",
+      "title": "Why Part 1",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "WildReactionsImposed.pdf",
+      "key": "source-1e8ab02e8043841550944f05",
+      "title": "WildReactionsImposed",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Wildfire-5.pdf",
+      "key": "source-1853af88a1c5a5d041fbb368",
+      "title": "Wildfire 5",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Wildpunk-Zine_Digital-Reading.pdf",
+      "key": "source-c92d446f68292adeb40429f7",
+      "title": "Wildpunk Zine Digital Reading",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Wildpunk-Zine_HQ-Printing_US-Letter.pdf",
+      "key": "source-4ba232efb305f608c5e2c7e8",
+      "title": "Wildpunk Zine HQ Printing US Letter",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "WithoutPolice-print.pdf",
+      "key": "source-0e539ce829037e68b5b036fb",
+      "title": "WithoutPolice print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "WithoutPolice-web.pdf",
+      "key": "source-e5fa1e755859e0933af0fcad",
+      "title": "WithoutPolice web",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "WritingsOfTheMaryNardiniGang1.pdf",
+      "key": "source-5c9be186a1b88d611705d4cf",
+      "title": "WritingsOfTheMaryNardiniGang1",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "WritingsOfTheMaryNardiniGang1Booklet.pdf",
+      "key": "source-30a3145cef047338195755e1",
+      "title": "WritingsOfTheMaryNardiniGang1Booklet",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Youth_Liberation_Now-Issue_2-print.pdf",
+      "key": "source-4b330482e0a1aa7ecb0880bf",
+      "title": "Youth Liberation Now Issue 2 print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Youth_Liberation_Now-Issue_2-print_text.pdf",
+      "key": "source-c3444b3b042fd036b4946392",
+      "title": "Youth Liberation Now Issue 2 print text",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Youth_Liberation_Now-Issue_2-screen.pdf",
+      "key": "source-4def8f2ec9ce36dea3a814e0",
+      "title": "Youth Liberation Now Issue 2 screen",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "Youth_Liberation_Now-Issue_2-screen_text.pdf",
+      "key": "source-9a75f6239ebcad1f5c308b46",
+      "title": "Youth Liberation Now Issue 2 screen text",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "a-letter-to-rojavist-friends_english-trans.pdf",
+      "key": "source-986058ffbef416504dde1855",
+      "title": "a letter to rojavist friends english trans",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "a-mestizos-identity.pdf",
+      "key": "source-5a4d2dc17f9221d9c6990cb1",
+      "title": "a mestizos identity",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "a-z-bklt.pdf",
+      "key": "source-8f0b35c050d4de759482e170",
+      "title": "a z bklt",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "aal-a5_brochure1.pdf",
+      "key": "source-988cbea52c461acc5843b363",
+      "title": "aal a5 brochure1",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "acrid_final_print_booklet.pdf",
+      "key": "source-abb2afd2224fb3b47d1cc468",
+      "title": "acrid final print booklet",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "acrid_final_print_booklet_text.pdf",
+      "key": "source-9e191160c681013dc08e96e4",
+      "title": "acrid final print booklet text",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "acwiisiw.pdf",
+      "key": "source-87d9ab88448935d0ab938349",
+      "title": "acwiisiw",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "afterbern.pdf",
+      "key": "source-52bdd666b060cdbedb2371e8",
+      "title": "afterbern",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "against-the-machine-imposed.pdf",
+      "key": "source-faf70a4df4543674993f190c",
+      "title": "against the machine imposed",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "against-the-machine-screen.pdf",
+      "key": "source-f2caefdd7a2449609d1158e2",
+      "title": "against the machine screen",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "agency-v2.pdf",
+      "key": "source-22a8ada39e405e5c37ba8703",
+      "title": "agency v2",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "amuurkrant3oktober2017eng.pdf",
+      "key": "source-9d4c8de93409d70a66f7f8d5",
+      "title": "amuurkrant3oktober2017eng",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "an-anarchist-primer-days-of-trump.pdf",
+      "key": "source-525ac07bf862fae043b22263",
+      "title": "an anarchist primer days of trump",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "anarchist-tactics-at-standing-rock-IMPOSED-fixed.pdf",
+      "key": "source-70163779c7d3aea06e1bf2f0",
+      "title": "anarchist tactics at standing rock IMPOSED fixed",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "anarchist-tactics-at-standing-rock-IMPOSED.pdf",
+      "key": "source-86757242c20980f30ecdcf38",
+      "title": "anarchist tactics at standing rock IMPOSED",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "anarchist-tactics-at-standing-rock-SCREEN.pdf",
+      "key": "source-626d066379a8b18732919c32",
+      "title": "anarchist tactics at standing rock SCREEN",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "anathema-apr21-print.pdf",
+      "key": "source-80cd52e5c7238d7c273491d2",
+      "title": "anathema apr21 print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "anathema-apr21-print_text.pdf",
+      "key": "source-daf0a1d051779d528b6fdcdb",
+      "title": "anathema apr21 print text",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "anathema-apr21.pdf",
+      "key": "source-c1331530708a45a723ecc649",
+      "title": "anathema apr21",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "anethema-jun21.pdf",
+      "key": "source-1a8d58c165f63b68a804af59",
+      "title": "anethema jun21",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "anethema-jun21print.pdf",
+      "key": "source-04ab17b2bf0d8364799f3046",
+      "title": "anethema jun21print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "anethema-jun21print_text.pdf",
+      "key": "source-8ae8e16138ea1abce4691c7e",
+      "title": "anethema jun21print text",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "angle-grinder-of-revolution-booklet.pdf",
+      "key": "source-0a6cda1077da1cbc83732ced",
+      "title": "angle grinder of revolution booklet",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "another_word_for_settle-imposed.pdf",
+      "key": "source-3fd543f1f6421ab9bd36ba87",
+      "title": "another word for settle imposed",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "anti-bklt.pdf",
+      "key": "source-b3d36efae54d4b9e311e69ad",
+      "title": "anti bklt",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "antifa-autism-and-the-border-around-punk.pdf",
+      "key": "source-a86e15e2aa55a4b3e5824633",
+      "title": "antifa autism and the border around punk",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "antifaoregon.pdf",
+      "key": "source-67f76192f7636fa73422287e",
+      "title": "antifaoregon",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "ars-print-pdf-final1.pdf",
+      "key": "source-8d9075607c4389df1e71ed70",
+      "title": "ars print pdf final1",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "ars-read-pdf-final2.pdf",
+      "key": "source-2f43e4c37c0366ee98129df2",
+      "title": "ars read pdf final2",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "atubes_feb_2018.pdf",
+      "key": "source-974d438487eb2f18466095f6",
+      "title": "atubes feb 2018",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "atubes_feb_2018_imposed.pdf",
+      "key": "source-b0554d51b17440671b09682c",
+      "title": "atubes feb 2018 imposed",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "atubes_jan_2018.pdf",
+      "key": "source-4070deb825d020f1bb5dbdfb",
+      "title": "atubes jan 2018",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "atubes_jan_2018_imposed.pdf",
+      "key": "source-fcb9e768207167f9d329441f",
+      "title": "atubes jan 2018 imposed",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "atubes_july2017.pdf",
+      "key": "source-af5d57aadd6df55eff993bb4",
+      "title": "atubes july2017",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "atubes_nov2016.pdf",
+      "key": "source-92886d0818e857458e8e51c7",
+      "title": "atubes nov2016",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "atubes_oct2017_imposed.pdf",
+      "key": "source-182e52d3a35a71df05c5c274",
+      "title": "atubes oct2017 imposed",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "awallpapert4june20181.pdf",
+      "key": "source-3898fdf18809368b0cd8ebea",
+      "title": "awallpapert4june20181",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "balance-sheet_print_black_and_white.pdf",
+      "key": "source-737938d8e8c023c6c941bc74",
+      "title": "balance sheet print black and white",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "balance-sheet_screen_single_page_view.pdf",
+      "key": "source-02be718981e295114546f987",
+      "title": "balance sheet screen single page view",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "bang-up-and-smash.pdf",
+      "key": "source-adbb0db7cf991521c56a3773",
+      "title": "bang up and smash",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "bangup-final.pdf",
+      "key": "source-6e689a276912e6010a439a8f",
+      "title": "bangup final",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "barricade-bulletin-no14.pdf",
+      "key": "source-9d4157f3a7775a2d6f1a0dac",
+      "title": "barricade bulletin no14",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "barricade-bulletin-no14_text.pdf",
+      "key": "source-f220d3ce0cd1918f2e508aef",
+      "title": "barricade bulletin no14 text",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "bellamy-fitzpatrick-an-invitation-to-desertion.lt.pdf",
+      "key": "source-85402900aed60f9de7b29319",
+      "title": "bellamy fitzpatrick an invitation to desertion.lt",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "bellamy-fitzpatrick-an-invitation-to-desertion.pdf",
+      "key": "source-adb47f0298199944aa9901ec",
+      "title": "bellamy fitzpatrick an invitation to desertion",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "bernnotice.pdf",
+      "key": "source-2350926dbb64f7105f3228a6",
+      "title": "bernnotice",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "beyond-the-sad-comforts-print.pdf",
+      "key": "source-d1e01d6e62d9664b2e6bd352",
+      "title": "beyond the sad comforts print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "beyond-the-sad-comforts-read.pdf",
+      "key": "source-af71df47b8f82d89027806dc",
+      "title": "beyond the sad comforts read",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "black-diamond-chronicle-1.pdf",
+      "key": "source-c007da52dedc3c223f3fb401",
+      "title": "black diamond chronicle 1",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "blk-int-i-grp-ccf.pdf",
+      "key": "source-ddac7756f24c9a441e6a3f32",
+      "title": "blk int i grp ccf",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "break-away-from-break-free1.pdf",
+      "key": "source-66100674ff7c368894178ae2",
+      "title": "break away from break free1",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "build-the-revolution-impoed.pdf",
+      "key": "source-f68770c6f1756afa816b2bf9",
+      "title": "build the revolution impoed",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "butterflies-polyamory-ideology-imposed.pdf",
+      "key": "source-94a79a0c55c6423a2fc46ecf",
+      "title": "butterflies polyamory ideology imposed",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "butterflies-polyamory-ideology.pdf",
+      "key": "source-9729acbafd3aaa8a20c6bfc2",
+      "title": "butterflies polyamory ideology",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "cameras-everywhere-safety-nowhere_print_black_and_white.pdf",
+      "key": "source-74e2cbb4ee526b3300508384",
+      "title": "cameras everywhere safety nowhere print black and white",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "camerasmash.pdf",
+      "key": "source-93e1853cdfccfad2329978f6",
+      "title": "camerasmash",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "canprison.pdf",
+      "key": "source-1bafa23d76132f069975cbb8",
+      "title": "canprison",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "charlottesville.pdf",
+      "key": "source-2b8af352def44c0416a9481c",
+      "title": "charlottesville",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "city-in-the-forest_print_black_and_white.pdf",
+      "key": "source-007db13bb4bd16b073316997",
+      "title": "city in the forest print black and white",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "civilwarrevisitedOE.pdf",
+      "key": "source-a79a957fe18ddb8d588d2551",
+      "title": "civilwarrevisitedOE",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "cleveland.pdf",
+      "key": "source-3d041eaf9379cf6988e5ad35",
+      "title": "cleveland",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "conflict16.pdf",
+      "key": "source-869d3fe12d03ba3b67cc31a9",
+      "title": "conflict16",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "conflict17.pdf",
+      "key": "source-f3da5b6f55184a518f6cba9a",
+      "title": "conflict17",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "conflictualwisdom.pdf",
+      "key": "source-1e68777733cbffbc90e362c7",
+      "title": "conflictualwisdom",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "creeker-2.3-print-clean.pdf",
+      "key": "source-072a22a6886fccae93058387",
+      "title": "creeker 2.3 print clean",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "creeker-2.3-web-clean.pdf",
+      "key": "source-ed5b42bb68d5fb0053444048",
+      "title": "creeker 2.3 web clean",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "creeker-3.04-print-clean.pdf",
+      "key": "source-41f90fb173e368dd738a9431",
+      "title": "creeker 3.04 print clean",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "creeker-3.04-web-clean.pdf",
+      "key": "source-b9c570bfb514296e93863ed1",
+      "title": "creeker 3.04 web clean",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "creeker-companion-1.0-print.pdf",
+      "key": "source-e52433e08e023862efccd838",
+      "title": "creeker companion 1.0 print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "creeker-companion-1.0-web.pdf",
+      "key": "source-d2d93183d9e51b58621db182",
+      "title": "creeker companion 1.0 web",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "creeker-v1-print.pdf",
+      "key": "source-a53427258b1ed45094a0d060",
+      "title": "creeker v1 print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "creeker-v1-read.pdf",
+      "key": "source-f3bef74dadb82999ecfffa2f",
+      "title": "creeker v1 read",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "creeker_companion-2.03-print.pdf",
+      "key": "source-e8df6b2aa93d617f85ca0b2a",
+      "title": "creeker companion 2.03 print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "creeker_companion-screen.pdf",
+      "key": "source-fcf698ff3c76261d227d9a57",
+      "title": "creeker companion screen",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "cruelty.pdf",
+      "key": "source-16b9c0b0af7a3544e0c2e308",
+      "title": "cruelty",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "csrc-bulletin-1-en-letter.pdf",
+      "key": "source-94557bd8ecbe573dbbd98a22",
+      "title": "csrc bulletin 1 en letter",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "dark-nights-47.pdf",
+      "key": "source-0cc064d7f725e5ea32530dc2",
+      "title": "dark nights 47",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "dark-nights-48.pdf",
+      "key": "source-681b7cffa6c24d969e1916ff",
+      "title": "dark nights 48",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "dark-nights-50-1.pdf",
+      "key": "source-8ca92354784c56d1f2e35c4f",
+      "title": "dark nights 50 1",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "dark-nights-51.pdf",
+      "key": "source-bde9250baed20cd8669426e0",
+      "title": "dark nights 51",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "dark-nights-52.pdf",
+      "key": "source-e81c7c8f1570a5cf9fedef4a",
+      "title": "dark nights 52",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "dec2016-final.pdf",
+      "key": "source-6f238493fb3395be9dfd550a",
+      "title": "dec2016 final",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "dec2016-final_text.pdf",
+      "key": "source-e12c9118f0e8abd2a12eed0c",
+      "title": "dec2016 final text",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "decomposition-print-letter.cleaned.pdf",
+      "key": "source-4147aafdfab6cd33523ee279",
+      "title": "decomposition print letter.cleaned",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "decomposition-read.cleaned.pdf",
+      "key": "source-5b550d3bb6baf9304bdf7a6e",
+      "title": "decomposition read.cleaned",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "defendentguidezine-1.1.pdf",
+      "key": "source-d99b1391c490278c18cf40cb",
+      "title": "defendentguidezine 1.1",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "definitieve-digitale-ENGLISH-Zomer-2021.pdf",
+      "key": "source-71efe1990365443cdf17a1fd",
+      "title": "definitieve digitale ENGLISH Zomer 2021",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "designed-to-kill_print_black_and_white.pdf",
+      "key": "source-a19def3d48db849af59f4ea9",
+      "title": "designed to kill print black and white",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "devils-night-11-black-cover.pdf",
+      "key": "source-e1871d6218b0c0fcfb129e88",
+      "title": "devils night 11 black cover",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "diagnostic-of-the-future_print_black_and_white.pdf",
+      "key": "source-7b92062042d3174aaf4cf213",
+      "title": "diagnostic of the future print black and white",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "digital-sec-1.pdf",
+      "key": "source-f73fd94c3d510e6c2536e2f2",
+      "title": "digital sec 1",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "discussion-zine.pdf",
+      "key": "source-f1ca40a1923fb1f5d8bccae5",
+      "title": "discussion zine",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "disenada-para-matar_print_black_and_white.pdf",
+      "key": "source-15a13fb2851898b010d73d44",
+      "title": "disenada para matar print black and white",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "dont-try-to-break-us_print_black_and_white.pdf",
+      "key": "source-77fb8900f148613a13f85499",
+      "title": "dont try to break us print black and white",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "doxxed.pdf",
+      "key": "source-9ce22953273bc9c62cc5b367",
+      "title": "doxxed",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "dysorganism-print.pdf",
+      "key": "source-0beb0611ca6f17c884870776",
+      "title": "dysorganism print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "dysorganism-screen.pdf",
+      "key": "source-76401812dda83abe56dc15cb",
+      "title": "dysorganism screen",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "ecofascism-1.pdf",
+      "key": "source-974d295220414b552280ab43",
+      "title": "ecofascism 1",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "ee-Copy.pdf",
+      "key": "source-d516b03fbb2176812a70dbef",
+      "title": "ee Copy",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "ef-news-Spring-2021-Read-and-Print-1.pdf",
+      "key": "source-57b1a97452b030ab9cce00ed",
+      "title": "ef news Spring 2021 Read and Print 1",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "emile.pdf",
+      "key": "source-eb9cd7aa3be90b922ce1963c",
+      "title": "emile",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "enclosure-booklet-cover.pdf",
+      "key": "source-b1c625bfaafae7fe0d9c61e0",
+      "title": "enclosure booklet cover",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "enclosure-booklet.pdf",
+      "key": "source-3bccbc3df69cf4369fa9ba32",
+      "title": "enclosure booklet",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "enclosure-screen.pdf",
+      "key": "source-aa62b3066c5e431dc451cea0",
+      "title": "enclosure screen",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "escaping-washington-for-freedom_print_black_and_white.pdf",
+      "key": "source-f76a838cc40c5ef2206b50fd",
+      "title": "escaping washington for freedom print black and white",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "escaping-washington-for-freedom_print_color.pdf",
+      "key": "source-2e05790ce2b067f34710fc5d",
+      "title": "escaping washington for freedom print color",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "evah-remastered-print-clean.pdf",
+      "key": "source-b9aaf2dc0a68a6683eacea17",
+      "title": "evah remastered print clean",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "evah-remastered-web-clean.pdf",
+      "key": "source-b0a73e2a8378b04ec0faf7bf",
+      "title": "evah remastered web clean",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "everybodyhatesthepolice.pdf",
+      "key": "source-49523cf6f11400e6c35cc31a",
+      "title": "everybodyhatesthepolice",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "face_to_face_france_2020_2021.pdf",
+      "key": "source-f3c950a608d69f8de7d8b266",
+      "title": "face to face france 2020 2021",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "feb17print-final.pdf",
+      "key": "source-5acc9661a479ded5c1b24f76",
+      "title": "feb17print final",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "feb17print-final_text.pdf",
+      "key": "source-499e7bc60100aae2c492b9ce",
+      "title": "feb17print final text",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "fedizine_print_bw.pdf",
+      "key": "source-216eef42ff9349a846971cc8",
+      "title": "fedizine print bw",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "fedizine_print_colour.pdf",
+      "key": "source-69e2db93362e4f2d9d73d3ac",
+      "title": "fedizine print colour",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "fedizine_read.pdf",
+      "key": "source-d28623c14a9ed12b1293aa12",
+      "title": "fedizine read",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "felix.pdf",
+      "key": "source-7207074fc0e348cfbe4cd1e7",
+      "title": "felix",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "fen_updt.pdf",
+      "key": "source-90f199410af208c43cc06fef",
+      "title": "fen updt",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "field-guide-to-wheatpasting-print.pdf",
+      "key": "source-60bbe668091fdf270ac6415c",
+      "title": "field guide to wheatpasting print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "fighting-for-our-lives-letter_print_black_and_white.pdf",
+      "key": "source-071fdcb6ba64ab3c49242457",
+      "title": "fighting for our lives letter print black and white",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "firesmoke-swain.pdf",
+      "key": "source-f05df3a1a34c949081d243d2",
+      "title": "firesmoke swain",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "fragments_against_reparation-print.pdf",
+      "key": "source-7e561f67c4162a86b67689f9",
+      "title": "fragments against reparation print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "fragments_against_reparation-screen.pdf",
+      "key": "source-499ce55975ac8e48ffe8727b",
+      "title": "fragments against reparation screen",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "franceinfopacket-bklt.pdf",
+      "key": "source-c40cd88019a5e37ad6f94a5b",
+      "title": "franceinfopacket bklt",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "franceinfopacket.pdf",
+      "key": "source-773b1408b9f9331d170f8d85",
+      "title": "franceinfopacket",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "ftp7.pdf",
+      "key": "source-81fd1bbda26c015fe74c7610",
+      "title": "ftp7",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "ftp7_text.pdf",
+      "key": "source-9c10ef7e0ff0d275fbfa899d",
+      "title": "ftp7 text",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "fuck-abuse-kill-power_print_black_and_white.pdf",
+      "key": "source-378dde79170b84dce50edd9e",
+      "title": "fuck abuse kill power print black and white",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "gaetano-bresci_print_color.pdf",
+      "key": "source-6bb1db8dacf8b1308fcc279c",
+      "title": "gaetano bresci print color",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "genderfascists.pdf",
+      "key": "source-d64ca9873bde3186a814c2e8",
+      "title": "genderfascists",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "gpbwimposed.pdf",
+      "key": "source-48e4025d7a24b14b763f2c5c",
+      "title": "gpbwimposed",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "hackett.pdf",
+      "key": "source-dc322b50af191088c0b85e8d",
+      "title": "hackett",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "hong_kong_protest_tactics_and_roles.pdf",
+      "key": "source-b232344cdfae766b684d2ca5",
+      "title": "hong kong protest tactics and roles",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "how-anti-fascists-won-the-battles-of-berkeley_print_black_and_white.pdf",
+      "key": "source-959e108b0f06d1aa6beae5c9",
+      "title": "how anti fascists won the battles of berkeley print black and white",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "howtoantifa-revised.pdf",
+      "key": "source-0df1d88173c73839b7bb3d65",
+      "title": "howtoantifa revised",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "howtostartazinedistro_BW_cover.pdf",
+      "key": "source-be5452de4bd8393d39692725",
+      "title": "howtostartazinedistro BW cover",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "howtostartazinedistro_BW_print_5pages.pdf",
+      "key": "source-7b6e08c35dda70379c5865c8",
+      "title": "howtostartazinedistro BW print 5pages",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "howtostartazinedistro_BW_web.pdf",
+      "key": "source-62991a61326314065d1d27f8",
+      "title": "howtostartazinedistro BW web",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "ie-2.pdf",
+      "key": "source-21df6a84c1ad4b57b59e5cdf",
+      "title": "ie 2",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "igdvandalisms.pdf",
+      "key": "source-6688deff5298ea3fc929cb3b",
+      "title": "igdvandalisms",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "invisibility_online_imposed.pdf",
+      "key": "source-e3a495585f793347b766b78c",
+      "title": "invisibility online imposed",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "invisibility_read_online.pdf",
+      "key": "source-dff4365b46f3cd0be51bb1cc",
+      "title": "invisibility read online",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "its-a-sin-to-kill-READ.pdf",
+      "key": "source-f3767ce0f2c61e59b02a8a3d",
+      "title": "its a sin to kill READ",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "its-a-sin-to-killPRINT.indd_.pdf",
+      "key": "source-187f5e2fdb4d26fc5276a2a3",
+      "title": "its a sin to killPRINT.indd",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "itsgoingdown2-FINALPRINT-IMP-1.pdf",
+      "key": "source-cb89656d150e5234bedf6136",
+      "title": "itsgoingdown2 FINALPRINT IMP 1",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "iw-issue_7_final_booklet.pdf",
+      "key": "source-9542ce6060d9f43ccb676317",
+      "title": "iw issue 7 final booklet",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "j0zqs9.pdf",
+      "key": "source-1b4b99092a9ed2adf1d176bb",
+      "title": "j0zqs9",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "j20-freedom-zine.pdf",
+      "key": "source-bd3739ce47142abc8d7ab5d1",
+      "title": "j20 freedom zine",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "janprint.pdf",
+      "key": "source-a35dc7c2276bc5d869a85486",
+      "title": "janprint",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "jean-weir-tame-words-from-a-wild-heart.lt.pdf",
+      "key": "source-f42f3202b9f43fc4a33983ea",
+      "title": "jean weir tame words from a wild heart.lt",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "jean-weir-tame-words-from-a-wild-heart.pdf",
+      "key": "source-26924b26adf404a92e6e9df1",
+      "title": "jean weir tame words from a wild heart",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "joinresistance.pdf",
+      "key": "source-3c42c2f3af66a0bc464e4abe",
+      "title": "joinresistance",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "junexiteng-print.pdf",
+      "key": "source-fa4ef54b8321b9f765751a73",
+      "title": "junexiteng print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "ksl-103.pdf",
+      "key": "source-879cd2d2685a586245211509",
+      "title": "ksl 103",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "ksl-106.pdf",
+      "key": "source-c68a2e7dc7b8dcc8e2768367",
+      "title": "ksl 106",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "ksl-107-108.pdf",
+      "key": "source-8354c541a88a8b95744c38b3",
+      "title": "ksl 107 108",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "kyr-dc.pdf",
+      "key": "source-4c2da5e591e5380a09741f29",
+      "title": "kyr dc",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "liberals-1.pdf",
+      "key": "source-c8f38ea9982aae0ab478164e",
+      "title": "liberals 1",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "linux101.pdf",
+      "key": "source-3d8de54cf9255cf175d8a0bd",
+      "title": "linux101",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "little-turtle-carries-the-world-print.pdf",
+      "key": "source-8b031f8faead2faae0ddfc6a",
+      "title": "little turtle carries the world print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "little-turtle-carries-the-world-read.pdf",
+      "key": "source-427b53ba4788b67478f276cc",
+      "title": "little turtle carries the world read",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "m0chf2.pdf",
+      "key": "source-f86dfd9987fbfed41351fb20",
+      "title": "m0chf2",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "main-line-2.pdf",
+      "key": "source-1d4be0fd409bee3306adfc94",
+      "title": "main line 2",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "making_sense_of_fascism-print-bw.pdf",
+      "key": "source-be2a8fe0b3d1263dda4a5f5c",
+      "title": "making sense of fascism print bw",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "making_sense_of_fascism-print-color.pdf",
+      "key": "source-d9c9b27fa6ab295920847e0c",
+      "title": "making sense of fascism print color",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "making_sense_of_fascism-screen.pdf",
+      "key": "source-0e94421e16fee602a4f3ed27",
+      "title": "making sense of fascism screen",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "may-day-special-2018-for-reading.pdf",
+      "key": "source-100841a5691050168292a21a",
+      "title": "may day special 2018 for reading",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "may-day-special-2018.pdf",
+      "key": "source-14d1f6071003516255999737",
+      "title": "may day special 2018",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "memento-mori-we-endlings_print_black_and_white.pdf",
+      "key": "source-a657e971779f24008836bbe5",
+      "title": "memento mori we endlings print black and white",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "memory_loss-book.pdf",
+      "key": "source-7d6f6aceecc01d693b570008",
+      "title": "memory loss book",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "memory_loss.pdf",
+      "key": "source-7f05f086825b7f552288742f",
+      "title": "memory loss",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "mexico-prison-chronicles-print.pdf",
+      "key": "source-f8add76c762fdf69ec0556eb",
+      "title": "mexico prison chronicles print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "mischief_nite_parade_new_orleans-print.pdf",
+      "key": "source-03e99195d5159b910d9ac7a6",
+      "title": "mischief nite parade new orleans print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "mischief_nite_parade_new_orleans-screen.pdf",
+      "key": "source-7a50abcca34b0c182c0b04e0",
+      "title": "mischief nite parade new orleans screen",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "mw6p4g.pdf",
+      "key": "source-93edd0da0179023a8ed83eba",
+      "title": "mw6p4g",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "nbksl-n08.pdf",
+      "key": "source-d36decb0edcef1da302fee6e",
+      "title": "nbksl n08",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "negazine-en-1.lt.pdf",
+      "key": "source-c7468a976f85a31a2bbfb8df",
+      "title": "negazine en 1.lt",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "nmc3-imposed.pdf",
+      "key": "source-7d56290eb1dc1f47ab6cbc28",
+      "title": "nmc3 imposed",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "nmc3-reading.pdf",
+      "key": "source-937f0e82b054c7b7504c80bb",
+      "title": "nmc3 reading",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "no-platform-mark-bray-interview.pdf",
+      "key": "source-c3d6f1721b516c078b1a825d",
+      "title": "no platform mark bray interview",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "notes-on-militant-folds.pdf",
+      "key": "source-4aba15949203dffe8bd15a8e",
+      "title": "notes on militant folds",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "nov22print.pdf",
+      "key": "source-319c71423b4945e6afcd0800",
+      "title": "nov22print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "nuclear_or_lignite_fragments-print.pdf",
+      "key": "source-aa7c48a7cd02e9956e514239",
+      "title": "nuclear or lignite fragments print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "nuclear_or_lignite_fragments-screen.pdf",
+      "key": "source-a231c8ba5b1b6fe0d8c42003",
+      "title": "nuclear or lignite fragments screen",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "nycabc_polprisonerlisting_11-5june2016.pdf",
+      "key": "source-73583be54d6f6856b674cb9b",
+      "title": "nycabc polprisonerlisting 11 5june2016",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "occupation-revolt-power.pdf",
+      "key": "source-e9ffcec877914edf49aa7357",
+      "title": "occupation revolt power",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "occupyicephl-collated.pdf",
+      "key": "source-9ec4d9d7e6dfaad9b970c0ed",
+      "title": "occupyicephl collated",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "occupyicephl-web.pdf",
+      "key": "source-1366508b8cbab0d6b6cc5dd4",
+      "title": "occupyicephl web",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "on-repression-patterns-in-europe-bnw-booklet.pdf",
+      "key": "source-82ad6a30e6715435f2f06788",
+      "title": "on repression patterns in europe bnw booklet",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "on-repression-patterns-in-europe-bnw.pdf",
+      "key": "source-fefe8530bd2768c31b425802",
+      "title": "on repression patterns in europe bnw",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "on_an_uprising_and_its_deferral-Print.pdf",
+      "key": "source-10cb67b5d067e1b69fde8054",
+      "title": "on an uprising and its deferral Print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "on_an_uprising_and_its_deferral-Read.pdf",
+      "key": "source-f4c78328a0470be34a414d4d",
+      "title": "on an uprising and its deferral Read",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "or-rev.pdf",
+      "key": "source-a8566455bf6e54764ca0bac5",
+      "title": "or rev",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "our_grief-imposed.pdf",
+      "key": "source-846ee8187bcf2ad56d9ae008",
+      "title": "our grief imposed",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "our_grief-screen.pdf",
+      "key": "source-9b421a2f24473d38df022364",
+      "title": "our grief screen",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "ourworkhasbegun-imposed.pdf",
+      "key": "source-8fe4df6be027c383ac1d1dc5",
+      "title": "ourworkhasbegun imposed",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "overview-of-police-investigations-tied-to-a-combative-demo-against-mega-basins-booklet-A4.pdf",
+      "key": "source-f94c1e5cf8937573d9eb7b16",
+      "title": "overview of police investigations tied to a combative demo against mega basins booklet A4",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "overview-of-police-investigations-tied-to-a-combative-demo-against-mega-basins-booklet-letter.pdf",
+      "key": "source-1dac7ee963d145d922404f3e",
+      "title": "overview of police investigations tied to a combative demo against mega basins booklet letter",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "overview-of-police-investigations-tied-to-a-combative-demo-against-mega-basins-read.pdf",
+      "key": "source-ee55398b66731969dbb0219c",
+      "title": "overview of police investigations tied to a combative demo against mega basins read",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "owl_fall22_laser.cleaned.pdf",
+      "key": "source-5c9fcf936ce9149e2c3a8d54",
+      "title": "owl fall22 laser.cleaned",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "owl_fall22_posters.cleaned.pdf",
+      "key": "source-8d8cff23ce37a4f4f5703b67",
+      "title": "owl fall22 posters.cleaned",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "owl_fall22_riso.cleaned.pdf",
+      "key": "source-8328c253f7f11b134d385920",
+      "title": "owl fall22 riso.cleaned",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "owl_summer22_laser.cleaned.pdf",
+      "key": "source-7599b8486946a2271901e650",
+      "title": "owl summer22 laser.cleaned",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "owl_summer22_riso.cleaned.pdf",
+      "key": "source-d5dc563ec67fdb242d7eee2a",
+      "title": "owl summer22 riso.cleaned",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "owls-spring22-bw.pdf",
+      "key": "source-05f890aa648b2740eccb3ec2",
+      "title": "owls spring22 bw",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "owls-spring22-risoblack.pdf",
+      "key": "source-2d9e15ce1f80eae914d64df1",
+      "title": "owls spring22 risoblack",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "owls-spring22-risocolor.pdf",
+      "key": "source-7bd7046a6f0f147e5aae4a22",
+      "title": "owls spring22 risocolor",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "pbtd-pamphlet.pdf",
+      "key": "source-671843c92de57afaa9a60e31",
+      "title": "pbtd pamphlet",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "penandpistoltabling.pdf",
+      "key": "source-ad6dd3cb2b3bf3c92a9575da",
+      "title": "penandpistoltabling",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "petguide_imposed.pdf",
+      "key": "source-7d293d4b44e0270b24049196",
+      "title": "petguide imposed",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "petguide_read.pdf",
+      "key": "source-3477bd67bcd7763afcf0d280",
+      "title": "petguide read",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "pigeon-confidential_browsing.pdf",
+      "key": "source-d441dbd2a543185add2bf61c",
+      "title": "pigeon confidential browsing",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "pigeon-cyber_civil_rights.pdf",
+      "key": "source-92236fd1f9d740b52d580a42",
+      "title": "pigeon cyber civil rights",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "pigeon-cybersecurity.pdf",
+      "key": "source-12c5b0029dab57572242c8ab",
+      "title": "pigeon cybersecurity",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "pigeon-encryption.pdf",
+      "key": "source-164ee12c7ea6021cf54051b1",
+      "title": "pigeon encryption",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "pigeon-surveillance.pdf",
+      "key": "source-b51f7626be04e76b6e9a7141",
+      "title": "pigeon surveillance",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "plain-words-1.pdf",
+      "key": "source-418b79ee80a08d585fc54128",
+      "title": "plain words 1",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "political-determinism.pdf",
+      "key": "source-6c60abc765e5ff86e3c7c3a4",
+      "title": "political determinism",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "popsec-andor-booklet.pdf",
+      "key": "source-9d5f0a854e84defe85545054",
+      "title": "popsec andor booklet",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "popsec-andor.pdf",
+      "key": "source-b7dec02770e4eeee5772fd5f",
+      "title": "popsec andor",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "poster-spring22-color.pdf",
+      "key": "source-78faa3993b39df92ca796aa3",
+      "title": "poster spring22 color",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "poster-spring22-riso.pdf",
+      "key": "source-86c67ae069d6220c41d98d57",
+      "title": "poster spring22 riso",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "poster2022-laser.cleaned.pdf",
+      "key": "source-3b2c84a4019c592ecd9a182f",
+      "title": "poster2022 laser.cleaned",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "poster2022-riso.cleaned.pdf",
+      "key": "source-ce86814d5dd94ec3e1f51c07",
+      "title": "poster2022 riso.cleaned",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "prisoners-list-2022-imposed.pdf",
+      "key": "source-94d4acafeb250825a3a1dba7",
+      "title": "prisoners list 2022 imposed",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "prisoners-list-2022.pdf",
+      "key": "source-dccb6c9a20f2518309c6b212",
+      "title": "prisoners list 2022",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "prisoners-united-1.pdf",
+      "key": "source-200ba9778827f0eeae4da94c",
+      "title": "prisoners united 1",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "prisoners-united-1_text.pdf",
+      "key": "source-5b2db861fb7dbf4c7c1e5d58",
+      "title": "prisoners united 1 text",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "professional-anarchy.pdf",
+      "key": "source-6cfc99c76cfef78856692df3",
+      "title": "professional anarchy",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "protest_marshal2.pdf",
+      "key": "source-5d8609bb0c001f66773ceedc",
+      "title": "protest marshal2",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "protest_marshal_imposed_2up1.pdf",
+      "key": "source-c21e97b1b2a755b63b40e39d",
+      "title": "protest marshal imposed 2up1",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "punk-dangerous.pdf",
+      "key": "source-bc21524774860917b175cc6f",
+      "title": "punk dangerous",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "queeringProtestSites_print.pdf",
+      "key": "source-e975fc1893c91c001dae2d23",
+      "title": "queeringProtestSites print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "queeringProtestSites_print_text.pdf",
+      "key": "source-658ef1ec805985dfd4c23ef6",
+      "title": "queeringProtestSites print text",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "queeringProtestSites_screen_text.pdf",
+      "key": "source-24d697c50f4b4edee4f6501d",
+      "title": "queeringProtestSites screen text",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "rage-against-video-surveillance-double-booklet.pdf",
+      "key": "source-ec528f5febd21e734bbcd2da",
+      "title": "rage against video surveillance double booklet",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "rage-against-video-surveillance-pageperpage.pdf",
+      "key": "source-486d39386ddfcd3c94a6ca71",
+      "title": "rage against video surveillance pageperpage",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "readingNow.pdf",
+      "key": "source-ca543a89a12143ad4b3b020d",
+      "title": "readingNow",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "rebellion-and-possibility-anti-ice-vol1-print.pdf",
+      "key": "source-00c39aea96a3a2e373aabd54",
+      "title": "rebellion and possibility anti ice vol1 print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "rebellion-and-possibility-anti-ice-vol1-screen.pdf",
+      "key": "source-cffb388e3006c492371a465f",
+      "title": "rebellion and possibility anti ice vol1 screen",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "rebellion-and-possibility-vol-2-booklet.pdf",
+      "key": "source-8a8ec0fd92ebb7af0fba4f73",
+      "title": "rebellion and possibility vol 2 booklet",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "rebellion-and-possibility-vol-2-digital.pdf",
+      "key": "source-bccb00c1f67be1e68a95e93e",
+      "title": "rebellion and possibility vol 2 digital",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "recognizing_hate-dog_whistles_and_far_right_symbols.pdf",
+      "key": "source-94f163e908d1a4cde512f33b",
+      "title": "recognizing hate dog whistles and far right symbols",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "resignation.pdf",
+      "key": "source-e60a600bbce27876fdded3ef",
+      "title": "resignation",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "return-fire-vol3-covers-BW.pdf",
+      "key": "source-4160f579ec15624ca98a1a7e",
+      "title": "return fire vol3 covers BW",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "return-fire-vol5-contents.compressed.pdf",
+      "key": "source-a1aa3e3f484cb51988fdcacf",
+      "title": "return fire vol5 contents.compressed",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "return-fire-vol5-covers-BW.pdf.pdf",
+      "key": "source-04156c0cfc355edd3d1eabd1",
+      "title": "return fire vol5 covers BW.pdf",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "return-fire-vol5-covers-COLOUR.pdf.pdf",
+      "key": "source-7b577eb0dfa8eb07dddd01a0",
+      "title": "return fire vol5 covers COLOUR.pdf",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "rnc_zine_03.pdf",
+      "key": "source-32ba713b40ba810a42f0737d",
+      "title": "rnc zine 03",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "sacco-vanzettis-revenge_print.pdf",
+      "key": "source-e210e94abeacacd04f776142",
+      "title": "sacco vanzettis revenge print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "salvo-summer-2018.pdf",
+      "key": "source-aeb7730e96650a7b292878ad",
+      "title": "salvo summer 2018",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "salvo-summer-2018_text.pdf",
+      "key": "source-126d271aa3dc21a47a1e4262",
+      "title": "salvo summer 2018 text",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "secret-world-of-duvbo_print_black_and_white.pdf",
+      "key": "source-9fb06d5dd35d36e1fb435f89",
+      "title": "secret world of duvbo print black and white",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "secrets-Letter-PRINT.cleaned.pdf",
+      "key": "source-1d2407e78a832d6d58cff013",
+      "title": "secrets Letter PRINT.cleaned",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "secrets-READ.cleaned.pdf",
+      "key": "source-59836c391a5b3e7d3a8f7b7e",
+      "title": "secrets READ.cleaned",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "sj3wmw.pdf",
+      "key": "source-c45a61406112b34a6d8c6025",
+      "title": "sj3wmw",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "small-pond-imposed.pdf",
+      "key": "source-2461f8c6d276a8996bb38d2d",
+      "title": "small pond imposed",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "small-pond-imposed_text.pdf",
+      "key": "source-5db4d25370273fc9e74ff774",
+      "title": "small pond imposed text",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "soaring-beyond-the-walls.pdf",
+      "key": "source-30332994c02700684ad48f00",
+      "title": "soaring beyond the walls",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "socialwarnativeland.pdf",
+      "key": "source-7b78daed66777ac543e6482b",
+      "title": "socialwarnativeland",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "solidarity-with-ivan-booklet.pdf",
+      "key": "source-9e6c86ff1239fe32fe0b536d",
+      "title": "solidarity with ivan booklet",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "solidarity-with-ivan-ppp.pdf",
+      "key": "source-feb43d40da914866ec258a62",
+      "title": "solidarity with ivan ppp",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "some-initial-notes-on-the-investigation-file-against-ivan-booklet-A4.pdf",
+      "key": "source-1ef08e25159890e3c69a56b5",
+      "title": "some initial notes on the investigation file against ivan booklet A4",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "some-initial-notes-on-the-investigation-file-against-ivan-booklet-letter.pdf",
+      "key": "source-222947939b94b3de32a393c4",
+      "title": "some initial notes on the investigation file against ivan booklet letter",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "some-initial-notes-on-the-investigation-file-against-ivan-read.pdf",
+      "key": "source-45adafb33e8d04adc71f67af",
+      "title": "some initial notes on the investigation file against ivan read",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "some-notes-on-antifascism-imposed.pdf",
+      "key": "source-27a1c6d005503a621a4923f5",
+      "title": "some notes on antifascism imposed",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "splash3-letter-booklet.pdf",
+      "key": "source-ace727fbc4445939dcbfa69b",
+      "title": "splash3 letter booklet",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "splash3-letter.pdf",
+      "key": "source-6b6ba8978029f501af732d90",
+      "title": "splash3 letter",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "spring-2018-for-printing-final.pdf",
+      "key": "source-5e077bb92e06bebdf8aad600",
+      "title": "spring 2018 for printing final",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "spring23.pdf",
+      "key": "source-9957752abaa14b27a13b0830",
+      "title": "spring23",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "spring23print.pdf",
+      "key": "source-5d5d634c5a4c5d01b0da2697",
+      "title": "spring23print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "ssa-spring-2018-even-single-page.pdf",
+      "key": "source-13af9b0d545e5b5319a62798",
+      "title": "ssa spring 2018 even single page",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "standing-on-the-land_print_black_and_white.pdf",
+      "key": "source-0140f25c9e54d27e6b655777",
+      "title": "standing on the land print black and white",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "standing-on-the-land_print_color.pdf",
+      "key": "source-1bd794dd937d2ad9e2efe28b",
+      "title": "standing on the land print color",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "star-wars-new.pdf",
+      "key": "source-0301863be2cdd79ce2f6a892",
+      "title": "star wars new",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "step-into-the-unknown-zine-imposed.pdf",
+      "key": "source-06664f38ff02970326ab7e4d",
+      "title": "step into the unknown zine imposed",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "step-into-the-unknown-zine-imposed_text.pdf",
+      "key": "source-e37bb8ca59dab562da29741b",
+      "title": "step into the unknown zine imposed text",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "stormwarnings49_print_a4.pdf",
+      "key": "source-5e47fb9789510377ccd95719",
+      "title": "stormwarnings49 print a4",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "stormwarnings49_print_letter.pdf",
+      "key": "source-f644907cb9b4e824d5501ccb",
+      "title": "stormwarnings49 print letter",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "stormwarnings49_read_a5.pdf",
+      "key": "source-3b51c23fa4eabba8f5ec26bd",
+      "title": "stormwarnings49 read a5",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "stormwarnings55_print_a4.cleaned.pdf",
+      "key": "source-c47056b074bfaf2e13f570ec",
+      "title": "stormwarnings55 print a4.cleaned",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "stormwarnings55_print_letter.cleaned.pdf",
+      "key": "source-853da4aa36c749bc0f731bf7",
+      "title": "stormwarnings55 print letter.cleaned",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "stormwarnings55_read_a5.cleaned.pdf",
+      "key": "source-fc826de8d27b44c329e35ac3",
+      "title": "stormwarnings55 read a5.cleaned",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "stormwarnings59_60_print_a4.cleaned.pdf",
+      "key": "source-a87dc04f39821b1a8ee8d58d",
+      "title": "stormwarnings59 60 print a4.cleaned",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "stormwarnings59_60_print_letter.cleaned.pdf",
+      "key": "source-035bf862663b32bd4212bc97",
+      "title": "stormwarnings59 60 print letter.cleaned",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "stormwarnings59_60_read_a5.cleaned.pdf",
+      "key": "source-5ac282841fab8bde6c60af60",
+      "title": "stormwarnings59 60 read a5.cleaned",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "strategies-for-countering-police-access-to-dna-data-booklet-letter.pdf",
+      "key": "source-6d6c8ef980d96e52adb46bbc",
+      "title": "strategies for countering police access to dna data booklet letter",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "strategies-for-countering-police-access-to-dna-data-read.pdf",
+      "key": "source-5b11b91cf2c8ac1548a9929c",
+      "title": "strategies for countering police access to dna data read",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "streamer_clean.pdf",
+      "key": "source-d7cc4109b1e5f3595febaf06",
+      "title": "streamer clean",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "subsitence.pdf",
+      "key": "source-b6b98d44ae1bc6f4b6bcc780",
+      "title": "subsitence",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "summer22-poster-riso.cleaned.pdf",
+      "key": "source-84b1e03ac51807c4532f496c",
+      "title": "summer22 poster riso.cleaned",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "summer22-poster.cleaned.pdf",
+      "key": "source-13e1476a76033df6abbd41cc",
+      "title": "summer22 poster.cleaned",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "surviving-a-grand-jury_print_black_and_white.pdf",
+      "key": "source-866d4df25627f4681fb9abef",
+      "title": "surviving a grand jury print black and white",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "syndicatetotal_.pdf",
+      "key": "source-3f7086cfcb64e6b48c38f9b6",
+      "title": "syndicatetotal",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "teenvogue2.pdf",
+      "key": "source-afae96965ed52f000daad64a",
+      "title": "teenvogue2",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "the-forest-in-the-city_print_black_and_white.pdf",
+      "key": "source-4816207980256b25ffa4814b",
+      "title": "the forest in the city print black and white",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "the-forest-in-the-city_screen_single_page_view.pdf",
+      "key": "source-d240dce90bf737d473753c1c",
+      "title": "the forest in the city screen single page view",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "the-may-days_print_black_and_white.pdf",
+      "key": "source-45c1d3ada62db28b22e65b76",
+      "title": "the may days print black and white",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "the-may-days_print_color.pdf",
+      "key": "source-ae84a24e256541c69051025a",
+      "title": "the may days print color",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "the-opening-statement-summer-2022.pdf",
+      "key": "source-eb1cab162ced70059d597a84",
+      "title": "the opening statement summer 2022",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "the-struggle-against-fascism-in-dc_print_black_and_white.pdf",
+      "key": "source-37b4f0c4cd8c23de507acc86",
+      "title": "the struggle against fascism in dc print black and white",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "the-struggle-against-fascism-in-dc_screen_single_page_view.pdf",
+      "key": "source-71c871551ce3912d36c0f08c",
+      "title": "the struggle against fascism in dc screen single page view",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "the-zone-to-defend.pdf",
+      "key": "source-bea0a94f63576d7a5b97f864",
+      "title": "the zone to defend",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "the_uprising_in_kazakhstan.pdf",
+      "key": "source-c83c3f49870890f5d22675f3",
+      "title": "the uprising in kazakhstan",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "thefuckinyear.pdf",
+      "key": "source-2818020bf35b707dd1287691",
+      "title": "thefuckinyear",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "there-is-no-migrant-crisis_print_black_and_white.pdf",
+      "key": "source-fc91d8de7a4330b788ddcc60",
+      "title": "there is no migrant crisis print black and white",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "theres-no-such-thing-as-revolutionary-government_print_black_and_white.pdf",
+      "key": "source-252b0f84e9f094a9d1c970d7",
+      "title": "theres no such thing as revolutionary government print black and white",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "theunseenexcerpt.pdf",
+      "key": "source-b91ad8676564d35b2df8e86e",
+      "title": "theunseenexcerpt",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "theunseenwalkout.pdf",
+      "key": "source-e02406001e39766442e9126f",
+      "title": "theunseenwalkout",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "tlk01.pdf",
+      "key": "source-3ec1f68f7fd2543360213546",
+      "title": "tlk01",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "tlk01print.pdf",
+      "key": "source-254ee46c73f4f13e4d3f8223",
+      "title": "tlk01print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "tlk02.pdf",
+      "key": "source-c17e07c5e3748f7b50058307",
+      "title": "tlk02",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "tlk02print.pdf",
+      "key": "source-1edb10c7da40e7501f52d6fd",
+      "title": "tlk02print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "tlk07.pdf",
+      "key": "source-2c50b584b8729114b12b49c2",
+      "title": "tlk07",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "tlk08.pdf",
+      "key": "source-24b9cf09681a12ffb7ea3775",
+      "title": "tlk08",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "tm-5.pdf",
+      "key": "source-35df15b0215068b553d68631",
+      "title": "tm 5",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "tm-7-1.pdf",
+      "key": "source-2dec410c13f9c63d0ac2c857",
+      "title": "tm 7 1",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "tmzine.pdf",
+      "key": "source-e4815b4796e671e842d1592b",
+      "title": "tmzine",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "tmzine_print.pdf",
+      "key": "source-eec2e890c96e30b739395734",
+      "title": "tmzine print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "to-change-everything_print_black_and_white.pdf",
+      "key": "source-1444c5aaaabc252449c2c07e",
+      "title": "to change everything print black and white",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "to-change-everything_print_color.pdf",
+      "key": "source-8486892335a73513d6d9d41e",
+      "title": "to change everything print color",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "to-change-everything_screen_single_page_view.pdf",
+      "key": "source-0558d048b6cfa89583f4ccb4",
+      "title": "to change everything screen single page view",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "tostruggleprintversion.pdf",
+      "key": "source-c881458c5ae4d70f42ca9683",
+      "title": "tostruggleprintversion",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "tostrugglereadversion.pdf",
+      "key": "source-98a1fc532e8b12ec763c4418",
+      "title": "tostrugglereadversion",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "trumpism.pdf",
+      "key": "source-73e7f63ff2d7acd47a42ff2c",
+      "title": "trumpism",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "ukraine-background-russian-invasion-print.pdf",
+      "key": "source-6583bce83ef4cfdf9e40c567",
+      "title": "ukraine background russian invasion print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "unseenwalkoutx2.pdf",
+      "key": "source-7982a67d30bdc7ccbbab0005",
+      "title": "unseenwalkoutx2",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "unstoppable_winter2018-publication.pdf",
+      "key": "source-9447580493781898eac46e7a",
+      "title": "unstoppable winter2018 publication",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "us10.pdf",
+      "key": "source-de3ba9687be7767ba087b2d7",
+      "title": "us10",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "usingspace10.pdf",
+      "key": "source-6dad9ae37a6a398fd825a808",
+      "title": "usingspace10",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "usingspace11-a4-readonscreen.pdf",
+      "key": "source-46f02bbdd386aad307f67a0e",
+      "title": "usingspace11 a4 readonscreen",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "usingspace11-print-doublesidedzine.pdf",
+      "key": "source-908b8ec5d3ca22fed16845d5",
+      "title": "usingspace11 print doublesidedzine",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "usingspace9-shortedgeprintdoublesided.pdf",
+      "key": "source-886de97ccffe786105161ec5",
+      "title": "usingspace9 shortedgeprintdoublesided",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "usingspace9-shortedgeprintdoublesided_text.pdf",
+      "key": "source-a56f7c9f45cd5ed38a6446d2",
+      "title": "usingspace9 shortedgeprintdoublesided text",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "value-and-its-abolition-bklt.pdf",
+      "key": "source-0ff703c334b554c89ccb6bd7",
+      "title": "value and its abolition bklt",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "vol2iss6.pdf",
+      "key": "source-cc7786777a03bec5a2006dd1",
+      "title": "vol2iss6",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "vol2iss6_text.pdf",
+      "key": "source-e6a75ec73725fcdcfef57070",
+      "title": "vol2iss6 text",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "vol2iss7.pdf",
+      "key": "source-e0a459a7f5f64f931c6d4620",
+      "title": "vol2iss7",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "vol2iss7_text.pdf",
+      "key": "source-5793fe69c8fc5a6ba17363d1",
+      "title": "vol2iss7 text",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "vol2iss9.pdf",
+      "key": "source-8d1d6dbcc95c3715c702eb1f",
+      "title": "vol2iss9",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "vol2iss9_text.pdf",
+      "key": "source-cc2d2422a391ecba5a131600",
+      "title": "vol2iss9 text",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "war-against-war_a3.pdf",
+      "key": "source-8d353b847aebf4433c8fc6a4",
+      "title": "war against war a3",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "war-against-war_a4.pdf",
+      "key": "source-b74ad874ffeea3d694ca3141",
+      "title": "war against war a4",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "war-against-war_tabloid.pdf",
+      "key": "source-0e017a28f10769b748b1ddf2",
+      "title": "war against war tabloid",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "we-dont-need-gun-control_print_black_and_white.pdf",
+      "key": "source-9ec4fb59ac68958471e23003",
+      "title": "we dont need gun control print black and white",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "we-dont-need-gun-control_print_black_and_white_text.pdf",
+      "key": "source-7cbb81d0ea33bca9d1099203",
+      "title": "we dont need gun control print black and white text",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "we_dont_forget-j20-digital-read.pdf",
+      "key": "source-7aee4f160a9e3f94740a4e7a",
+      "title": "we dont forget j20 digital read",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "we_dont_forget-j20-letter-print.pdf",
+      "key": "source-f9d2cd453abe460dfde59197",
+      "title": "we dont forget j20 letter print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "welcome.pdf",
+      "key": "source-9defc1dcdd73e2199874fff6",
+      "title": "welcome",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "wfbf-zine.pdf",
+      "key": "source-d6fee375a41e46dd842c1a2b",
+      "title": "wfbf zine",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "whiteness-is-a-war-measure_print.pdf",
+      "key": "source-17baeef230970f31c7fef08a",
+      "title": "whiteness is a war measure print",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "who-wrote-that-booklet-A4.pdf",
+      "key": "source-ce2f0cfaffdc940ba9388e73",
+      "title": "who wrote that booklet A4",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "who-wrote-that-booklet-letter.pdf",
+      "key": "source-89f03da45f3a5bb95cef49a1",
+      "title": "who wrote that booklet letter",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "who-wrote-that-read.pdf",
+      "key": "source-5621cd1b9292fe61a09288a1",
+      "title": "who wrote that read",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "whores_dialogue_imposed.pdf",
+      "key": "source-51bdea2e279a5c557482b3df",
+      "title": "whores dialogue imposed",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "why-start-a-union-printable.pdf",
+      "key": "source-3d92946766e2e76ea778f0a4",
+      "title": "why start a union printable",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "why-start-a-union-readable.pdf",
+      "key": "source-77bf1040f74387106ec7b089",
+      "title": "why start a union readable",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "why-we-break-windows_print_black_and_white.pdf",
+      "key": "source-4b2986af4f831b69578529f2",
+      "title": "why we break windows print black and white",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "why-we-dont-make-demands_print_black_and_white.pdf",
+      "key": "source-8735357f84b6449316ea8bee",
+      "title": "why we dont make demands print black and white",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "why-we-dont-make-demands_print_color.pdf",
+      "key": "source-06c9392632ca862d6f07ec56",
+      "title": "why we dont make demands print color",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "wisdom.pdf",
+      "key": "source-e3eeedba2b8bd8b39d6d632b",
+      "title": "wisdom",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "words-2016-anarchy-with-cover.pdf",
+      "key": "source-42cd539614538e195b2f6bb9",
+      "title": "words 2016 anarchy with cover",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "words-2016-attack-with-cover.pdf",
+      "key": "source-5f19e5efe15573f6f93af41a",
+      "title": "words 2016 attack with cover",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "words-2016-queer-with-cover.pdf",
+      "key": "source-64bc0226a538214e4cef57a3",
+      "title": "words 2016 queer with cover",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "words-2016-society-with-cover.pdf",
+      "key": "source-401c3662d9caba8ddb5342c1",
+      "title": "words 2016 society with cover",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "work-is-a-crime.pdf",
+      "key": "source-f4c633d0df3502315014e00f",
+      "title": "work is a crime",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "work.pdf",
+      "key": "source-77f6724275ff7a1447b32de2",
+      "title": "work",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "your_honor.pdf",
+      "key": "source-6cb540d38e986752d083e374",
+      "title": "your honor",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "zapatistas.pdf",
+      "key": "source-0c4894bbba6b0090cad55706",
+      "title": "zapatistas",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "zundlappen-README.pdf",
+      "key": "source-8ace426d743e4b283ef7e444",
+      "title": "zundlappen README",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "zundlappen-a4-PRINTME.pdf",
+      "key": "source-8cedac09273302a2e1ba5f3a",
+      "title": "zundlappen a4 PRINTME",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
+    },
+    {
+      "file": "zundlappen-letter-PRINTME.pdf",
+      "key": "source-520dc1d66dc566eb4c23a68e",
+      "title": "zundlappen letter PRINTME",
+      "creator": "",
+      "date": "unknown",
+      "language": "",
+      "subjects": [],
+      "rights": "unknown"
     }
-  ]
+  ],
+  "public_access": {
+    "policy": "verified-automatic",
+    "item": "ZineArchive",
+    "review": "Owner decision 2026-10-03: auto approve all Anarchist collection documents for public archival reading and downloads after integrity/reader verification; retain unknown rights, attribution, correction/removal contact, and assert no reuse license. Explicit withdrawals remain in force.",
+    "public_url": "https://arkhiv.subcult.tv",
+    "correction_contact": "info@subcult.tv"
+  },
+  "updates": {
+    "enabled": true,
+    "policy": "acquire",
+    "cadence_hours": 24,
+    "minimum_free_bytes": 2147483648
+  }
 }

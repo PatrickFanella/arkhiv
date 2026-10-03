@@ -433,4 +433,6 @@ func TestArchiveIntegration(t *testing.T) {
 	if recovery.Restore(ctx, create("corrupt"), backup, filepath.Join(t.TempDir(), "restore")) == nil {
 		t.Fatal("accepted corrupt catalog backup")
 	}
+	checkAutomaticAccess(t, ctx, db, store)
+
 }

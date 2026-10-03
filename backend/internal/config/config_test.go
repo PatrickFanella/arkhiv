@@ -42,8 +42,26 @@ func TestLimitsAndDistinctDocuments(t *testing.T) {
 		t.Fatal("accepted unsafe source name")
 	}
 	c.Selection = nil
-	c.Limits.TotalBytes = 3 << 30
+	c.Limits.TotalBytes = 9 << 30
 	if c.Validate() == nil {
 		t.Fatal("accepted excessive batch")
+	}
+}
+
+func TestAutomaticPublicPolicyRequiresExactOwnerScope(t *testing.T) {
+	c := Collection{ID: "zines", Item: "ZineArchive", Name: "Zines", Accent: "#123456", Limits: Limits{1000, 8 << 30, 250 << 20, 2}}
+	if err := c.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	c.PublicAccess = PublicAccess{Policy: "verified-automatic", Item: "ZineArchive", Review: "Owner decision", PublicURL: "https://archive.example", Contact: "info@example.org"}
+	if err := c.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	for _, change := range []func(*PublicAccess){func(p *PublicAccess) { p.Item = "other" }, func(p *PublicAccess) { p.Review = "" }, func(p *PublicAccess) { p.Contact = "" }, func(p *PublicAccess) { p.Policy = "approve-everything" }} {
+		broken := c
+		change(&broken.PublicAccess)
+		if broken.Validate() == nil {
+			t.Fatal("accepted incomplete automatic approval scope")
+		}
 	}
 }

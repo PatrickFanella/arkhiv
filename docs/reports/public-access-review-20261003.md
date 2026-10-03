@@ -50,3 +50,7 @@ subsequent review; never overwrite an original to change access.
 | Russia: Anarchists Against the Invasion of Ukraine | Unknown; source evidence retained | Approved archival access; no reuse license |
 | Varieties of Islamic Anarchism | Unknown; source evidence retained | Approved archival access; no reuse license |
 | Weathering Prison | Unknown; source evidence retained | Approved archival access; no reuse license |
+
+## Subsequent owner policy, October 3
+
+After the pilot review, the owner requested automatic approval for all Anarchist collection documents. The [full-collection plan](../plans/0004-full-anarchist-collection.md) records that expanded access decision and verification gates. This dated pilot manifest remains evidence for its exact original 26 variants; automatic additions record their own variant/hash events. Explicit withdrawals remain effective.

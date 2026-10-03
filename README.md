@@ -89,7 +89,7 @@ original filename, SHA-256, size, private publication and readable extraction be
 committing the entire approval. `revoke-public --variant ID --review "reason"`
 withdraws catalog, search, cover, reader and download access and preserves originals
 and decision history. New variants start unapproved, including additions to a
-privately published document. The source updater never grants public access.
+privately published document. The source updater grants public access only when an explicit `verified-automatic` collection policy is configured and integrity/reader checks pass. Other collections retain individual approval; explicit revocations and withdrawals stay in force.
 
 `web/nginx.public.conf` routes only to the dedicated public API and disables proxy
 caching. Catalog and document responses use `Cache-Control: no-store`; approval is
@@ -103,3 +103,13 @@ The public entry page includes Open Graph and Twitter summary metadata. Document
 ## Catalog design
 
 The owner selected **A — Front Cover** from the [inspiration studies](docs/design/catalog-previews.md). The interface now displays real catalog metadata and local cover scans in the selected layout, with existing search, reading, downloads and rights information. The comparison prototypes are removed. This repository change is separate from deployment.
+
+## Full Anarchist collection and automatic access
+
+The owner authorized automatic archival reading and downloads for the Anarchist collection on October 3, 2026. Its configuration now selects all 700 unrestricted PDFs from the measured `ZineArchive` source, preserving the existing pilot identities; two existing variants share one document, for 699 selected document keys. Filename-derived titles for additions are provisional catalog labels, not researched bibliographic titles. Grouping similar filenames requires a separate editorial decision.
+
+The full source PDFs total 3,510,725,119 bytes before OCR companions. Explicit collection limits are 1,000 documents, 8 GiB per acquisition batch, 250 MiB per file, two transfers at most, and a 2 GiB free-space reserve. Framework validation supports these broader bounds; other configured archives retain their own limits.
+
+`approve-automatic --config PATH` applies the recorded policy to the exact collection/source item after original hashes and successful reader manifests are verified. It writes exact variant/hash decision manifests and events, asserts no reuse license, and respects revocations, document withdrawals and source holds/rejections. Repeat runs add no duplicate approval events. Scheduled source acquisition applies the same policy after extraction. A collection without this explicit policy continues to require individual public approval.
+
+Live expansion, qualification and independent backup are tracked in [issue #52](https://git.subcult.tv/subculture-collective/arkhiv/issues/52) and the [expansion plan](docs/plans/0004-full-anarchist-collection.md). A committed source selection does not establish that all files have been acquired or published.

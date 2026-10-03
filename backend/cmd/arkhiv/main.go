@@ -34,7 +34,7 @@ func main() {
 }
 func run(ctx context.Context, args []string) error {
 	if len(args) == 0 {
-		return errors.New("usage: arkhiv approve-public|revoke-public|plan|refresh|acquire-changes|changes|review-change|acquire|migrate|list|inspect|edit|group|publish|unpublish|extract|audit|backup|restore|seed-fixture [flags]")
+		return errors.New("usage: arkhiv approve-automatic|approve-public|revoke-public|plan|refresh|acquire-changes|changes|review-change|acquire|migrate|list|inspect|edit|group|publish|unpublish|extract|audit|backup|restore|seed-fixture [flags]")
 	}
 	command := args[0]
 	flags := flag.NewFlagSet(command, flag.ContinueOnError)
@@ -125,6 +125,16 @@ func run(ctx context.Context, args []string) error {
 	}
 	defer syscall.Flock(int(lock.Fd()), syscall.LOCK_UN)
 	switch command {
+	case "approve-automatic":
+		c, err := config.Load(*conf)
+		if err != nil {
+			return err
+		}
+		report, err := db.ApproveAutomatic(ctx, s, c)
+		if encodeErr := json.NewEncoder(os.Stdout).Encode(report); encodeErr != nil {
+			return encodeErr
+		}
+		return err
 	case "approve-public":
 		f, err := os.Open(*manifest)
 		if err != nil {
@@ -172,7 +182,11 @@ func run(ctx context.Context, args []string) error {
 			acquired, err = updates.Acquire(ctx, c, ia.New(), s, db)
 		}
 
-		if encodeErr := json.NewEncoder(os.Stdout).Encode(map[string]any{"inventory": report, "acquisition": acquired}); encodeErr != nil {
+		var access catalog.AutomaticAccess
+		if err == nil && c.PublicAccess.Automatic() {
+			access, err = db.ApproveAutomatic(ctx, s, c)
+		}
+		if encodeErr := json.NewEncoder(os.Stdout).Encode(map[string]any{"inventory": report, "acquisition": acquired, "public_access": access}); encodeErr != nil {
 			return encodeErr
 		}
 		return err

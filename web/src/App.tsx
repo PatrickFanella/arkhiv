@@ -264,7 +264,7 @@ export default function App() {
       <section className="about" id="about" aria-labelledby="about-title">
         <h2 id="about-title">About this archive</h2>
         <p>Arkhiv preserves independent print collections and serves original PDFs in a local reader. Catalog metadata and available document text are searchable. Source links identify the Internet Archive item each file came from.</p>
-        <p>Public access is reviewed for each PDF variant. Availability here does not grant permission to reuse a document. Rights remain unknown unless stated, and Arkhiv asserts no reuse license. Newly acquired editions remain private until reviewed.</p>
+        <p>Public access follows a recorded collection policy or individual review. Availability here does not grant permission to reuse a document. Rights remain unknown unless stated, and Arkhiv asserts no reuse license. Newly acquired editions remain private until the required verification and approval checks pass.</p>
         <p>For corrections or removal requests, contact <a href={`mailto:${contact}`}>{contact}</a> with the document link and details of your request. Access can be withdrawn while preservation and decision records remain in the private archive.</p>
       </section>
       <footer>
