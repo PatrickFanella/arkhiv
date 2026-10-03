@@ -20,6 +20,7 @@ import (
 	"git.subcult.tv/subculture-collective/arkhiv/internal/recovery"
 	ia "git.subcult.tv/subculture-collective/arkhiv/internal/source/internetarchive"
 	"git.subcult.tv/subculture-collective/arkhiv/internal/storage"
+	"git.subcult.tv/subculture-collective/arkhiv/internal/updates"
 )
 
 func main() {
@@ -32,7 +33,7 @@ func main() {
 }
 func run(ctx context.Context, args []string) error {
 	if len(args) == 0 {
-		return errors.New("usage: arkhiv plan|acquire|migrate|list|inspect|edit|group|publish|unpublish|extract|audit|backup|restore|seed-fixture [flags]")
+		return errors.New("usage: arkhiv plan|refresh|acquire-changes|changes|review-change|acquire|migrate|list|inspect|edit|group|publish|unpublish|extract|audit|backup|restore|seed-fixture [flags]")
 	}
 	command := args[0]
 	flags := flag.NewFlagSet(command, flag.ContinueOnError)
@@ -41,6 +42,9 @@ func run(ctx context.Context, args []string) error {
 	migrations := flags.String("migrations", "../migrations", "migration directory")
 	variant := flags.String("variant", "", "variant ID for grouping")
 	id := flags.String("id", "", "document ID")
+	offset := flags.Int("offset", 0, "review queue offset, 500 events per page")
+	scheduled := flags.Bool("scheduled", false, "honor per-collection enable and cadence")
+	decision := flags.String("decision", "", "source change decision: approve, reject or hold")
 	note := flags.String("review", "", "recorded review note")
 	rights := flags.String("rights", "", "rights/access statement")
 	patch := flags.String("metadata", "{}", "editorial override JSON")
@@ -106,6 +110,47 @@ func run(ctx context.Context, args []string) error {
 	}
 	defer syscall.Flock(int(lock.Fd()), syscall.LOCK_UN)
 	switch command {
+	case "refresh", "changes":
+		c, err := config.Load(*conf)
+		if err != nil {
+			return err
+		}
+		if command == "changes" {
+			queue, err := updates.QueuePage(ctx, db, c.ID, *offset)
+			if err != nil {
+				return err
+			}
+			return json.NewEncoder(os.Stdout).Encode(queue)
+		}
+		due, status, err := updates.Due(ctx, c, db, *scheduled)
+		if err != nil {
+			return err
+		}
+		if !due {
+			return json.NewEncoder(os.Stdout).Encode(map[string]any{"status": status, "checked": 0, "acquired": 0})
+		}
+		report, err := updates.Refresh(ctx, c, ia.New(), s, db)
+		var acquired updates.Acquisition
+		if err == nil && c.Updates.Policy == "acquire" {
+			acquired, err = updates.Acquire(ctx, c, ia.New(), s, db)
+		}
+
+		if encodeErr := json.NewEncoder(os.Stdout).Encode(map[string]any{"inventory": report, "acquisition": acquired}); encodeErr != nil {
+			return encodeErr
+		}
+		return err
+	case "acquire-changes":
+		c, err := config.Load(*conf)
+		if err != nil {
+			return err
+		}
+		report, err := updates.Acquire(ctx, c, ia.New(), s, db)
+		if encodeErr := json.NewEncoder(os.Stdout).Encode(report); encodeErr != nil {
+			return encodeErr
+		}
+		return err
+	case "review-change":
+		return updates.Review(ctx, db, *id, *decision, *note)
 	case "acquire":
 		c, e := config.Load(*conf)
 		if e != nil {

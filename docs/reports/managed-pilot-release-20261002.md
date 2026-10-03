@@ -31,3 +31,32 @@ Canonical homelab notes could not yet be updated: the globally named Operations
 vault was absent at the inspected Kvant path during the documentation migration.
 This repository report preserves release evidence until the canonical owner is
 available; it does not establish a second editable homelab documentation authority.
+
+## Scheduled operations proof
+
+The Almaz timers were installed from commit
+`88933b5d5ecaad6cda44ca3f18f01cc858c0bf3d`. Their initial scheduled triggers ran
+at 23:47:07 UTC (audit), 23:47:37 UTC (backup), 23:48:37 UTC (retention planning)
+and 23:49:07 UTC (monitoring). These are actual timer triggers using the documented
+initial activation delays; the overnight calendar cycle has not yet been observed.
+
+Audit verified 43 assets, 26 variants and 25 published documents. Backup promoted
+`auto-20261002T234738Z` on NUC after independent verification of all 148 archive
+files and the 827,040-byte portable dump. The dump SHA-256 is
+`8a560ff7d3aa1d2faebeee4c6646a8f1ce8a4c34d198794a01d1363d1f2c9034`.
+Retention planning kept that snapshot, held all manual/qualification snapshots,
+and returned no removal candidates. No bytes were deleted.
+
+Monitoring subsequently used the existing ntfy `backups` topic on NUC. The initial
+healthy message is cached as `h0b4D6xZSFPk`. An isolated qualification state directory
+produced a stale `qualification-audit` failure and recovery, cached by the receiver
+as `WTV752UaWcmQ` and `yL09f0X1vfgy`. The primary job state was not falsified to
+produce that test. Receiver cache observations establish notification delivery;
+they do not establish a user notification receipt. The original scheduled monitor
+run preceded notification configuration; the configured delivery was invoked
+separately through its systemd service.
+
+Private readback receipts are `natural-jobs.json` and `notification-receiver.json`
+in the execution state directory. The monitored jobs have 36-hour staleness limits,
+with a 15-minute monitoring cadence. The original private reader/API revision remains
+`6470472`; only the operator/job implementation uses `88933b5`.

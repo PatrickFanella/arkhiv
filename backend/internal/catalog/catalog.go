@@ -116,6 +116,14 @@ func (d *DB) Import(ctx context.Context, c config.Collection, s config.Selection
 	}
 	defer tx.Rollback(ctx)
 	id := ID(c.ID, c.Item, s.Key)
+	var published, same bool
+	e = tx.QueryRow(ctx, `SELECT published, EXISTS(SELECT 1 FROM variants WHERE document_id=$1 AND filename=$2 AND asset_sha=$3) FROM documents WHERE id=$1 FOR UPDATE`, id, s.File, sha).Scan(&published, &same)
+	if e != nil && e != pgx.ErrNoRows {
+		return e
+	}
+	if published && !same {
+		return fmt.Errorf("published document changes require a separate unpublished edition")
+	}
 	b, e := json.Marshal(s)
 	if e != nil {
 		return e

@@ -59,3 +59,8 @@ test-browser: ## Synthetic desktop and narrow-screen browser suite on an isolate
 .PHONY: test-operations
 test-operations: ## Isolated job, manifest, retention and failure checks
 	python3 -m unittest discover -s scripts/operations -v
+
+.PHONY: test-updates
+test-updates: ## Complete source inventory and durable refresh integration checks
+	@test -n "$$TEST_DATABASE_URL" || (echo 'Run with t3-dev --profile arkhiv test --command "make test-updates"'; exit 1)
+	cd backend && go test -race ./internal/updates -count=1

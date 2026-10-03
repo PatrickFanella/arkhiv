@@ -14,7 +14,11 @@ import (
 	"time"
 )
 
-const UserAgent = "Arkhiv/0.1 (archive pilot; gpt-6.1-sol)"
+const UserAgent = "Arkhiv/0.1 (document preservation; info@subcult.tv)"
+
+type RetryError struct{ At time.Time }
+
+func (e *RetryError) Error() string { return "source backoff until " + e.At.UTC().Format(time.RFC3339) }
 
 type File struct {
 	Name    string `json:"name"`
@@ -76,9 +80,6 @@ func (c *Client) Request(ctx context.Context, path string, headers map[string]st
 			return resp, nil
 		}
 		resp.Body.Close()
-		if attempt == 3 {
-			return nil, fmt.Errorf("source retries exhausted")
-		}
 		delay := time.Duration(1<<attempt) * time.Second
 		if s := resp.Header.Get("Retry-After"); s != "" {
 			if n, e := strconv.Atoi(s); e == nil {
@@ -90,8 +91,8 @@ func (c *Client) Request(ctx context.Context, path string, headers map[string]st
 		if delay < 0 {
 			delay = 0
 		}
-		if delay > 60*time.Second {
-			delay = 60 * time.Second
+		if delay > 60*time.Second || attempt == 3 {
+			return nil, &RetryError{At: time.Now().Add(delay)}
 		}
 		select {
 		case <-ctx.Done():
@@ -122,9 +123,12 @@ func (c *Client) Metadata(ctx context.Context, item string) (Metadata, []byte, e
 	if resp.StatusCode != 200 {
 		return Metadata{}, nil, fmt.Errorf("metadata status %d", resp.StatusCode)
 	}
-	b, e := io.ReadAll(io.LimitReader(resp.Body, 16<<20))
+	b, e := io.ReadAll(io.LimitReader(resp.Body, (16<<20)+1))
 	if e != nil {
 		return Metadata{}, nil, e
+	}
+	if len(b) > 16<<20 {
+		return Metadata{}, nil, fmt.Errorf("metadata exceeds bound")
 	}
 	var m Metadata
 	if e = json.Unmarshal(b, &m); e != nil {

@@ -1,0 +1,12 @@
+[Unit]
+Description=Schedule Arkhiv update
+
+[Timer]
+OnCalendar=04:00 America/Chicago
+OnActiveSec=180s
+Persistent=true
+AccuracySec=1s
+Unit=arkhiv-update.service
+
+[Install]
+WantedBy=timers.target
