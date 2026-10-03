@@ -22,7 +22,7 @@ class ReleaseManifestTests(unittest.TestCase):
         (self.root / 'packages/viewer/package.json').write_text(json.dumps({'name': self.contract['package'], 'version': '0.1.0', 'license': 'GPL-3.0-only'}))
         (self.root / 'packages/viewer/dist/index.js').write_text('export const version = "0.1.0";\n')
         (self.root / 'migrations/0001.sql').write_text('SELECT 1;\n')
-        (self.root / '.gitignore').write_text('.artifacts/\n')
+        shutil.copy2(source.parent.parent / '.gitignore', self.root / '.gitignore')
         self.git('init', '-q')
         self.git('add', '.')
         self.git('-c', 'user.name=Release Test', '-c', 'user.email=release-test@example.invalid', 'commit', '-qm', 'fixture')
@@ -65,6 +65,13 @@ class ReleaseManifestTests(unittest.TestCase):
         result = self.run_manifest()
         self.assertNotEqual(result.returncode, 0)
         self.assertIn('clean committed source', result.stderr)
+
+    def test_generated_pnpm_store_does_not_dirty_release_source(self):
+        store = self.root / '.pnpm-store/v10'
+        store.mkdir(parents=True)
+        (store / 'cached-package').write_bytes(b'generated dependency cache')
+        result = self.run_manifest()
+        self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_rejects_substituted_package_bytes(self):
         self.pack(changed=True)
