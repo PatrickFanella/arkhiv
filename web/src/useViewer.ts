@@ -65,7 +65,7 @@ export function useViewer(defaultCollection: string) {
       if (token !== action.current) return;
       setPaused(false);
       setSession({ mode: 'ondemand', episode, playback, offset: 0, receivedAt: performance.now(), latency: 0, generation: token });
-      document.querySelector('#screen')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      document.querySelector('#screen')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
     } catch (reason) { if (token === action.current) setPlayError(reason instanceof Error ? reason.message : 'Playback unavailable.'); }
     finally { if (token === action.current) setResolving(false); }
   };
