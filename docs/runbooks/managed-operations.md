@@ -88,3 +88,7 @@ proof does not establish a full month of unattended operation.
 isolated two-collection synthetic stack. The ordinary operations suite checks
 backup destination confinement and cleanup after partial stack creation. A real
 NUC restore still requires its independent live receipt.
+
+Public staging can set `public_readiness_url` and `public_revision` in the private operations configuration. The monitor requires HTTP 200, `status: ok`, public mode, and the exact qualified revision. A failed or mismatched response uses the existing preservation notice and recovery path. After ingress activation, point the check at the actual public domain.
+
+Fresh restore drills create an `arkhiv_public` role with `NOLOGIN` before replaying catalog grants. This permits restoring backups taken after public-role provisioning without importing the deployment password or exposing the drill database.

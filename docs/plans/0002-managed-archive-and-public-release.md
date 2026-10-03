@@ -127,3 +127,5 @@ added. #30 and #35 are operator decision gates. This plan creates no deployment,
 notification, pruning, acquisition or public publication action by itself.
 
 The update runner persists acquisition backoff across processes. A controlled source qualification may set `force_source_checks` to bypass collection cadence for that run; disabled collections and source backoff remain enforced. Remove that qualification setting afterward. Fixture qualification includes discovery and acquisition of a new multi-item source record, private review defaults, and duplicate-free replay.
+
+Public-release qualification includes a readiness monitor bound to the exact release revision and a fresh restore with a non-login public role. Public ingress activation remains the separate owner action specified by #33. The #30 access approval is already recorded for the exact 26 reviewed variants.

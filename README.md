@@ -100,3 +100,5 @@ checked before conditional or range handling. Copies already downloaded by a rea
 cannot be recalled by revocation.
 
 Source update jobs persist payload `Retry-After` deadlines and stop further source requests until that deadline. Expired payload backoff resumes pending acquisition before the next collection cadence. For a bounded operator qualification, `refresh --scheduled --force-source-check` bypasses cadence while retaining disabled-collection and source-backoff checks; ordinary scheduled runs keep each collection's configured cadence.
+
+The public entry page includes Open Graph and Twitter summary metadata. Document canonical links and titles update in the browser; document-specific social previews are not server rendered. Public readiness monitoring checks the qualified revision and mode.
