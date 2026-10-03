@@ -1,5 +1,13 @@
 # VHNESS
 
+VHNESS is the selected base for a **planned multi-media archive platform**:
+shared print/audio/video modules, a neutral white-label frontend, and distinct
+branded interfaces built from versioned shared components. See the
+[platform design](docs/plans/0003-multimedia-platform.md) and
+[dependency-ordered roadmap](docs/plans/0003-multimedia-roadmap.md).
+This expansion is planned; the implemented engine described below remains
+video-focused. Naming and public rollout are separate decisions.
+
 The owner selected a shared engine with separate Democracy Now! and Bill Nye
 app repositories, each with its own design system and deployment. VHNESS naming
 and visual identity remain deferred. See the [standalone product plan](docs/plans/0002-standalone-products.md).
