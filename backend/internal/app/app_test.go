@@ -85,6 +85,61 @@ func TestPrivatePlaybackAndMediaIntegration(t *testing.T) {
 	if err = d.Decide(ctx, e.ID, decision); err != nil {
 		t.Fatal(err)
 	}
+	// The legacy projection retains stable video links and reads decisions live.
+	var mixedPage catalog.CatalogPage
+	if err = json.Unmarshal(get("/api/catalog/v1/items?media=video", nil).Body.Bytes(), &mixedPage); err != nil || mixedPage.Total != 1 || mixedPage.Items[0].Representations[0].LegacyEpisodeID != e.ID {
+		t.Fatal("legacy catalog projection", err, mixedPage)
+	}
+	if err = d.Collection(ctx, domain.Collection{ID: "mixed-fixture", Policy: domain.Stream}); err != nil {
+		t.Fatal(err)
+	}
+	sourceRaw := []byte(`{"metadata":{"identifier":"multi-source","unknown":"retained"},"files":[{"name":"talk.pdf"},{"name":"talk.flac"}]}`)
+	if err = d.Snapshot(ctx, "multi-source", sourceRaw, 200, "", "", nil); err != nil {
+		t.Fatal(err)
+	}
+	item := domain.CatalogItem{ID: "multi-talk", Title: "A mixed talk", Collections: []string{c.ID, "mixed-fixture"}, Representations: []domain.Representation{
+		{ID: "print", Media: domain.PrintMedia, SourceItemID: "multi-source", Snapshot: domain.Digest(sourceRaw), File: "talk.pdf", Collections: []string{c.ID, "mixed-fixture"}, Extension: domain.MediaExtension{Print: &domain.PrintExtension{DocumentID: "doc", Variant: "original", Pages: 2}}},
+		{ID: "audio", Media: domain.AudioMedia, SourceItemID: "multi-source", Snapshot: domain.Digest(sourceRaw), File: "talk.flac", Collections: []string{"mixed-fixture"}, Extension: domain.MediaExtension{Audio: &domain.AudioExtension{RecordingID: "recording", Tracks: []domain.AudioTrack{{ID: "track", File: "talk.flac"}}}}},
+	}}
+	item.Representations[0].File = "absent.pdf"
+	if err = d.InsertCatalog(ctx, item, "Must reject a fabricated source file"); err == nil {
+		t.Fatal("absent source file accepted")
+	}
+	item.Representations[0].File = "talk.pdf"
+	if err = d.InsertCatalog(ctx, item, "Synthetic metadata-only catalog mapping"); err != nil {
+		t.Fatal(err)
+	}
+	server.Collection = c.ID
+	if err = json.Unmarshal(get("/api/catalog/v1/items/multi-talk", nil).Body.Bytes(), &item); err != nil || len(item.Representations) != 1 || len(item.Collections) != 1 || item.Collections[0] != c.ID {
+		t.Fatal("representation scope leaked", err, item)
+	}
+	if w := get("/api/catalog/v1/items?collection=mixed-fixture", nil); w.Code != 404 {
+		t.Fatal("foreign catalog scope", w.Code)
+	}
+	server.Collection = ""
+	if err = json.Unmarshal(get("/api/catalog/v1/items?media=audio&q=mixed", nil).Body.Bytes(), &mixedPage); err != nil || mixedPage.Total != 1 || len(mixedPage.Items[0].Representations) != 1 || mixedPage.SearchCoverage[0] != "metadata" {
+		t.Fatal("typed search", err, mixedPage)
+	}
+	if err = json.Unmarshal(get("/api/catalog/v1/items?media=audio&page=999", nil).Body.Bytes(), &mixedPage); err != nil || mixedPage.Total != 1 || len(mixedPage.Items) != 0 {
+		t.Fatal("empty page lost total", err, mixedPage)
+	}
+	for _, path := range []string{"/api/catalog/v1/items?page=0", "/api/catalog/v1/items?media=pdf", "/api/catalog/v1/items?page=999999999999999999999"} {
+		if w := get(path, nil); w.Code != 400 {
+			t.Fatal("invalid catalog query", path, w.Code)
+		}
+	}
+	if _, err = d.Pool.Exec(ctx, `UPDATE catalog_representation_memberships SET listed=false WHERE item_id='multi-talk' AND representation_id='audio'`); err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(get("/api/catalog/v1/items?media=audio", nil).Body.Bytes(), &mixedPage); err != nil || mixedPage.Total != 0 {
+		t.Fatal("revoked representation remained searchable", err, mixedPage)
+	}
+	if _, err = d.Pool.Exec(ctx, `UPDATE catalog_memberships SET listed=false WHERE item_id='multi-talk'`); err != nil {
+		t.Fatal(err)
+	}
+	if w := get("/api/catalog/v1/items/multi-talk", nil); w.Code != 404 {
+		t.Fatal("revoked item remained addressable", w.Code)
+	}
 	if w := get("/api/playback/"+e.ID, nil); w.Code != 404 {
 		t.Fatal("unacquired local exposed")
 	}
@@ -179,6 +234,9 @@ func TestPrivatePlaybackAndMediaIntegration(t *testing.T) {
 	}
 	if w := get("/api/media/"+e.ID, map[string]string{"If-None-Match": etag}); w.Code != 404 {
 		t.Fatal("withdrawn conditional leaked", w.Code)
+	}
+	if w := get("/api/catalog/v1/items/legacy-video:"+e.ID, nil); w.Code != 404 {
+		t.Fatal("legacy withdrawal not reflected", w.Code)
 	}
 	if err = d.Decide(ctx, e.ID, domain.Decision{Acquisition: true, Published: true, Playback: true, Channel: true, File: "original.mp4", Notes: "Restore fixture review"}); err != nil {
 		t.Fatal(err)
