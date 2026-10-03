@@ -42,3 +42,6 @@ next-env.d.ts
 /web/coverage/
 __pycache__/
 *.pyc
+
+/.playwright-cli/
+/output/playwright/

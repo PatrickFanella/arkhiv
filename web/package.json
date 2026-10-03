@@ -9,7 +9,7 @@
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "test": "vitest run src --passWithNoTests"
+    "test": "vitest run src"
   },
   "dependencies": {
     "react": "^19.2.0",

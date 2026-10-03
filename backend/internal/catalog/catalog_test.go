@@ -117,6 +117,16 @@ func TestMetadataIntegration(t *testing.T) {
 	if err != nil || restored.Revision != "one" {
 		t.Fatal("schedule persistence", err)
 	}
+	if err = d.NotModified(ctx, "item", "", ""); err != nil {
+		t.Fatal(err)
+	}
+	var observations int
+	if err = d.Pool.QueryRow(ctx, `SELECT count(*) FROM observations WHERE status=304`).Scan(&observations); err != nil || observations != 1 {
+		t.Fatal("304 history", err, observations)
+	}
+	if d.NotModified(ctx, "unknown", "", "") == nil {
+		t.Fatal("unbacked 304 accepted")
+	}
 	if err = d.QueuePage(ctx, domain.DemocracyNow, 2, 2, []string{"item", "item", "other"}, true); err != nil {
 		t.Fatal(err)
 	}
