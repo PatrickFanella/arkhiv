@@ -2,6 +2,10 @@
 
 Updated 2026-10-02. Status: design; no application or public deployment exists.
 
+The [repository roadmap](../../ROADMAP.md) records milestone ordering and links
+to the Gitea tasks. Gitea issues own executable task state, acceptance criteria,
+and native prerequisites.
+
 ## Confirmed requirements
 
 - Start with Internet Archive's

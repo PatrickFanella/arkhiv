@@ -24,5 +24,8 @@ Both viewing modes and both delivery designs are in scope; Democracy Now!'s
 streaming-only policy is confirmed. Local preservation remains an explicit,
 budgeted choice for other collections.
 
-See the [initial design proposal](docs/plans/0001-video-archive-and-channel.md)
-for the proposed scope, reuse boundaries, delivery order, and verification gates.
+See the [roadmap](ROADMAP.md) and
+[Gitea tracking issue #2](https://git.subcult.tv/subculture-collective/VHNESS/issues/2)
+for milestone order and implementation tasks. The
+[initial design proposal](docs/plans/0001-video-archive-and-channel.md) covers
+scope, reuse boundaries, delivery policies, and verification gates.
