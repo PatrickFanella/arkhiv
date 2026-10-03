@@ -71,12 +71,15 @@ func (w *Worker) Run(ctx context.Context, id string, pages, items int, deadline 
 		}
 	}
 	for n := 0; n < pages && !state.Complete; n++ {
-		ids, count, _, fetchErr := w.Source.Discover(ctx, id, state.Page, 100)
+		ids, count, discoveryResponse, fetchErr := w.Source.Discover(ctx, id, state.Page, 100)
 		if fetchErr != nil {
 			if handleBackoff(fetchErr) {
 				return result, nil
 			}
 			return result, fetchErr
+		}
+		if err = w.DB.Snapshot(ctx, id, discoveryResponse.Raw, discoveryResponse.Status, discoveryResponse.ETag, discoveryResponse.Modified, nil); err != nil {
+			return result, err
 		}
 		complete := len(ids) < 100 || int64(state.Page*100) >= count
 		if err = w.DB.QueuePage(ctx, id, state.Page+1, count, ids, complete); err != nil {
@@ -119,7 +122,20 @@ func (w *Worker) Run(ctx context.Context, id string, pages, items int, deadline 
 			result.Failed++
 			continue
 		}
-		if response.Status != 304 {
+		if response.Status == 304 {
+			var priorETag, priorModified string
+			response.Raw, priorETag, priorModified, err = w.DB.RetainedResponse(ctx, item)
+			if err != nil {
+				return result, err
+			}
+			if response.ETag == "" {
+				response.ETag = priorETag
+			}
+			if response.Modified == "" {
+				response.Modified = priorModified
+			}
+		}
+		{
 			e, err := source.Normalize(item, id, response.Raw)
 			if err != nil {
 				if snapshotErr := w.DB.Snapshot(ctx, item, response.Raw, response.Status, response.ETag, response.Modified, nil); snapshotErr != nil {

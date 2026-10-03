@@ -66,6 +66,11 @@ func TestWorkerResumeAndPersistentBackoff(t *testing.T) {
 				return
 			}
 			w.Write([]byte(`{"metadata":{"identifier":"item","mediatype":"movies","collection":"democracy_now_vid","title":"Sample"},"files":[{"name":"a.mp4","size":"10","length":"60"}]}`))
+		case "/metadata/retained":
+			if r.Header.Get("If-None-Match") != `"retained"` {
+				t.Error("conditional request lost retained validator")
+			}
+			w.WriteHeader(304)
 		default:
 			t.Errorf("worker requested media: %s", r.URL.Path)
 			w.WriteHeader(400)
@@ -101,7 +106,28 @@ func TestWorkerResumeAndPersistentBackoff(t *testing.T) {
 		t.Fatalf("counts %v %v", counts, err)
 	}
 	var snapshots int
-	if err = d.Pool.QueryRow(ctx, `SELECT count(*) FROM snapshots`).Scan(&snapshots); err != nil || snapshots != 2 {
+	if err = d.Pool.QueryRow(ctx, `SELECT count(*) FROM snapshots`).Scan(&snapshots); err != nil || snapshots != 3 {
 		t.Fatal("collection/item metadata not preserved", err, snapshots)
+	}
+	// A formerly rejected response has a retained body but no normalized episode.
+	// A 304 must re-normalize that body, rather than claiming import without it.
+	raw := []byte(`{"metadata":{"identifier":"retained","mediatype":"movies","collection":"democracy_now_vid","title":"Partial source date","date":"2006-08"},"files":[]}`)
+	if err = d.Snapshot(ctx, "retained", raw, 200, `"retained"`, "", nil); err != nil {
+		t.Fatal(err)
+	}
+	if err = d.QueuePage(ctx, domain.DemocracyNow, 2, 2, []string{"retained"}, true); err != nil {
+		t.Fatal(err)
+	}
+	result, err = w.Run(ctx, domain.DemocracyNow, 0, 10, time.Minute)
+	if err != nil || result.Imported != 1 {
+		t.Fatal("retained response was not materialized", err, result)
+	}
+	e, err := d.Entry(ctx, "retained")
+	if err != nil || e.Episode.Date != "2006-08" || e.SourceHash != domain.Digest(raw) {
+		t.Fatal("304 lost body or original date precision", err, e)
+	}
+	var status int
+	if err = d.Pool.QueryRow(ctx, `SELECT status FROM observations WHERE item_id='retained' ORDER BY id DESC LIMIT 1`).Scan(&status); err != nil || status != 304 {
+		t.Fatal("conditional observation history lost", err, status)
 	}
 }

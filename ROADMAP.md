@@ -1,16 +1,22 @@
 # VHNESS roadmap
 
-Status: design and planning only. No application, running channel, or public
-deployment has been qualified. Updated 2026-10-02.
+Status: implementation and private qualification in progress. Metadata, source
+streaming, shared schedules, and manifest-bounded local preservation are
+implemented in the review stack. Complete collection coverage and sustained
+qualification remain open. No public deployment is authorized. Updated 2026-10-03.
 
 VHNESS starts with Democracy Now! on Internet Archive. The first private version
 includes a browsable episode library, on-demand viewing, and a shared scheduled
 replay channel. It stores complete metadata and streams video directly from the
 source. Democracy Now! videos are never acquired or cached by VHNESS.
 
-Other collections may opt into local preservation only after a reviewed sample,
-destination, and explicit storage budget are chosen. That adapter is a later
-milestone and does not block the streaming pilot.
+The owner activated the optional preservation pilot for two Bill Nye source MP4s:
+01 Flight and 02 Earth's Crust, totaling 274,780,857 bytes. The approved limit is
+512 MiB with a 1 GiB free-space reserve, stored below
+~/.local/state/vhness/private-pilot/media/bill-nye and backed up independently
+on NUC below /home/onnwee/Backups/vhness-private-pilot. The selection does not
+change Democracy Now!'s streaming-only policy. See the dated preservation report
+for measured evidence and remaining qualification limits.
 
 [Roadmap tracking issue #2](https://git.subcult.tv/subculture-collective/VHNESS/issues/2) · [All issues](https://git.subcult.tv/subculture-collective/VHNESS/issues) · [Milestones](https://git.subcult.tv/subculture-collective/VHNESS/milestones)
 

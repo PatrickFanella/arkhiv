@@ -28,3 +28,13 @@ func TestNormalizePreservesAllFilesAndUnknownFields(t *testing.T) {
 		t.Fatal("candidate selection")
 	}
 }
+
+func TestPartialSourceDateKeepsPrecision(t *testing.T) {
+	for _, date := range []string{"2006", "2006-08"} {
+		raw := []byte(`{"metadata":{"identifier":"partial","mediatype":"movies","collection":["democracy_now_vid"],"title":"Partial date","date":"` + date + `"},"files":[]}`)
+		e, err := Normalize("partial", "democracy_now_vid", raw)
+		if err != nil || e.Date != date {
+			t.Fatal("invented date or discarded metadata", err, e)
+		}
+	}
+}
