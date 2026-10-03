@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"mime"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -21,7 +22,7 @@ func ArchiveHandler(db *catalog.DB, store *storage.Store) http.Handler {
 			fail(w, 503, "catalog unavailable")
 			return
 		}
-		respond(w, map[string]string{"status": "ok", "stage": "archive"})
+		respond(w, map[string]any{"status": "ok", "stage": "archive", "public": db.PublicOnly, "revision": os.Getenv("ARKHIV_REVISION")})
 	})
 	mux.HandleFunc("GET /api/collections", func(w http.ResponseWriter, r *http.Request) {
 		c, e := db.Collections(r.Context())
