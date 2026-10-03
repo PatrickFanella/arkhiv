@@ -38,10 +38,12 @@ type Metadata struct {
 	Error    string         `json:"error"`
 }
 type Client struct {
-	HTTP  *http.Client
-	Base  string
-	mu    sync.Mutex
-	cache map[string]metadataCache
+	HTTP      *http.Client
+	Base      string
+	mu        sync.Mutex
+	cache     map[string]metadataCache
+	limited   bool
+	remaining int
 }
 
 type metadataCache struct {
@@ -63,6 +65,15 @@ func New() *Client {
 }
 func (c *Client) Request(ctx context.Context, path string, headers map[string]string) (*http.Response, error) {
 	for attempt := 0; attempt < 4; attempt++ {
+		c.mu.Lock()
+		if c.limited && c.remaining <= 0 {
+			c.mu.Unlock()
+			return nil, fmt.Errorf("source request budget exhausted")
+		}
+		if c.limited {
+			c.remaining--
+		}
+		c.mu.Unlock()
 		r, e := http.NewRequestWithContext(ctx, http.MethodGet, c.Base+path, nil)
 		if e != nil {
 			return nil, e

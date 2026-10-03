@@ -18,6 +18,7 @@ import (
 	"git.subcult.tv/subculture-collective/arkhiv/internal/catalog"
 	"git.subcult.tv/subculture-collective/arkhiv/internal/config"
 	"git.subcult.tv/subculture-collective/arkhiv/internal/fixtures"
+	"git.subcult.tv/subculture-collective/arkhiv/internal/ingest"
 	ia "git.subcult.tv/subculture-collective/arkhiv/internal/source/internetarchive"
 	"git.subcult.tv/subculture-collective/arkhiv/internal/storage"
 	"github.com/jackc/pgx/v5"
@@ -65,8 +66,27 @@ func TestRefreshIntegration(t *testing.T) {
 	c := config.Collection{ID: "updates", Item: "zines", Name: "Fixture zines"}
 	metadata := ia.Metadata{Metadata: map[string]any{"title": "Fixture"}, Files: []ia.File{{Name: "first.pdf", Size: "12", MD5: "first"}, {Name: "remove.pdf", Size: "20", MD5: "remove"}}}
 	payload := fixtures.PDF("synthetic update test")
+	identifiers := []string{"a", "b"}
 	broken := false
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/advancedsearch.php" {
+			page := 1
+			if r.URL.Query().Get("page") == "2" {
+				page = 2
+			}
+			if r.URL.Query().Get("page") == "3" {
+				page = 3
+			}
+			docs := []map[string]string{}
+			if page <= len(identifiers) {
+				docs = append(docs, map[string]string{"identifier": identifiers[page-1]})
+			}
+			if broken {
+				docs = nil
+			}
+			json.NewEncoder(w).Encode(map[string]any{"response": map[string]any{"numFound": len(identifiers), "start": page - 1, "docs": docs}})
+			return
+		}
 		if strings.HasPrefix(r.URL.Path, "/download/") {
 			w.Write(payload)
 			return
@@ -157,6 +177,10 @@ func TestRefreshIntegration(t *testing.T) {
 	if err = db.Edit(ctx, originalID, map[string]any{"title": "Curator title"}, "", "Curator review", nil); err != nil {
 		t.Fatal(err)
 	}
+	yes := true
+	if err = db.Edit(ctx, originalID, nil, "", "Reviewed fixture publication", &yes); err != nil {
+		t.Fatal(err)
+	}
 	firstHash, firstSize, _ := storage.Digest(bytes.NewReader(payload))
 	payload = fixtures.PDF("changed synthetic update test")
 	hash := md5.Sum(payload)
@@ -184,7 +208,7 @@ func TestRefreshIntegration(t *testing.T) {
 		t.Fatal("duplicate acquisition", again, err)
 	}
 	original, err := db.Get(ctx, originalID, false)
-	if err != nil || original.Metadata["title"] != "Curator title" || len(original.Variants) != 1 {
+	if err != nil || original.Metadata["title"] != "Curator title" || len(original.Variants) != 1 || !original.Published {
 		t.Fatal("edition changed editorial original", err)
 	}
 	if err = store.Verify(firstHash, firstSize); err != nil {
@@ -192,8 +216,56 @@ func TestRefreshIntegration(t *testing.T) {
 	}
 	var published int
 	db.Pool.QueryRow(ctx, `SELECT count(*) FROM documents WHERE published`).Scan(&published)
-	if published != 0 {
+	if published != 1 {
 		t.Fatal("refresh published records")
+	}
+	// A second collection discovers multiple items, preserving complete query
+	// baselines through failures and retaining distinct provenance for shared bytes.
+	secondConfig := config.Collection{ID: "second-zines", Name: "Second fixture brand", Accent: "#123456", Discovery: config.Discovery{Query: "collection:fixture", MaxItems: 10, PageSize: 1, MaxRequests: 64}, Limits: c.Limits, Selection: []config.Selection{{Item: "a", Key: "issue", File: "edition.pdf", Title: "Second A"}, {Item: "b", Key: "issue", File: "edition.pdf", Title: "Second B"}}}
+	if err = secondConfig.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	multi, err := Refresh(ctx, secondConfig, client, store, db)
+	if err != nil || multi.Added != 2 {
+		t.Fatal("multi-item discovery", multi, err)
+	}
+	batch, err := ingest.Acquire(ctx, secondConfig, client, store, db)
+	if err != nil || len(batch.Snapshots) != 2 || len(batch.Files) != 2 {
+		t.Fatal("multi-item batch", batch, err)
+	}
+	secondDocs, total, err := db.List(ctx, secondConfig.ID, "", "", "", 50, 0, false)
+	if err != nil || total != 2 || secondDocs[0].Item == secondDocs[1].Item || secondDocs[0].Variants[0].SHA != secondDocs[1].Variants[0].SHA {
+		t.Fatal("distinct provenance and deduplication", err)
+	}
+	for _, doc := range secondDocs {
+		if doc.Published {
+			t.Fatal("second archive auto-published")
+		}
+	}
+	broken = true
+	if _, err = Refresh(ctx, secondConfig, client, store, db); err == nil {
+		t.Fatal("partial discovery advanced baseline")
+	}
+	var discovered []byte
+	db.Pool.QueryRow(ctx, `SELECT raw FROM source_discoveries WHERE collection_id=$1`, secondConfig.ID).Scan(&discovered)
+	var completeDiscovery ia.Discovery
+	if err = json.Unmarshal(discovered, &completeDiscovery); err != nil || len(completeDiscovery.Items) != 2 {
+		t.Fatal("lost complete discovery baseline", err)
+	}
+	broken = false
+	identifiers = []string{"a", "b", "c"}
+	newItem, err := Refresh(ctx, secondConfig, client, store, db)
+	if err != nil || newItem.Added != 1 {
+		t.Fatal("new item detection", newItem, err)
+	}
+	identifiers = []string{"a", "c"}
+	removedItem, err := Refresh(ctx, secondConfig, client, store, db)
+	if err != nil || removedItem.Removed != 1 {
+		t.Fatal("removed item event", removedItem, err)
+	}
+	retained, err := db.Get(ctx, secondDocs[1].ID, false)
+	if err != nil || len(retained.Variants) != 1 {
+		t.Fatal("source removal deleted preserved record", err)
 	}
 	c.Updates.Enabled = false
 	if due, status, err := Due(ctx, c, db, true); err != nil || due || status != "disabled" {
@@ -213,7 +285,7 @@ func TestRefreshIntegration(t *testing.T) {
 	}
 	var failedRuns int
 	db.Pool.QueryRow(ctx, `SELECT count(*) FROM source_refresh_runs WHERE status='failed'`).Scan(&failedRuns)
-	if failedRuns != 2 {
+	if failedRuns != 3 {
 		t.Fatal("missing durable failure receipt")
 	}
 }

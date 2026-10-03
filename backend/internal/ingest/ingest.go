@@ -243,6 +243,7 @@ func Download(ctx context.Context, client *ia.Client, store *storage.Store, item
 }
 
 type Result struct {
+	Item   string `json:"item,omitempty"`
 	File   string `json:"file"`
 	SHA    string `json:"sha256,omitempty"`
 	Size   int64  `json:"size"`
@@ -252,11 +253,12 @@ type Result struct {
 type Receipt struct {
 	Collection string    `json:"collection"`
 	Snapshot   string    `json:"snapshot"`
+	Snapshots  []string  `json:"snapshots,omitempty"`
 	Started    time.Time `json:"started"`
 	Files      []Result  `json:"files"`
 }
 
-func Acquire(ctx context.Context, c config.Collection, client *ia.Client, store *storage.Store, db *catalog.DB) (Receipt, error) {
+func acquireItem(ctx context.Context, c config.Collection, client *ia.Client, store *storage.Store, db *catalog.DB) (Receipt, error) {
 	receipt := Receipt{Collection: c.ID, Started: time.Now().UTC(), Files: []Result{}}
 	if len(c.Selection) == 0 {
 		return receipt, fmt.Errorf("reviewed selection required")
@@ -289,7 +291,7 @@ func Acquire(ctx context.Context, c config.Collection, client *ia.Client, store 
 			return receipt, e
 		}
 		hash, n, reused, err := Download(ctx, client, store, c.Item, by[sel.File], c.Limits.FileBytes)
-		result := Result{File: sel.File, SHA: hash, Size: n, Status: "verified"}
+		result := Result{Item: c.Item, File: sel.File, SHA: hash, Size: n, Status: "verified"}
 		if reused {
 			result.Status = "reused"
 		}
@@ -316,7 +318,7 @@ func Acquire(ctx context.Context, c config.Collection, client *ia.Client, store 
 					message = ce.Error()
 					err = ce
 				}
-				receipt.Files = append(receipt.Files, Result{File: companionName, SHA: ch, Size: cn, Status: status, Error: message})
+				receipt.Files = append(receipt.Files, Result{Item: c.Item, File: companionName, SHA: ch, Size: cn, Status: status, Error: message})
 			}
 		}
 		if err != nil {
