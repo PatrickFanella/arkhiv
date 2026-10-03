@@ -1,0 +1,27 @@
+{
+  "registry_version": 1,
+  "consumers": [
+    {
+      "repository": "subculture-collective/video-archive-template",
+      "media": ["video"],
+      "adoption": "pending",
+      "rollout": "reviewed-pr",
+      "package_file": "web/package.json",
+      "lock_file": "web/pnpm-lock.yaml",
+      "release_file": "deploy/platform-release.json",
+      "engine_file": "deploy/archive-engine.env",
+      "checks": [["make", "verify"]]
+    },
+    {
+      "repository": "subculture-collective/democracy-now-tv",
+      "media": ["video"],
+      "adoption": "pending",
+      "rollout": "reviewed-pr",
+      "package_file": "web/package.json",
+      "lock_file": "web/pnpm-lock.yaml",
+      "release_file": "deploy/platform-release.json",
+      "engine_file": "deploy/archive-engine.env",
+      "checks": [["make", "verify"]]
+    }
+  ]
+}

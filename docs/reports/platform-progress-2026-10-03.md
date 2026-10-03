@@ -42,10 +42,10 @@ metadata. Mutable engine tags, dirty sources, replaced artifacts and overwritten
 receipts are rejected by regression checks. Hosted check state belongs to the
 Gitea runs, not these local results.
 
-## Blocker: scoped package publishing credential
+## Release credential gate: resolved; hosted qualification pending
 
-[Issue #39](https://git.subcult.tv/subculture-collective/VHNESS/issues/39) cannot
-complete hosted package/container publication with current credentials:
+The first attempt at [issue #39](https://git.subcult.tv/subculture-collective/VHNESS/issues/39)
+was blocked by package publishing credentials:
 
 - VHNESS repository and organization Actions secret lists are empty.
 - After the owner promoted `subcult-agent`, the authenticated account reports
@@ -66,12 +66,19 @@ the existing secret provider, installed as the repository secret
 that token's actual account. The existing operator repository token is not
 substituted into an unattended release job.
 
-The token-creation endpoint currently requires `write:user` on the device token;
-its remaining authentication requirements have not been verified past that gate.
-The direct unblock is to provision a separate token with `read:package` and
-`write:package` into `ARCHIVE_PACKAGE_TOKEN` and set
-`ARCHIVE_REGISTRY_USER` to that token's account. Keep credential values in the
-secret provider or Gitea Actions settings; do not put them in an issue or chat.
+After the owner granted full API scope to the device token, token creation reached
+the account authentication requirement. The retained agent bootstrap credential
+in the private provisioning directory authenticated as `subcult-agent` and created
+a separate package-only release token (ID 62). Gitea normalizes the requested
+read/write scopes to `write:package`, which includes package reading. The token is
+retained in a mode-0600 operator state file outside Git and installed in VHNESS
+Actions as `ARCHIVE_PACKAGE_TOKEN`. `ARCHIVE_REGISTRY_USER` is `subcult-agent`.
+Review its rotation by 2027-01-03. The broad device token was not installed in CI.
+
+[Hosted release run 12406](https://git.subcult.tv/subculture-collective/VHNESS/actions/runs/12406)
+was dispatched at source `aea0785cd19cc64c35107a3203b53f26a946065c`. Dispatch and
+secret readback succeeded; registry publication remains unqualified until that
+run and a clean registry consumer check complete.
 
 Once the credential is available, run the release workflow and verify actual
 registry artifacts/manifest before closing #39. Continue with upgrade PR automation
