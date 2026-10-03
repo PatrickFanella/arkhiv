@@ -1,0 +1,17 @@
+[Unit]
+Description=Arkhiv update job
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=onnwee
+Group=onnwee
+ExecStart=/usr/bin/python3 /mnt/spektr/server/data/arkhiv/operations/runner.py update --config /mnt/spektr/server/data/arkhiv/operations/config.json
+TimeoutStartSec=20min
+MemoryMax=512M
+CPUQuota=50%
+UMask=0077
+KillMode=control-group
+NoNewPrivileges=true
+PrivateTmp=true

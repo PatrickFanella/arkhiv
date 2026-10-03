@@ -16,7 +16,7 @@ import tempfile
 import time
 import urllib.request
 
-JOBS = ('audit', 'backup', 'monitor', 'retention')
+JOBS = ('audit', 'backup', 'monitor', 'retention', 'update')
 
 
 def atomic(path, value):
@@ -207,6 +207,12 @@ class Runner:
         self.remote('python3', self.c['remote_script'], 'promote', '--root', partial, '--destination', final)
         atomic(self.state / 'latest-backup.json', {'name': name, 'destination': final, **summary})
         return {'snapshot': name, 'destination': final, 'verified_on_host': self.c['backup_host'], **summary}
+
+    def update(self):
+        results = {}
+        for conf in self.c.get('collections', []):
+            results[Path(conf).stem] = json.loads(self.cli('refresh', '--scheduled', '--config', conf))
+        return results
 
     def retention(self):
         value = self.remote('python3', self.c['remote_script'], 'retain', '--root', self.c['backup_root'], '--policy', json.dumps(self.c.get('retention', {})))

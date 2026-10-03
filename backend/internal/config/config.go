@@ -28,7 +28,14 @@ type Selection struct {
 	Subjects []string `json:"subjects" yaml:"subjects"`
 	Rights   string   `json:"rights" yaml:"rights"`
 }
+type Updates struct {
+	Enabled          bool   `json:"enabled" yaml:"enabled"`
+	Policy           string `json:"policy" yaml:"policy"`
+	CadenceHours     int    `json:"cadence_hours" yaml:"cadence_hours"`
+	MinimumFreeBytes int64  `json:"minimum_free_bytes" yaml:"minimum_free_bytes"`
+}
 type Collection struct {
+	Updates      Updates     `json:"updates" yaml:"updates"`
 	ID           string      `json:"id" yaml:"id"`
 	Name         string      `json:"name" yaml:"name"`
 	Introduction string      `json:"introduction" yaml:"introduction"`
@@ -65,6 +72,12 @@ func (c Collection) Validate() error {
 	l := c.Limits
 	if l.Documents < 1 || l.Documents > 50 || l.FileBytes < 1 || l.FileBytes > 250<<20 || l.TotalBytes < 1 || l.TotalBytes > 2<<30 || l.Concurrency < 1 || l.Concurrency > 2 {
 		return fmt.Errorf("limits exceed pilot bounds")
+	}
+	if c.Updates.Policy != "" && c.Updates.Policy != "review" && c.Updates.Policy != "acquire" {
+		return fmt.Errorf("updates policy must be review or acquire")
+	}
+	if c.Updates.CadenceHours < 0 || c.Updates.CadenceHours > 8760 || c.Updates.MinimumFreeBytes < 0 {
+		return fmt.Errorf("invalid update limits")
 	}
 	seen := map[string]bool{}
 	keys := map[string]bool{}

@@ -2,7 +2,9 @@
 
 Status: implementation in progress. The merged private pilot was deployed on
 2026-10-02. Audit, backup, monitoring and dry-run retention runners are implemented;
-timer activation and live job qualification remain pending. Public ingress remains
+the four timers have completed initial scheduled runs, and NUC recorded
+notification qualification messages. Recurring restore and refresh qualification
+remain pending. Public ingress remains
 unconfigured.
 
 The first private pilot is qualified. PRs #18, #19 and #20 are merged; the
@@ -110,8 +112,8 @@ curator UI/accounts and evidence-driven OCR/search improvements.
 
 Existing gates are `make verify`, `make test-integration`, `make test-browser`,
 and `make test-recovery`. `make test-operations` runs job, backup, notification and retention checks
-and is included in `make verify`; `make test-updates` is introduced by #27 and reused downstream. These
-commands are deliverables, not capabilities already implemented by this plan.
+and is included in `make verify`; `make test-updates` verifies durable inventory and acquisition behavior against
+disposable PostgreSQL; multi-item discovery remains downstream work.
 
 Fixture checks cover job interruption, overlap, disk/transport/checksum failure,
 complete-inventory boundaries, evolving sources, publication exclusion, and safe
