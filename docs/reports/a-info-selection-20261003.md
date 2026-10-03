@@ -48,3 +48,7 @@ Raw source metadata and checksum/access receipts remain outside Git in the priva
 execution evidence directory. Live qualification must record acquisition, editorial
 review, hashes, text coverage, source-blocked reading, independent backup and fresh
 restore. The first archive must continue working throughout.
+
+## Candidate comparison
+
+Initial bounded collection searches found 624 Australian Anarchist Zine Archive items, 451 ATTAC zine items, 240 Equalizing X Distort items and 139 A-Info items. These are dated source-listing observations, not reviewed/acquired works. The first two span broader political material; Equalizing X Distort emphasizes punk/music print. A-Info offers a compact numbered series with separate issue items and a 15-item title-year subset. It tests multi-item discovery, Portuguese metadata/text and independent branding within the selected byte/document caps. The retained search responses are private selection evidence.
