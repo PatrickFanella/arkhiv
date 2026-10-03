@@ -87,3 +87,14 @@ The additional archive file is the retained raw source snapshot. The reader rema
 at revision `6470472`; operator image `0fd557f` supplies the stricter configuration
 reader. The restore runner source is `d6e2669`, while its unchanged probe image
 identifies `0fd557f`. The first restore timer trigger is scheduled for 00:17:21 UTC.
+
+## First recurring restore failure
+
+The first actual restore timer triggered at 00:17:22 UTC and failed at catalog
+restoration. It retained the independently fetched snapshot and fresh archive at
+`qualification/arkhiv-drill-20261003t001723087569z`; the isolated stack was removed.
+Inspection of the portable dump showed owner role `arkhiv`, while the fresh drill
+database had been created with role `drill`. The correction uses the original role
+name with synthetic drill-only credentials. Saved phase receipts now distinguish
+database startup, catalog restoration, audit and reader proof. A corrected scheduled
+run remains required; this failed run is not a successful restore qualification.
