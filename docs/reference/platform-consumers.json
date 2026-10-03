@@ -1,0 +1,144 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-10-03T18:00:42.749690+00:00",
+  "host": "kvant",
+  "consumers": [
+    {
+      "repository": "subculture-collective/arkhiv",
+      "media": [
+        "print"
+      ],
+      "main_revision": "9478b3b92c4e4e9559cc52f17ce91cddeff1fd0a",
+      "local_revision": "99d499b92cb8d848e0fcb37288ece8bce9de943e",
+      "open_prs": [],
+      "deployment_policy": "reviewed",
+      "package_dependencies": []
+    },
+    {
+      "repository": "subculture-collective/arkhiv-riot-grrrl",
+      "media": [
+        "print"
+      ],
+      "main_revision": "1ed47b7916f412bac590fc92f67c00b2b48a6b27",
+      "local_revision": "38b81f85c6bb7c7133079f1e8b64b56dddba85b7",
+      "open_prs": [],
+      "deployment_policy": "reviewed",
+      "package_dependencies": []
+    },
+    {
+      "repository": "subculture-collective/dedhed",
+      "media": [
+        "audio"
+      ],
+      "main_revision": "ab8ac813ddada7db0cef2bfb97ae05f9758db9d1",
+      "local_revision": "e5843b17fd33d2e09c88fe3e5022153a0c9e8adc",
+      "open_prs": [],
+      "deployment_policy": "reviewed",
+      "package_dependencies": []
+    },
+    {
+      "repository": "subculture-collective/VHNESS",
+      "media": [
+        "video"
+      ],
+      "main_revision": "d53f2df7aad59ad33b6e9ecc83d46f8238d10322",
+      "local_revision": null,
+      "open_prs": [],
+      "deployment_policy": "reviewed",
+      "package_dependencies": []
+    },
+    {
+      "repository": "subculture-collective/video-archive-template",
+      "media": [
+        "video"
+      ],
+      "main_revision": "90cb48819f41e2906a283b8972d58228aad9daa0",
+      "local_revision": "0cd10bbe7a8fdf1371da1d8123ff5036637dd1d0",
+      "open_prs": [],
+      "deployment_policy": "reviewed",
+      "package_dependencies": []
+    },
+    {
+      "repository": "subculture-collective/democracy-now-tv",
+      "media": [
+        "video"
+      ],
+      "main_revision": "ba0f9a8467d4d7c69da9655f5265c58a28061a99",
+      "local_revision": "03195eabf9ebc7e086f9ec63babba0511c08036b",
+      "open_prs": [],
+      "deployment_policy": "reviewed",
+      "package_dependencies": []
+    },
+    {
+      "repository": "subculture-collective/bill-nye-tv",
+      "media": [
+        "video"
+      ],
+      "main_revision": "1f7ac4667bf76555323b2845bdfabd91d2dc0961",
+      "local_revision": "ae0933cf2d1373bacd3fec94f0cc5c0aab1e6bf1",
+      "open_prs": [],
+      "deployment_policy": "reviewed",
+      "package_dependencies": []
+    }
+  ],
+  "runtime": [
+    {
+      "container": "vhness-white-label-app-1",
+      "image": "video-archive-template:0cd10bbe7a8fdf1371da1d8123ff5036637dd1d0",
+      "image_id": "sha256:c548f6262ff21dcf0148052fc3b94c1adaa31a334768741c5a1821f075678623",
+      "loopback_port": 48071,
+      "compatibility": {
+        "api_version": "1",
+        "collection": "democracy_now_vid"
+      },
+      "mounts": [
+        {
+          "source": "/home/onnwee/.local/state/vhness/standalone/white-label/media",
+          "target": "/media",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "container": "democracy-now-tv-app-1",
+      "image": "democracy-now-tv:03195eabf9ebc7e086f9ec63babba0511c08036b",
+      "image_id": "sha256:9d1f9761b81175cef8fbc37dee1e3dc1f37d3ed967f22feb67a34dfc65f8f623",
+      "loopback_port": 48072,
+      "compatibility": {
+        "api_version": "1",
+        "collection": "democracy_now_vid"
+      },
+      "mounts": [
+        {
+          "source": "/home/onnwee/.local/state/vhness/standalone/democracy-now/media",
+          "target": "/media",
+          "read_only": true
+        }
+      ]
+    },
+    {
+      "container": "bill-nye-tv-app-1",
+      "image": "bill-nye-tv:ae0933cf2d1373bacd3fec94f0cc5c0aab1e6bf1",
+      "image_id": "sha256:69a7064d51fcdc931c12e6b38fc6ff24301158dd1ad817edb6c87aafe0883ed5",
+      "loopback_port": 48073,
+      "compatibility": {
+        "api_version": "1",
+        "collection": "bill-nye"
+      },
+      "mounts": [
+        {
+          "source": "/home/onnwee/.local/state/vhness/private-pilot/media",
+          "target": "/media",
+          "read_only": true
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "No separate print/audio template repositories found in the authenticated organization inventory; use Arkhiv/Dedhed engine donors and create the neutral combined app in VHNESS.",
+    "Dedhed historical loopback port 18577 refused connections; existing isolated Dedhed preview remains running.",
+    "Arkhiv public API returned HTTP 403 from this client; current public deployment revision and remote print service ownership remain unverified.",
+    "NUC SSH succeeded; no archive-named running containers/timers were observed. Independent backup byte verification is a later qualification task.",
+    "Existing VHNESS #28-#33 remain open with checked acceptance boxes; merged engine #32 and current source are inputs, not new deployment proof."
+  ]
+}
