@@ -12,7 +12,7 @@ sets a 25-item discovery cap, ten results per page and 64 HTTP requests per refr
 Selection includes 15 PDFs and 15 OCR companions, totaling 98,015,146 bytes.
 Each selected file has a recorded source checksum and no private flag. The batch
 cap is 150 MiB, file cap 50 MiB and document cap 25; transfer concurrency stays
-below two. Actual payload acquisition and reader qualification remain pending.
+below two. Actual acquisition preserved all 30 selected assets. Private review, source-blocked reading and fresh independent restore passed; see [second-archive qualification](second-archive-qualification-20261003.md).
 
 The collection uses a distinct name, purple accent and Portuguese/São Paulo
 taxonomy. Source creators and catalog dates are absent; title dates are not silently
@@ -48,3 +48,7 @@ Raw source metadata and checksum/access receipts remain outside Git in the priva
 execution evidence directory. Live qualification must record acquisition, editorial
 review, hashes, text coverage, source-blocked reading, independent backup and fresh
 restore. The first archive must continue working throughout.
+
+## Candidate comparison
+
+Initial bounded collection searches found 624 Australian Anarchist Zine Archive items, 451 ATTAC zine items, 240 Equalizing X Distort items and 139 A-Info items. These are dated source-listing observations, not reviewed/acquired works. The first two span broader political material; Equalizing X Distort emphasizes punk/music print. A-Info offers a compact numbered series with separate issue items and a 15-item title-year subset. It tests multi-item discovery, Portuguese metadata/text and independent branding within the selected byte/document caps. The retained search responses are private selection evidence.

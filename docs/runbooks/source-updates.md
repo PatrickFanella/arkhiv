@@ -33,8 +33,7 @@ operator commands; no refresh approves public release.
 Acquisition accepts checked, nonrestricted PDFs with known size and a source
 checksum. Collection file, total-byte and document limits apply; at least 2 GiB
 must remain free by default. Formats outside this policy and changed/removal events
-that cannot safely acquire remain in review. The current update path indexes PDFs;
-new OCR companion acquisition remains follow-up work. Existing OCR assets are retained.
+that cannot safely acquire remain in review. The update path indexes PDFs and preserves eligible OCR companions under the same source checksum, size and free-space limits. Existing OCR assets are retained.
 
 A collection may set `updates.enabled`, `updates.policy` (`review` or `acquire`),
 `updates.cadence_hours` and `updates.minimum_free_bytes`. The default policy is
@@ -55,4 +54,6 @@ complete inventories, persistent exclusions, failed baseline protection, evolvin
 source bytes, separate editions, original retention, replay, cadence and backoff.
 `make verify` includes the inventory/acquisition integration suite. Actual unchanged
 source checks and timer runs must be recorded separately from synthetic additions.
-Multi-item query discovery and second-archive qualification remain roadmap work.
+Bounded multi-item query discovery is implemented. The second-archive report records real A-Info acquisition, scheduled source checks and fresh independent restore separately from synthetic source additions.
+
+Payload `Retry-After` deadlines persist across acquisition processes. An expired acquisition deadline resumes pending work before the next source cadence. The operator-only `--force-source-check` flag bypasses cadence for a bounded scheduled qualification while preserving enable and backoff controls. Remove the private `force_source_checks` setting after qualification.
