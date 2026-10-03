@@ -64,12 +64,7 @@ available. Bill Nye video uses contain sizing to preserve its source proportions
 Rendered screenshots were inspected. This is Chromium on Linux evidence, not
 Safari/Firefox or mobile-device qualification.
 
-Earlier viewing windows were closed by the owner and their interrupted runs do
-not count as complete-episode proof. A separate background context now observes
-a new Democracy Now! episode at normal playback speed from the beginning, with
-audio/video decoding and periodic continuity receipts. Its natural end and the
-complete 6,626-identity metadata queue remain pending. No issue requiring those
-checks is closed by the shorter observations in this report.
+Earlier owner-closed windows remain interrupted evidence. The subsequent full-episode run reached natural end at 05:55:15 UTC, after 3,542.016 seconds at speed 1 with 116 continuity samples, 106,154 decoded frames and zero dropped frames. All 6,626 discovered identifiers are now accounted for, and independent full metadata recovery passed. See [standalone qualification](standalone-products-2026-10-03.md) for the later full-series preservation, complete coverage, new frontend proofs and current private previews.
 
 Raw evidence remains outside Git under
 `~/.local/state/vhness/private-pilot/evidence/`: source-channel observations,

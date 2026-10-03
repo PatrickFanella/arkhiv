@@ -5,6 +5,14 @@ separate repositories with a shared engine. Each app owns its design system,
 frontend, deployment, and release cycle. VHNESS's eventual name and visual
 identity remain undecided.
 
+Later in the same thread the owner requested work through three deployable
+products: a configurable white-label app and both branded apps. The owner also
+authorized the complete Bill Nye episode collection if storage permits. The
+implementation uses all 100 source MP4s at 13,763,456,996 bytes, a reviewed
+16 GiB budget, and the existing 1 GiB reserve and storage/backup locations.
+The two-episode limits below record the earlier pilot authorization; this later
+instruction supersedes that selection limit. See [deployment operations](../DEPLOYMENT.md).
+
 This extends the [original video plan](0001-video-archive-and-channel.md).
 It records a delivery plan; the standalone apps have not been implemented.
 Existing pilot qualification continues. Public deployment remains a separate

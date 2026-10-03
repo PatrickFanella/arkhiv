@@ -24,6 +24,7 @@ type Server struct {
 	Clock             func() time.Time
 	Media             string
 	Web               string
+	Collection        string
 	failures          sync.Mutex
 	resolutionFailure *ResolutionFailure
 }
@@ -64,6 +65,9 @@ func write(w http.ResponseWriter, status int, v any) {
 func (s *Server) Handler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/health", func(w http.ResponseWriter, r *http.Request) { write(w, 200, map[string]string{"status": "ok"}) })
+	mux.HandleFunc("GET /api/version", func(w http.ResponseWriter, r *http.Request) {
+		write(w, 200, map[string]string{"api_version": "1", "collection": s.Collection})
+	})
 	mux.HandleFunc("GET /api/ready", func(w http.ResponseWriter, r *http.Request) {
 		if err := s.DB.Pool.Ping(r.Context()); err != nil {
 			write(w, 503, map[string]string{"error": "database unavailable"})
@@ -77,6 +81,15 @@ func (s *Server) Handler() http.Handler {
 		if err != nil {
 			write(w, 503, map[string]string{"error": "collections unavailable"})
 			return
+		}
+		if s.Collection != "" {
+			selected := []catalog.CollectionSummary{}
+			for _, collection := range collections {
+				if collection.ID == s.Collection {
+					selected = append(selected, collection)
+				}
+			}
+			collections = selected
 		}
 		write(w, 200, collections)
 	})
@@ -102,6 +115,10 @@ func (s *Server) Handler() http.Handler {
 		})
 	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if selected := r.URL.Query().Get("collection"); s.Collection != "" && selected != "" && selected != s.Collection {
+			write(w, 404, map[string]string{"error": "collection unavailable"})
+			return
+		}
 		if strings.HasPrefix(r.URL.Path, "/api/") {
 			// A connected but unresponsive database must not hold readiness or
 			// the single in-flight channel poll indefinitely. Local file serving
@@ -123,6 +140,9 @@ func (s *Server) list(w http.ResponseWriter, r *http.Request) {
 	query := strings.ToLower(r.URL.Query().Get("q"))
 	year := r.URL.Query().Get("year")
 	for _, e := range entries {
+		if s.Collection != "" && e.Episode.CollectionID != s.Collection {
+			continue
+		}
 		if selected := r.URL.Query().Get("collection"); selected != "" && e.Episode.CollectionID != selected {
 			continue
 		}
@@ -139,12 +159,7 @@ func (s *Server) list(w http.ResponseWriter, r *http.Request) {
 		ep.Files = nil
 		list = append(list, ep)
 	}
-	sort.Slice(list, func(i, j int) bool {
-		if list[i].Date == list[j].Date {
-			return list[i].ID < list[j].ID
-		}
-		return list[i].Date > list[j].Date
-	})
+	sort.Slice(list, func(i, j int) bool { return domain.BrowseLess(list[i], list[j]) })
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
 	if page < 1 {
 		page = 1
@@ -166,7 +181,7 @@ func (s *Server) episode(w http.ResponseWriter, r *http.Request) {
 		write(w, 503, map[string]string{"error": "catalog unavailable"})
 		return
 	}
-	if err != nil || !e.Decision.Published {
+	if err != nil || !e.Decision.Published || (s.Collection != "" && e.Episode.CollectionID != s.Collection) {
 		write(w, 404, map[string]string{"error": "episode unavailable"})
 		return
 	}
@@ -178,7 +193,7 @@ func (s *Server) playback(w http.ResponseWriter, r *http.Request) {
 		write(w, 503, map[string]string{"error": "catalog unavailable"})
 		return
 	}
-	if err != nil {
+	if err != nil || (s.Collection != "" && e.Episode.CollectionID != s.Collection) {
 		s.failure(r, "episode unavailable")
 		write(w, 404, map[string]string{"error": "episode unavailable"})
 		return
@@ -205,7 +220,16 @@ func (s *Server) channel(w http.ResponseWriter, r *http.Request) {
 		write(w, 200, domain.Now{ServerTime: now.UTC(), State: "unavailable", Reason: "channel has no schedule"})
 		return
 	}
-	entries, err := s.DB.ScheduleEntries(r.Context(), schedule)
+	within, err := s.DB.ScheduleWithinCollection(r.Context(), schedule, s.Collection)
+	if err != nil {
+		write(w, 503, map[string]string{"error": "catalog unavailable"})
+		return
+	}
+	if !within {
+		write(w, 200, domain.Now{ServerTime: now.UTC(), State: "unavailable", Reason: "schedule contains a different collection"})
+		return
+	}
+	entries, err := s.DB.CurrentEntries(r.Context(), schedule, now)
 	if err != nil {
 		write(w, 503, map[string]string{"error": "catalog unavailable"})
 		return
@@ -221,7 +245,10 @@ func (s *Server) channel(w http.ResponseWriter, r *http.Request) {
 func (s *Server) status(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("collection")
 	if id == "" {
-		id = domain.DemocracyNow
+		id = s.Collection
+		if id == "" {
+			id = domain.DemocracyNow
+		}
 	}
 	state, err := s.DB.State(r.Context(), id)
 	if err != nil {
@@ -249,8 +276,9 @@ func (s *Server) status(w http.ResponseWriter, r *http.Request) {
 	}
 	channel := map[string]any{"state": "unavailable"}
 	if schedule, err := s.DB.Schedule(r.Context()); err == nil {
-		entries, err := s.DB.ScheduleEntries(r.Context(), schedule)
-		if err == nil {
+		within, scopeErr := s.DB.ScheduleWithinCollection(r.Context(), schedule, s.Collection)
+		entries, err := s.DB.CurrentEntries(r.Context(), schedule, now)
+		if err == nil && scopeErr == nil && within {
 			state := schedule.At(now, entries)
 			gaps := 0
 			for i := 1; i < len(schedule.Programs); i++ {
@@ -272,7 +300,7 @@ func (s *Server) media(w http.ResponseWriter, r *http.Request) {
 		write(w, 503, map[string]string{"error": "catalog unavailable"})
 		return
 	}
-	if err != nil || e.Policy != domain.Local || !e.Watchable() || s.Media == "" {
+	if err != nil || e.Policy != domain.Local || !e.Watchable() || s.Media == "" || (s.Collection != "" && e.Episode.CollectionID != s.Collection) {
 		write(w, 404, map[string]string{"error": "episode unavailable"})
 		return
 	}

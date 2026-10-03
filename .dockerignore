@@ -1,0 +1,10 @@
+.git
+**/node_modules
+**/dist
+**/__pycache__
+.playwright-cli
+output
+var
+backend/vhness
+bill-nye
+democracy-now

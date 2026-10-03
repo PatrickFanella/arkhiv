@@ -1,9 +1,24 @@
 package domain
 
 import (
+	"sort"
 	"testing"
 	"time"
 )
+
+func TestBrowseOrderPreservesNumberedSeriesAndNewsDates(t *testing.T) {
+	series := []Episode{{ID: "opaque-a", SourceItemID: "series", SourceFile: "100 Motion.mp4"}, {ID: "opaque-b", SourceItemID: "series", SourceFile: "02 Earth.mp4"}, {ID: "opaque-c", SourceItemID: "series", SourceFile: "01 Flight.mp4"}, {ID: "opaque-d", SourceItemID: "series", SourceFile: "09 Wind.mp4"}}
+	sort.Slice(series, func(i, j int) bool { return BrowseLess(series[i], series[j]) })
+	for i, want := range []string{"01 Flight.mp4", "02 Earth.mp4", "09 Wind.mp4", "100 Motion.mp4"} {
+		if series[i].SourceFile != want {
+			t.Fatal("source episode order", series)
+		}
+	}
+	news := []Episode{{ID: "earlier", Date: "2026-10-01"}, {ID: "later", Date: "2026-10-02"}}
+	if !BrowseLess(news[1], news[0]) {
+		t.Fatal("news no longer sorts newest first")
+	}
+}
 
 func TestProtectedCollectionAndDecisions(t *testing.T) {
 	if err := (Collection{ID: DemocracyNow, Policy: Local, Budget: 10, Reserve: 1}).Validate(); err == nil {
@@ -50,5 +65,38 @@ func TestScheduleBoundariesAndWithdrawal(t *testing.T) {
 	s.Programs[1].Start = start.Add(59 * time.Second)
 	if s.Validate() == nil {
 		t.Fatal("overlap allowed")
+	}
+}
+
+func TestSourceCaptionsRequireExplicitReviewAndCurrentEligibility(t *testing.T) {
+	e := Entry{Episode: Episode{ID: "sample", Files: []File{{Name: "a.mp4", Bytes: 10, Duration: 60}, {Name: "English captions.vtt", Bytes: 100}}}, Policy: Stream, Decision: Decision{Published: true, Playback: true, File: "a.mp4", Notes: "Browser qualified sample"}}
+	p, err := Resolve(e, false)
+	if err != nil || len(p.Captions) != 0 {
+		t.Fatal("discovered captions were automatically enabled", p, err)
+	}
+	review := CaptionReview{File: "English captions.vtt", Label: "English", Language: "en"}
+	e.Decision.Captions = []CaptionReview{review}
+	if err = e.ValidateDecision(e.Decision); err != nil {
+		t.Fatal(err)
+	}
+	p, err = Resolve(e, false)
+	if err != nil || len(p.Captions) != 1 || p.Captions[0].URL != "https://archive.org/download/sample/English%20captions.vtt" {
+		t.Fatal("reviewed caption identity", p, err)
+	}
+	for _, invalid := range []CaptionReview{{File: "missing.vtt", Label: "English", Language: "en"}, {File: "../English captions.vtt", Label: "English", Language: "en"}, {File: "a.mp4", Label: "English", Language: "en"}, {File: review.File, Label: "English", Language: "unknown language"}} {
+		decision := e.Decision
+		decision.Captions = []CaptionReview{invalid}
+		if e.ValidateDecision(decision) == nil {
+			t.Fatal("invalid caption accepted", invalid)
+		}
+	}
+	e.Episode.Files[1].Private = true
+	if _, err = Resolve(e, false); err == nil {
+		t.Fatal("restricted caption after source refresh remained eligible")
+	}
+	e.Episode.Files[1].Private = false
+	e.Policy = Local
+	if e.ValidateDecision(e.Decision) == nil {
+		t.Fatal("source captions enabled without independent local sidecar preservation")
 	}
 }

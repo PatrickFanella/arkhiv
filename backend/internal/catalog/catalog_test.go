@@ -66,6 +66,32 @@ func TestMetadataIntegration(t *testing.T) {
 	if _, err = d.Pool.Exec(ctx, `UPDATE collections SET policy='local_preserve',budget=10,reserve=1 WHERE id=$1`, domain.DemocracyNow); err == nil {
 		t.Fatal("DB Democracy policy protection missing")
 	}
+	local := domain.Collection{ID: "budget-proof", Policy: domain.Local, Budget: 512, Reserve: 100}
+	if err = d.Collection(ctx, local); err != nil {
+		t.Fatal(err)
+	}
+	if err = d.ReviewBudget(ctx, local.ID, 512, 100, 1024, 100, "Owner approved expansion after capacity measurement"); err != nil {
+		t.Fatal(err)
+	}
+	for _, wrong := range []struct {
+		id                                string
+		prior, reserve, next, nextReserve int64
+		notes                             string
+	}{
+		{local.ID, 512, 100, 2048, 100, "Stale authorization"},
+		{local.ID, 1024, 100, 512, 100, "Would decrease original budget"},
+		{local.ID, 1024, 100, 2048, 50, "Would reduce reserve"},
+		{local.ID, 1024, 100, 2048, 100, ""},
+		{domain.DemocracyNow, 0, 0, 2048, 100, "Must never activate local budget"},
+	} {
+		if d.ReviewBudget(ctx, wrong.id, wrong.prior, wrong.reserve, wrong.next, wrong.nextReserve, wrong.notes) == nil {
+			t.Fatal("invalid budget review accepted", wrong)
+		}
+	}
+	var reviewCount int
+	if err = d.Pool.QueryRow(ctx, `SELECT count(*) FROM collection_budget_reviews WHERE collection_id=$1 AND old_budget=512 AND new_budget=1024`, local.ID).Scan(&reviewCount); err != nil || reviewCount != 1 {
+		t.Fatal("budget history", err, reviewCount)
+	}
 	raw := []byte("{\n\"metadata\":{\"identifier\":\"item\",\"mediatype\":\"movies\",\"collection\":[\"democracy_now_vid\"],\"title\":\"Title\",\"unknown\":42},\"files\":[{\"name\":\"a.mp4\",\"size\":\"123\",\"length\":\"60\",\"custom\":true}]}\n")
 	e, err := source.Normalize("item", domain.DemocracyNow, raw)
 	if err != nil {
