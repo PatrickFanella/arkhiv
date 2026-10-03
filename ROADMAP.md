@@ -1,5 +1,18 @@
 # VHNESS roadmap
 
+## Planned multi-media expansion
+
+The owner selected distinct branded interfaces built from shared components.
+VHNESS is the canonical base for the planned print/audio/video platform, with
+Arkhiv and Dedhed as reviewed module donors. The
+[multi-media design](docs/plans/0003-multimedia-platform.md) and
+[platform roadmap](docs/plans/0003-multimedia-roadmap.md) record new milestones,
+native issue prerequisites, shared release automation and per-brand migration
+gates. The video roadmap below remains intact. Creating these records does not
+implement, migrate or deploy the platform.
+
+## Existing video delivery
+
 Status: private pilot qualification complete; three standalone products have
 verified deployable images and private previews. Full metadata coverage, natural
 full-episode playback, both viewing modes and independent recovery passed.
