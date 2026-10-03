@@ -1,0 +1,10 @@
+{
+  "name": "@subcult/archive-platform",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.33.0",
+  "scripts": {
+    "build:packages": "pnpm --filter \"./packages/*\" -r build",
+    "check:packages": "pnpm --filter \"./packages/*\" -r typecheck && pnpm --filter \"./packages/*\" -r lint && pnpm --filter \"./packages/*\" -r test"
+  }
+}
