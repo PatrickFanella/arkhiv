@@ -192,6 +192,16 @@ func (d *DB) Get(ctx context.Context, id string, public bool) (Document, error) 
 	if public {
 		doc.Review = ""
 	}
+	if d.PublicOnly {
+		metadata := map[string]any{}
+		for _, key := range []string{"title", "creator", "date", "language", "subjects"} {
+			if value, ok := doc.Metadata[key]; ok {
+				metadata[key] = value
+			}
+		}
+		doc.Metadata = metadata
+	}
+
 	doc.Variants = []Variant{}
 	doc.Hits = []Hit{}
 	rows, e := d.Pool.Query(ctx, `SELECT v.id,v.filename,v.asset_sha,a.size,COALESCE(x.pages,0),COALESCE(x.status,'pending'),v.public_approved FROM variants v JOIN assets a ON a.sha256=v.asset_sha LEFT JOIN derivatives x ON x.asset_sha=v.asset_sha WHERE document_id=$1 AND (NOT $2 OR v.public_approved) ORDER BY v.filename,v.id`, id, d.PublicOnly)
@@ -255,7 +265,7 @@ func (d *DB) Edit(ctx context.Context, id string, overrides map[string]any, righ
 	return tx.Commit(ctx)
 }
 func (d *DB) List(ctx context.Context, c, q, subject, language string, limit, offset int, public bool) ([]Document, int, error) {
-	const where = `FROM documents d WHERE ($1='' OR collection_id=$1) AND (NOT $2 OR published) AND (NOT $6 OR (published AND EXISTS(SELECT 1 FROM variants WHERE document_id=d.id AND public_approved))) AND ($3='' OR to_tsvector('simple',(metadata||overrides)::text) @@ plainto_tsquery('simple',$3) OR EXISTS(SELECT 1 FROM variants v JOIN page_text t ON t.asset_sha=v.asset_sha WHERE v.document_id=d.id AND (NOT $6 OR v.public_approved) AND t.search @@ plainto_tsquery('simple',$3))) AND ($4='' OR (metadata||overrides)->'subjects' ? $4) AND ($5='' OR (metadata||overrides)->>'language'=$5)`
+	const where = `FROM documents d WHERE ($1='' OR collection_id=$1) AND (NOT $2 OR published) AND (NOT $6 OR (published AND EXISTS(SELECT 1 FROM variants WHERE document_id=d.id AND public_approved))) AND ($3='' OR to_tsvector('simple',(CASE WHEN $6 THEN jsonb_build_object('title',(metadata||overrides)->'title','creator',(metadata||overrides)->'creator','date',(metadata||overrides)->'date','language',(metadata||overrides)->'language','subjects',(metadata||overrides)->'subjects') ELSE metadata||overrides END)::text) @@ plainto_tsquery('simple',$3) OR EXISTS(SELECT 1 FROM variants v JOIN page_text t ON t.asset_sha=v.asset_sha WHERE v.document_id=d.id AND (NOT $6 OR v.public_approved) AND t.search @@ plainto_tsquery('simple',$3))) AND ($4='' OR (metadata||overrides)->'subjects' ? $4) AND ($5='' OR (metadata||overrides)->>'language'=$5)`
 	args := []any{c, public, q, subject, language, d.PublicOnly}
 	var total int
 	if e := d.Pool.QueryRow(ctx, `SELECT count(*) `+where, args...).Scan(&total); e != nil {

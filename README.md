@@ -98,3 +98,5 @@ privately published document. The source updater never grants public access.
 caching. Catalog and document responses use `Cache-Control: no-store`; approval is
 checked before conditional or range handling. Copies already downloaded by a reader
 cannot be recalled by revocation.
+
+Source update jobs persist payload `Retry-After` deadlines and stop further source requests until that deadline. Expired payload backoff resumes pending acquisition before the next collection cadence. For a bounded operator qualification, `refresh --scheduled --force-source-check` bypasses cadence while retaining disabled-collection and source-backoff checks; ordinary scheduled runs keep each collection's configured cadence.

@@ -211,7 +211,10 @@ class Runner:
     def update(self):
         results = {}
         for conf in self.c.get('collections', []):
-            results[Path(conf).stem] = json.loads(self.cli('refresh', '--scheduled', '--config', conf))
+            args = ['refresh', '--scheduled', '--config', conf]
+            if self.c.get('force_source_checks', False):
+                args.append('--force-source-check')
+            results[Path(conf).stem] = json.loads(self.cli(*args))
         return results
 
     def retention(self):

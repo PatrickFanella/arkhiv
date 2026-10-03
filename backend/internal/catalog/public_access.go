@@ -75,6 +75,15 @@ func (d *DB) ApprovePublic(ctx context.Context, store *storage.Store, raw []byte
 			if err = store.Verify(sha, size); err != nil {
 				return 0, err
 			}
+			var derivative struct {
+				Input  string `json:"input_sha256"`
+				Pages  int    `json:"pages"`
+				Status string `json:"status"`
+			}
+			if err = store.JSON("derivatives/"+sha+"/manifest.json", &derivative); err != nil || derivative.Input != sha || derivative.Pages != pages || derivative.Status != status {
+				return 0, fmt.Errorf("verified readable derivative manifest required")
+			}
+
 			if _, err = tx.Exec(ctx, `UPDATE variants SET public_approved=true WHERE id=$1`, v.ID); err != nil {
 				return 0, err
 			}

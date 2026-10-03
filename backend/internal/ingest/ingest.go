@@ -7,6 +7,7 @@ import (
 	"crypto/sha1"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -333,6 +334,11 @@ func acquireItem(ctx context.Context, c config.Collection, client *ia.Client, st
 		if e = store.WriteJSON("receipts/"+catalog.ID(c.ID, receipt.Started.String())+".json", receipt); e != nil {
 			return receipt, e
 		}
+		var backoff *ia.RetryError
+		if errors.As(err, &backoff) {
+			return receipt, err
+		}
+
 	}
 	if failed {
 		return receipt, fmt.Errorf("acquisition has failures; see receipt")

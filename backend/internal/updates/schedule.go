@@ -29,6 +29,10 @@ func Due(ctx context.Context, c config.Collection, db *catalog.DB, scheduled boo
 		if last.RetryAt != nil && time.Now().Before(*last.RetryAt) {
 			return false, "source-backoff", nil
 		}
+		if last.Status == "failed" && last.Phase == "acquisition" {
+			return true, "resume-acquisition", nil
+		}
+
 	}
 	if !scheduled {
 		return true, "due", nil

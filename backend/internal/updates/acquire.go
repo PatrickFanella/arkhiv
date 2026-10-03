@@ -3,10 +3,12 @@ package updates
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/jackc/pgx/v5"
 	"strings"
 	"syscall"
+	"time"
 
 	"git.subcult.tv/subculture-collective/arkhiv/internal/catalog"
 	"git.subcult.tv/subculture-collective/arkhiv/internal/config"
@@ -28,6 +30,22 @@ type Acquisition struct {
 // Its deterministic source key resumes an interrupted import without changing an
 // existing published document or losing its older preserved edition.
 func Acquire(ctx context.Context, c config.Collection, client *ia.Client, store *storage.Store, db *catalog.DB) (result Acquisition, err error) {
+	due, status, e := Due(ctx, c, db, false)
+	if e != nil {
+		return result, e
+	}
+	if !due {
+		return result, fmt.Errorf("source acquisition deferred: %s", status)
+	}
+	defer func() {
+		var backoff *ia.RetryError
+		if errors.As(err, &backoff) {
+			cleanup, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			err = errors.Join(err, db.SourceBackoff(cleanup, c.ID, "acquisition", backoff.At))
+		}
+	}()
+
 	rows, e := db.Pool.Query(ctx, `SELECT id,source_item,snapshot_id,detail FROM source_changes WHERE collection_id=$1 AND kind IN ('added','content') AND (decision='approve' OR ($2 AND decision='pending')) ORDER BY created_at,id LIMIT 500`, c.ID, c.Updates.Policy == "acquire")
 	if e != nil {
 		return result, e
@@ -111,7 +129,11 @@ func Acquire(ctx context.Context, c config.Collection, client *ia.Client, store 
 		hash, n, reused, downloadErr := ingest.Download(ctx, client, store, v.item, *f, c.Limits.FileBytes)
 		if downloadErr != nil {
 			result.Failed++
-			err = fmt.Errorf("source update acquisition failed; preserved checkpoint retained")
+			err = fmt.Errorf("source update acquisition failed; preserved checkpoint retained: %w", downloadErr)
+			var backoff *ia.RetryError
+			if errors.As(downloadErr, &backoff) {
+				return result, err
+			}
 			continue
 		}
 		var existing string
@@ -120,7 +142,11 @@ func Acquire(ctx context.Context, c config.Collection, client *ia.Client, store 
 			if existing == documentID && hasCompanion {
 				if e = preserveCompanion(ctx, c, client, store, db, v.item, hash, companion, v.snapshot); e != nil {
 					result.Failed++
-					err = fmt.Errorf("source OCR acquisition failed; preserved checkpoint retained")
+					err = fmt.Errorf("source OCR acquisition failed; preserved checkpoint retained: %w", e)
+					var backoff *ia.RetryError
+					if errors.As(e, &backoff) {
+						return result, err
+					}
 					continue
 				}
 				result.Bytes += companion.Bytes()
@@ -156,7 +182,11 @@ func Acquire(ctx context.Context, c config.Collection, client *ia.Client, store 
 		if hasCompanion {
 			if e = preserveCompanion(ctx, c, client, store, db, v.item, hash, companion, v.snapshot); e != nil {
 				result.Failed++
-				err = fmt.Errorf("source OCR acquisition failed; preserved checkpoint retained")
+				err = fmt.Errorf("source OCR acquisition failed; preserved checkpoint retained: %w", e)
+				var backoff *ia.RetryError
+				if errors.As(e, &backoff) {
+					return result, err
+				}
 				continue
 			}
 			result.Bytes += companion.Bytes()
