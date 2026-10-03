@@ -55,6 +55,7 @@ async function main() {
         const painted = await page.locator('canvas').evaluate(c => c.getContext('2d').getImageData(0, 0, c.width, c.height).data.some((v, i) => i % 4 !== 3 && v < 230));
         if (!painted) throw new Error('PDF canvas has no visible content');
         renders++;
+        if (renders % 25 === 0) console.log(JSON.stringify({progress: renders, downloads, documents: documents.length}));
         if (!renderedCollections.has(document.collection)) {
           await page.screenshot({ path: '/proof/' + document.collection + '-reader.png', fullPage: true });
           renderedCollections.add(document.collection);
