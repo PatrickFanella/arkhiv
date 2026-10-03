@@ -35,7 +35,7 @@ func load(p string, v any) error {
 }
 func run() error {
 	if len(os.Args) < 2 {
-		return fmt.Errorf("usage: vhness migrate|collection|import|review|schedule|discover|refresh|report|seed|serve")
+		return fmt.Errorf("usage: vhness migrate|collection|import|fetch|inspect|review|schedule|discover|refresh|report|seed|serve")
 	}
 	cmd := os.Args[1]
 	f := flag.NewFlagSet(cmd, flag.ContinueOnError)
@@ -76,6 +76,16 @@ func run() error {
 			return err
 		}
 		return d.Snapshot(ctx, *id, raw, 200, "", "", &e)
+	case "fetch":
+		response, err := source.New().Metadata(ctx, *id, "", "")
+		if err != nil {
+			return err
+		}
+		e, err := source.Normalize(*id, *collection, response.Raw)
+		if err != nil {
+			return err
+		}
+		return d.Snapshot(ctx, *id, response.Raw, response.Status, response.ETag, response.Modified, &e)
 	case "review":
 		var decision domain.Decision
 		if err := load(*file, &decision); err != nil {
@@ -121,6 +131,16 @@ func run() error {
 			return err
 		}
 		return json.NewEncoder(os.Stdout).Encode(map[string]any{"episodes": len(entries), "worker": state, "counts": counts})
+	case "inspect":
+		entries, err := d.Entries(ctx)
+		if err != nil {
+			return err
+		}
+		e, ok := entries[*id]
+		if !ok {
+			return fmt.Errorf("episode not found")
+		}
+		return json.NewEncoder(os.Stdout).Encode(e)
 	case "seed":
 		if err = d.Collection(ctx, domain.Collection{ID: domain.DemocracyNow, Policy: domain.Stream}); err != nil {
 			return err
@@ -143,7 +163,7 @@ func run() error {
 		}
 		return nil
 	case "serve":
-		server := &http.Server{Addr: env("API_ADDR", "127.0.0.1:8080"), Handler: (&app.Server{DB: d}).Handler(), ReadHeaderTimeout: 5 * time.Second, IdleTimeout: 60 * time.Second}
+		server := &http.Server{Addr: env("API_ADDR", "127.0.0.1:8080"), Handler: (&app.Server{DB: d, Web: os.Getenv("VHNESS_WEB")}).Handler(), ReadHeaderTimeout: 5 * time.Second, IdleTimeout: 60 * time.Second}
 		go func() {
 			<-ctx.Done()
 			shutdown, cancel := context.WithTimeout(context.Background(), 10*time.Second)

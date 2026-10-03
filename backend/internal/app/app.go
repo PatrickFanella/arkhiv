@@ -3,6 +3,8 @@ package app
 import (
 	"encoding/json"
 	"net/http"
+	"os"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -15,6 +17,7 @@ import (
 type Server struct {
 	DB    *catalog.DB
 	Clock func() time.Time
+	Web   string
 }
 
 func write(w http.ResponseWriter, status int, v any) {
@@ -39,6 +42,22 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /api/playback/{id}", s.playback)
 	mux.HandleFunc("GET /api/channel", s.channel)
 	mux.HandleFunc("GET /api/status", s.status)
+	if s.Web != "" {
+		files := http.FileServer(http.Dir(s.Web))
+		mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
+			if strings.HasPrefix(r.URL.Path, "/api/") {
+				write(w, 404, map[string]string{"error": "unknown API route"})
+				return
+			}
+			if r.URL.Path != "/" {
+				if _, err := os.Stat(filepath.Join(s.Web, filepath.Clean(r.URL.Path))); err != nil {
+					http.ServeFile(w, r, filepath.Join(s.Web, "index.html"))
+					return
+				}
+			}
+			files.ServeHTTP(w, r)
+		})
+	}
 	return mux
 }
 func (s *Server) list(w http.ResponseWriter, r *http.Request) {

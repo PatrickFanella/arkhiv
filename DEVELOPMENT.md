@@ -17,8 +17,8 @@ database is retained; tests use a separate disposable PostgreSQL database and
 temporary schemas. Do not point `TEST_DATABASE_URL` at preview or production.
 
 `make verify` checks Go formatting, vet, race tests, binary build, frozen web
-dependencies, TypeScript, lint, web tests, and production build. The initial
-catalog UI has no frontend unit tests; browser proof is a separate gate. Database
+dependencies, TypeScript, lint, web tests, and production build. Frontend tests cover channel clock offsets, asset identity, and permitted playback URLs;
+browser proof is a separate gate. Database
 tests report a skip if `TEST_DATABASE_URL` is absent. Explicit integration refuses
 an absent URL. Actual playback, live source discovery, source failure, independent
 restore, hosted CI, and complete pilot qualification require separate receipts.
