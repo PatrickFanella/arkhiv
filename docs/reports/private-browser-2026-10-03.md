@@ -13,6 +13,30 @@ offset against the server timeline. All ready, playing samples were within
 Each browser owns its player and local controls. On-demand playback continued
 independently while the shared schedule changed.
 
+The private target is Chromium 154 on Linux. The qualification tolerance is
+three seconds for a ready, playing channel, matching the player's correction
+threshold; loading, deliberate pause, and the short boundary poll interval are
+reported separately. Other browser engines and physical mobile devices remain
+unqualified.
+
+A second source boundary at 05:11:41 UTC advanced from Friday to Thursday with
+one viewer deliberately paused before `ended`. The playing viewer joined the
+new program within 0.06 seconds; the paused viewer loaded the new identity while
+remaining paused. Rejoin returned it to the current position. A ten-second
+Chromium lifecycle freeze/restore also rejoined within 0.29 seconds. Forced
+autoplay denial displayed Start playback; restoring permission and clicking it
+produced advancing frames and audio again.
+
+On the independently restored NUC pilot, a first-program local media request was
+delayed by 60 seconds across the 05:23:05 UTC boundary. The player abandoned that
+loading asset, selected Earth's Crust, and decoded it within 0.06 seconds of the
+server offset. Separate future and expired schedules displayed explicit gap and
+exhausted messages with Tune in disabled and no active player. These tests changed
+only the disposable restored schedule, preserving the primary pilot timeline.
+
+Search and year filtering produced the expected one-result and empty states.
+Keyboard Tab reached the wordmark and form controls with visible focus outlines.
+
 The source on-demand player sought `dn2026-1001_vid.mp4` to 5, 1,770, and 3,530
 seconds. Each seek completed at readyState 4 with increasing audio/video decoder
 counters. Source CDN requests returned 206. A few requests logged

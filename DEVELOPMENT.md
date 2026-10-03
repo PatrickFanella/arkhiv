@@ -88,14 +88,24 @@ no network and are removed with their own disposable volumes after the drill.
 Runtime/preview databases are never reset. Recovery receipts and archives stay
 outside Git. The sample recovery command does not qualify browser playback.
 
-The current inventory driver is `scripts/metadata_inventory.py --hours 6`. It
+The inventory driver is `scripts/metadata_inventory.py --hours 6` (maximum 12). It
 reconciles search responses, runs bounded metadata-only calls, honors persisted
 backoff, and backs up/restores after complete accounting. Its transient user unit
-is `vhness-metadata-pilot.service`, limited to 768 MiB, one CPU, and seven hours.
+is `vhness-metadata-pilot.service`, limited to 768 MiB and one CPU. The current
+qualification run uses a 12-hour driver with a 13-hour unit limit.
 Inspect `systemctl --user status vhness-metadata-pilot` and `/api/status`; stop with
 `systemctl --user stop vhness-metadata-pilot`. An incomplete bounded run requires
 explicit resume. Coverage requires `discovery_complete`, queue total equal to
 source count, no pending/retry entries, and explicit unavailable/rejected reasons.
+The driver repeats discovery after the item queue finishes, so items added or
+backfilled during ingestion enter the queue before its final coverage receipt.
+Incomplete discovery continues from its retained page checkpoint.
+
+API database operations have a three-second request deadline. Browser API fetches
+have a ten-second deadline, combined with lifecycle cancellation. An unresponsive
+database therefore produces explicit unavailable states and permits later channel
+polls to recover. These deadlines do not limit direct source video or local file
+streaming duration.
 
 Back up before schema/runtime changes and after inventory completion; while the
 pilot is active, run a daily backup and weekly independent restore drill. No daily

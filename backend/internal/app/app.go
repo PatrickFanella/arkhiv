@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -100,7 +101,17 @@ func (s *Server) Handler() http.Handler {
 			files.ServeHTTP(w, r)
 		})
 	}
-	return mux
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, "/api/") {
+			// A connected but unresponsive database must not hold readiness or
+			// the single in-flight channel poll indefinitely. Local file serving
+			// keeps its normal streaming lifetime; only DB work uses this context.
+			ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
+			defer cancel()
+			r = r.WithContext(ctx)
+		}
+		mux.ServeHTTP(w, r)
+	})
 }
 func (s *Server) list(w http.ResponseWriter, r *http.Request) {
 	entries, err := s.DB.Summaries(r.Context())
