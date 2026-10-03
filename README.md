@@ -100,6 +100,6 @@ Source update jobs persist payload `Retry-After` deadlines and stop further sour
 
 The public entry page includes Open Graph and Twitter summary metadata. Document canonical links and titles update in the browser; document-specific social previews are not server rendered. Public readiness monitoring checks the qualified revision and mode.
 
-## Catalog design studies
+## Catalog design
 
-Three development-only catalog previews explore the owner-supplied [inspiration files](docs/inspo/). See [preview directions and launch instructions](docs/design/catalog-previews.md). Selection is pending; the qualified production interface is unchanged.
+The owner selected **A — Front Cover** from the [inspiration studies](docs/design/catalog-previews.md). The interface now displays real catalog metadata and local cover scans in the selected layout, with existing search, reading, downloads and rights information. The comparison prototypes are removed. This repository change is separate from deployment.

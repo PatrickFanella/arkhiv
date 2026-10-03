@@ -198,4 +198,4 @@ scheduled preservation operations remain follow-up work.
 
 ## Catalog design follow-up
 
-The owner requested a modern magazine layout. Three [development-only studies](../design/catalog-previews.md) compare distinct compositions. Select and implement a direction against the existing catalog and reader before replacing the qualified interface.
+The owner selected **A — Front Cover** on October 3. The [selected interface](../design/catalog-previews.md) uses actual catalog metadata and local cover scans. Search, pagination, document reading, downloads, provenance and rights/contact remain available. Comparison prototypes and unused layouts are removed. Required repository verification and desktop/narrow browser checks qualify the implementation; deployment remains separate.

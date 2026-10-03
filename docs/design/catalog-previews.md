@@ -1,32 +1,23 @@
-# Anarchist Zine catalog design previews
+# Catalog design: Front Cover
 
-Three temporary studies compare catalog layouts using the owner's October 3 inspiration files in [docs/inspo](../inspo/). Selection is pending. These studies are available only in Vite development mode; production builds exclude the prototype component and its styles.
+The owner selected A, **Front Cover**, on October 3, 2026. A large sans-serif masthead, a featured scanned publication, a compact contents column and a three-column cover catalog. The selected layout now uses the catalog API. The comparison switcher, six sample records, sample cover artwork and unused B/C layouts have been removed.
 
-| Variant | Direction | Composition |
-| --- | --- | --- |
-| A | Front Cover | A large sans-serif masthead, one featured publication, and a compact contents column. |
-| B | Editorial Spread | An editorial serif masthead, asymmetric publication placement, and varied cover sizes. |
-| C | The Index | A large typographic opening and a compact title index with creator and subject columns. |
+## Content and interaction
 
-## Open the previews
+The opening feature uses the first returned document on the unfiltered first page. It is a browsing entry, not an editorial ranking. The contents column links to the next three returned records. Search and subsequent pages omit this opening feature and display the actual results, including page-text links. Collection selection, query, subject and pagination remain URL state handled by the server.
 
-From this repository root, run:
+Cover images come from the existing local cover endpoint. Missing images show a clearly labeled title fallback. The layouts introduce no fabricated issue numbers, publication dates, scan artwork or creator information. Document pages retain the local PDF reader, download links, text-coverage labels, original source links, access statements, hashes and correction/removal contact.
 
-```sh
-pnpm --dir web install --frozen-lockfile
-pnpm --dir web dev --host 127.0.0.1 --port 54431
-```
+At narrow widths the feature stacks, the cover catalog reduces to two columns, and forms remain labeled. The reader controls retain their existing responsive behavior. The second configured archive keeps its own collection name and introduction.
 
-Open `http://127.0.0.1:54431/?design=A`; substitute B or C for the other studies. The bottom selector and left/right arrow keys cycle designs. Text fields retain normal keyboard behavior. Search and publication/subject filters operate on six sample selections. Selecting a publication opens a native modal with sample metadata and a source link; Escape closes it.
+## Preview
 
-For review from another homelab device, bind Vite to Kvant's private interface with `--host 10.0.0.50`. This frontend-only process uses no database or preserved document storage. The normal isolated launcher remains the default for application development; these studies can run independently when its two application slots are occupied.
+Use the isolated Arkhiv launcher from this exact checkout for synthetic application development. For a frontend review against an already qualified API, set `ARKHIV_DEV_API` when starting Vite; it defaults to `http://127.0.0.1:8080`. This option changes only the development proxy. Production keeps its existing API route and access policy.
 
-## Content and evidence boundaries
+The retained private review URL is `http://10.0.0.50:54431/`. It proxies the existing public API; it displays only public-approved documents. No `design` parameter is needed.
 
-Titles and creators come from the qualified pilot. Cover compositions are original typeset study artwork, not original scans. Anarchist numbered labels are design ordering, not historical issue numbers. Riot Grrrl VOOP dates show the pilot's 1992–1993 range, not verified dates for each edition. The samples do not demonstrate PDF reading, preservation, or live acquisition. No new rights or public-access decision is implied.
+Owner-supplied references remain in [docs/inspo](../inspo/). Their original bytes are tracked as research material. Source URLs and reuse licenses were not supplied. Reference images are not bundled into the application.
 
-Reference images stay under docs/inspo and are not bundled into the previews. Their source URLs and licenses were not supplied. Treat them as research references; the production identity requires its own assets.
+## Release boundary
 
-## After selection
-
-Record the selected layout and the elements to retain, implement them against the existing catalog API and reader, then remove DesignPrototype.tsx, design-prototype.css, and the development entry gate. Keep the existing attribution, rights, source history, and access controls intact. Verify desktop and narrow layouts, keyboard controls, search, and the reader before rollout.
+This change prepares the selected interface for review. Verification and hosted CI are recorded in the PR. Deployment is a separate action; passing frontend checks does not establish production rollout. Existing preservation storage, publication approvals and update jobs are unchanged.
