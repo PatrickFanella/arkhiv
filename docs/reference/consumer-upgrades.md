@@ -40,9 +40,9 @@ qualification and effective deployment revisions remain separate receipts.
 ## Initial adoption and stacked proposals
 
 The neutral video and Democracy Now! adoption branches consume the published
-0.1.0 package. Their exact revisions and PRs are recorded in the registry;
-`adoption_status: pull-request` does not claim default-branch or deployment
-adoption. Both passed isolated registry installation, consumer verification and
+0.1.0 package. Their exact revisions, merged PRs and merge revisions are recorded in the
+registry. They now consume the package on their default branches; deployment
+adoption remains separate. Both passed isolated registry installation, consumer verification and
 image builds over the qualified engine digest.
 
 When an adoption PR is still open, pass `--base-ref feat/shared-package-adoption`
@@ -73,3 +73,8 @@ Qualified release runs: 0.1.0 is VHNESS run 12470, source `d2a005f0ecd2a81614f10
 Both completed every hosted release step successfully, and their registry
 tarballs match the downloaded hosted receipts. Consumer deployment and browser
 qualification remain separate.
+
+The first hosted proposal attempt (run 12522) failed safely because both
+adoption branches were merged and removed while the job was starting. No
+upgrade branch or PR was created. The registry now records both merged
+adoptions, so subsequent proposals use their default branches.
