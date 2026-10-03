@@ -347,7 +347,7 @@ func TestArchiveIntegration(t *testing.T) {
 	if count, err := db.ApprovePublic(ctx, store, raw, "owner reviewed fixture"); err != nil || count != 1 {
 		t.Fatal("public approval", count, err)
 	}
-	if w := publicRequest("GET", "/api/documents/"+id); w.Code != 200 || strings.Contains(w.Body.String(), "owner reviewed fixture") {
+	if w := publicRequest("GET", "/api/documents/"+id); w.Code != 200 || strings.Contains(w.Body.String(), "owner reviewed fixture") || strings.Contains(w.Body.String(), `"file":`) || strings.Contains(w.Body.String(), "synthetic test fixture") {
 		t.Fatal("approved public document", w.Body.String())
 	}
 	if w := publicRequest("GET", "/api/documents?collection=fixture-zines&q=knownword"); !strings.Contains(w.Body.String(), `"total":1`) {
