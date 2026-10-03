@@ -1,0 +1,44 @@
+name: verify
+on:
+  push:
+  pull_request:
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: vhness
+          POSTGRES_PASSWORD: disposable-ci-only
+          POSTGRES_DB: vhness_test
+        options: --label vhness.ci-database=${{ github.run_id }}-${{ github.run_attempt }} --health-cmd "pg_isready -U vhness -d vhness_test" --health-interval 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+          cache: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --global pnpm@10.33.0 --force
+      - name: Verify with this run's disposable database
+        env:
+          TEST_DATABASE_RUN: ${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          # The configured runner uses Docker bridge without service DNS.
+          # Resolve exactly this run's labeled service, never a shared alias.
+          [[ "$TEST_DATABASE_RUN" =~ ^[0-9]+-[0-9]+$ ]]
+          test_db_id=$(docker ps --no-trunc --quiet --filter "label=vhness.ci-database=$TEST_DATABASE_RUN")
+          if ! [[ "$test_db_id" =~ ^[0-9a-f]{64}$ ]]; then
+            echo 'Expected exactly one database container for this run' >&2
+            exit 1
+          fi
+          test_db_ip=$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$test_db_id")
+          if ! [[ "$test_db_ip" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]; then
+            echo 'Expected exactly one IPv4 address for the job database' >&2
+            exit 1
+          fi
+          export TEST_DATABASE_URL="postgres://vhness:disposable-ci-only@$test_db_ip:5432/vhness_test?sslmode=disable"
+          make verify
