@@ -137,9 +137,8 @@
   "limitations": [
     "No separate print/audio template repositories found in the authenticated organization inventory; use Arkhiv/Dedhed engine donors and create the neutral combined app in VHNESS.",
     "Dedhed historical loopback port 18577 refused connections; existing isolated Dedhed preview remains running.",
-    "Arkhiv public API returned HTTP 403 from this client; current public deployment revision and remote print service ownership remain unverified.",
     "NUC SSH succeeded; no archive-named running containers/timers were observed. Independent backup byte verification is a later qualification task.",
-    "Existing VHNESS #28-#33 remain open with checked acceptance boxes; merged engine #32 and current source are inputs, not new deployment proof."
+    "The public HTTP API remained inaccessible from this client; Docker labels and mounts supply current print deployment ownership. Backup directory inventory does not prove restored bytes or current public data behavior."
   ],
   "donors": [
     {
@@ -285,5 +284,50 @@
       },
       "runtime_ownership": "Existing project retains database/media/workers/schedules/backups; no ownership transfer during extraction."
     }
-  ]
+  ],
+  "runtime_followup": {
+    "observed_at": "2026-10-03T23:00:00Z",
+    "print_host": "almaz",
+    "compose_root": "/mnt/spektr/server/data/arkhiv",
+    "primary_archive": "/mnt/spektr/server/data/arkhiv/pilot",
+    "public_api": {
+      "container": "arkhiv-pilot-public-api-1",
+      "revision": "85f100f20b3f2260f852108aa47863908fb8814e",
+      "image_id": "sha256:09c261dd3f3d9ced6891bf9a6cd95fd203d6404af9d1f0aa20704d2c3e1a3203",
+      "archive_mount": "read-only"
+    },
+    "private_api": {
+      "container": "arkhiv-pilot-api-1",
+      "revision": "647047210c4ff6650bd849997d7f66680d325b78",
+      "image_id": "sha256:03e2ad6e8e78c6459f49ce9e017166722a35480693dcd9959240e82b9be8dfea"
+    },
+    "active_operator": {
+      "container": "arkhiv-pilot-operator-run-996eeb64696b",
+      "image_id": "sha256:a54013d1535a3a2b8f594060881f536c1fceb8fafe7c729ee98311cf8512b133",
+      "archive_mount": "read-write",
+      "preserved": true
+    },
+    "system_timers": [
+      "arkhiv-monitor",
+      "arkhiv-audit",
+      "arkhiv-backup",
+      "arkhiv-retention",
+      "arkhiv-update",
+      "arkhiv-restore"
+    ],
+    "independent_backup": {
+      "host": "nuc",
+      "root": "/home/onnwee/backups/arkhiv",
+      "latest_observed_directory": "auto-20261003T202905Z",
+      "byte_verification": "deferred to migration qualification"
+    },
+    "legacy_issue_state": {
+      "28": "open",
+      "29": "open",
+      "30": "open",
+      "31": "closed",
+      "32": "closed",
+      "33": "open"
+    }
+  }
 }

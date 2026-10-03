@@ -46,7 +46,16 @@ On-demand playback in both 0.1.1 consumers reached ready state 4, advanced from
 about 8–9 seconds to 16–17 seconds, and accepted a seek to 90 seconds. Both used
 the direct Archive.org `dn2026-1002_vid.mp4` URL and displayed its source page.
 Tune in selected the existing server schedule and direct source asset in each
-consumer. Further replay, keyboard, error and narrow-screen checks remain open.
+consumer. The isolated browser subsequently verified both sites at 390 px with
+390 px document widths. Both replay players reached ready state 4 near the server
+offset: neutral 84.808 seconds versus server 85.668; Democracy Now! 3009.901
+versus 3010.043. Seeking to 300 seconds and pausing preserved each server revision
+while its offset continued. Keyboard Enter activated the neutral Tune in control
+and branded Rejoin current program control; the branded player then resumed at
+3077.037 seconds in ready state 4. Injected catalog HTTP 503 responses produced an
+explicit error in both interfaces; the neutral error removed old cards. Temporary
+routes were removed afterward. These narrow layouts use a desktop browser.
+
 The recorded clips do not establish subjective audiovisual fidelity or a full
 episode run.
 
@@ -60,5 +69,5 @@ automation limitation, not an application failure or completed mobile proof.
 
 Full isolated source verification passed before the final registry/documentation
 update: Go format/vet/race/database checks, 18 Python checks, 13 shared-viewer
-tests, two reference tests, builds and a fresh packed consumer. The outstanding
-browser matrix prevents closing issue #41.
+tests, two reference tests, builds and a fresh packed consumer. These observations complete the bounded shared update matrix for issue #41.
+Physical devices, listening review and full episodes remain separate proof.
