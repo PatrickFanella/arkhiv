@@ -112,6 +112,65 @@ func TestPrivatePlaybackAndMediaIntegration(t *testing.T) {
 	if now.Episode == nil || len(now.Episode.Files) != 0 || now.Playback == nil || now.Playback.File.Name != decision.File {
 		t.Fatal("channel should retain the selected asset without repeating the complete source inventory")
 	}
+	// A product instance must not expose another collection even when its
+	// database contains retained migration/recovery records for that source.
+	server.Collection = domain.DemocracyNow
+	for _, path := range []string{"/api/episodes/" + e.ID, "/api/playback/" + e.ID, "/api/media/" + e.ID, "/api/episodes?collection=" + c.ID, "/api/status?collection=" + c.ID} {
+		if w := get(path, nil); w.Code != 404 {
+			t.Fatal("cross-collection response", path, w.Code)
+		}
+	}
+	var catalogResponse struct {
+		Episodes []domain.Episode `json:"episodes"`
+		Total    int              `json:"total"`
+	}
+	if err = json.Unmarshal(get("/api/episodes", nil).Body.Bytes(), &catalogResponse); err != nil || catalogResponse.Total != 0 {
+		t.Fatal("unscoped query leaked another collection", err, catalogResponse)
+	}
+	now = domain.Now{}
+	if err = json.Unmarshal(get("/api/channel", nil).Body.Bytes(), &now); err != nil || now.State != "unavailable" || now.Episode != nil {
+		t.Fatal("cross-collection schedule leaked", err, now)
+	}
+	var collections []catalog.CollectionSummary
+	if err = json.Unmarshal(get("/api/collections", nil).Body.Bytes(), &collections); err != nil || len(collections) != 0 {
+		t.Fatal("collections leaked", err, collections)
+	}
+	server.Collection = c.ID
+	if w := get("/api/playback/"+e.ID, nil); w.Code != 200 {
+		t.Fatal("configured collection was blocked", w.Code)
+	}
+	server.Collection = ""
+	if err = d.Collection(ctx, domain.Collection{ID: domain.DemocracyNow, Policy: domain.Stream}); err != nil {
+		t.Fatal(err)
+	}
+	other := domain.Episode{ID: "other-collection", CollectionID: domain.DemocracyNow, Title: "Other source fixture", Synthetic: true, Files: []domain.File{{Name: "original.mp4", Bytes: 1, Duration: 10}}}
+	if err = d.Snapshot(ctx, other.ID, []byte(`{"other_source_fixture":true}`), 200, "", "", &other); err != nil {
+		t.Fatal(err)
+	}
+	if err = d.Decide(ctx, other.ID, domain.Decision{Published: true, Playback: true, Channel: true, File: "original.mp4", Notes: "Synthetic source fixture review"}); err != nil {
+		t.Fatal(err)
+	}
+	mixed := domain.Schedule{Revision: "mixed-scope-proof", Programs: append(append([]domain.Program{}, schedule.Programs...), domain.Program{EpisodeID: other.ID, File: "original.mp4", Policy: domain.Stream, Start: clock.Add(8 * time.Second), Duration: 10})}
+	currentEntries, err := d.CurrentEntries(ctx, mixed, clock)
+	if err != nil || len(currentEntries) != 1 || currentEntries[e.ID].Episode.ID != e.ID {
+		t.Fatal("poll loaded future inventories", err, currentEntries)
+	}
+	if within, err := d.ScheduleWithinCollection(ctx, mixed, c.ID); err != nil || within {
+		t.Fatal("future program scope bypass", err, within)
+	}
+	if err = d.SaveSchedule(ctx, mixed); err != nil {
+		t.Fatal(err)
+	}
+	server.Collection = c.ID
+	now = domain.Now{}
+	if err = json.Unmarshal(get("/api/channel", nil).Body.Bytes(), &now); err != nil || now.State != "unavailable" || now.Episode != nil {
+		t.Fatal("foreign future slot exposed through current-only poll", err, now)
+	}
+	server.Collection = ""
+	schedule.Revision = "generated-proof-after-scope"
+	if err = d.SaveSchedule(ctx, schedule); err != nil {
+		t.Fatal(err)
+	}
 	decision.Playback = false
 	decision.Channel = false
 	decision.Published = false

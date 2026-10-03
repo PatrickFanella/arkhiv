@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 
 	"git.subcult.tv/subculture-collective/vhness/internal/domain"
@@ -112,6 +113,35 @@ func (d *DB) GetCollection(ctx context.Context, id string) (domain.Collection, e
 	err := d.Pool.QueryRow(ctx, `SELECT id,policy,budget,reserve,source_item FROM collections WHERE id=$1`, id).Scan(&c.ID, &c.Policy, &c.Budget, &c.Reserve, &c.SourceItem)
 	return c, err
 }
+
+// ReviewBudget explicitly increases reviewed local limits without changing
+// collection identity, delivery policy, or source ownership. Expected limits
+// prevent applying a stale approval over another operator's review.
+func (d *DB) ReviewBudget(ctx context.Context, id string, expectedBudget, expectedReserve, budget, reserve int64, notes string) error {
+	if strings.TrimSpace(notes) == "" || len(notes) > 4000 {
+		return fmt.Errorf("budget review requires bounded authorization notes")
+	}
+	tx, err := d.Pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+	var c domain.Collection
+	err = tx.QueryRow(ctx, `SELECT id,policy,budget,reserve,source_item FROM collections WHERE id=$1 FOR UPDATE`, id).Scan(&c.ID, &c.Policy, &c.Budget, &c.Reserve, &c.SourceItem)
+	if err != nil {
+		return err
+	}
+	if c.Policy != domain.Local || c.ID == domain.DemocracyNow || c.Budget != expectedBudget || c.Reserve != expectedReserve || budget < c.Budget || reserve < c.Reserve || (budget == c.Budget && reserve == c.Reserve) {
+		return fmt.Errorf("budget review requires matching prior local limits and an explicit increase")
+	}
+	if _, err = tx.Exec(ctx, `INSERT INTO collection_budget_reviews(collection_id,old_budget,old_reserve,new_budget,new_reserve,notes) VALUES($1,$2,$3,$4,$5,$6)`, id, c.Budget, c.Reserve, budget, reserve, notes); err != nil {
+		return err
+	}
+	if _, err = tx.Exec(ctx, `UPDATE collections SET budget=$2,reserve=$3 WHERE id=$1`, id, budget, reserve); err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
+}
 func (d *DB) Snapshot(ctx context.Context, item string, raw []byte, status int, etag, modified string, e *domain.Episode) error {
 	if !domain.ValidID(item) || !json.Valid(raw) {
 		return fmt.Errorf("invalid source snapshot")
@@ -209,6 +239,29 @@ func (d *DB) ScheduleEntries(ctx context.Context, s domain.Schedule) (map[string
 		ids = append(ids, p.EpisodeID)
 	}
 	return d.entries(ctx, ids, false)
+}
+
+// Channel polling needs the current asset, not every complete file inventory
+// in a multi-day schedule. Full inventories remain retained in the database.
+func (d *DB) CurrentEntries(ctx context.Context, s domain.Schedule, now time.Time) (map[string]domain.Entry, error) {
+	state := s.At(now, nil)
+	if state.Program == nil {
+		return map[string]domain.Entry{}, nil
+	}
+	return d.entries(ctx, []string{state.Program.EpisodeID}, false)
+}
+
+func (d *DB) ScheduleWithinCollection(ctx context.Context, s domain.Schedule, collection string) (bool, error) {
+	if collection == "" {
+		return true, nil
+	}
+	ids := make([]string, 0, len(s.Programs))
+	for _, program := range s.Programs {
+		ids = append(ids, program.EpisodeID)
+	}
+	var foreign bool
+	err := d.Pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM episodes WHERE id=ANY($1) AND collection_id<>$2)`, ids, collection).Scan(&foreign)
+	return !foreign, err
 }
 func (d *DB) Decide(ctx context.Context, id string, decision domain.Decision) error {
 	tx, err := d.Pool.Begin(ctx)

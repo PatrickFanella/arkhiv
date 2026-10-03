@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 
 from pilot import ROOT, PROJECT, REPO
 
-TABLES = ['collections', 'snapshots', 'observations', 'episodes', 'decision_history', 'schedules', 'current_schedule', 'worker_state', 'metadata_queue', 'schema_versions', 'preservation_history']
+TABLES = ['collections', 'snapshots', 'observations', 'episodes', 'decision_history', 'schedules', 'current_schedule', 'worker_state', 'metadata_queue', 'schema_versions', 'preservation_history', 'collection_budget_reviews']
 
 def shell_arguments(args):
     if args[0] == 'ssh' and len(args) > 3:
@@ -25,6 +25,10 @@ def run(args, **kwargs):
 
 def capture(args, **kwargs):
     return subprocess.check_output(shell_arguments(args), **kwargs)
+
+def checksum(path):
+    with path.open('rb') as stream:
+        return hashlib.file_digest(stream, 'sha256').hexdigest()
 
 def fingerprint(prefix):
     result = {}
@@ -73,7 +77,7 @@ def main():
         run(['docker', 'compose', '-p', PROJECT, '-f', str(ROOT / 'compose.json'), 'exec', '-T', 'db', 'pg_dump', '-U', 'vhness', '-d', 'vhness', '-Fc'], stdout=output)
     dump.chmod(0o600)
     if dump.stat().st_size > 1 << 30: raise RuntimeError('Metadata backup exceeded 1 GiB operator bound; preserved for review')
-    digest = hashlib.sha256(dump.read_bytes()).hexdigest()
+    digest = checksum(dump)
     baseline = restore(dump, 'vhness-restore-local-' + stamp.lower())
     remote = args.destination.rstrip('/') + '/' + stamp
     run(['ssh', args.host, 'mkdir', '-p', '-m', '700', remote])
@@ -87,20 +91,20 @@ def main():
         media = Path(args.media).resolve()
         # Only immutable originals and receipts belong to this bounded sample backup.
         originals = list(media.rglob('originals/*.mp4'))
-        if args.media_budget <= 0 or args.media_budget > 1 << 30 or not originals or sum(p.stat().st_size for p in originals) > args.media_budget:
-            raise RuntimeError('This sample recovery workflow exceeds the explicit media backup bound')
+        if args.media_budget <= 0 or args.media_budget > 32 << 30 or not originals or any(p.is_symlink() for p in originals) or sum(p.stat().st_size for p in originals) > args.media_budget:
+            raise RuntimeError('Preservation exceeds the explicit media backup bound')
         archive = directory / 'preservation.tar'
         run(['tar', '-cf', str(archive), '-C', str(media), *[str(p.relative_to(media)) for p in originals], *[str(p.relative_to(media)) for p in media.rglob('*.receipt.json')]])
         archive.chmod(0o600)
         run(['scp', '-q', str(archive), args.host + ':' + remote + '/preservation.tar'])
-        archive_hash = hashlib.sha256(archive.read_bytes()).hexdigest()
+        archive_hash = checksum(archive)
         remote_hash = capture(['ssh', args.host, 'sha256sum', remote + '/preservation.tar'], text=True).split()[0]
         if archive_hash != remote_hash: raise RuntimeError('Independent preservation archive mismatch')
         run(['ssh', args.host, 'mkdir', '-m', '700', remote + '/restored-originals'])
         run(['ssh', args.host, 'tar', '-xf', remote + '/preservation.tar', '-C', remote + '/restored-originals'])
         files = {}
         for original in originals:
-            expected = hashlib.sha256(original.read_bytes()).hexdigest()
+            expected = checksum(original)
             actual = capture(['ssh', args.host, 'sha256sum', remote + '/restored-originals/' + str(original.relative_to(media))], text=True).split()[0]
             if actual != expected: raise RuntimeError('Independent original checksum mismatch')
             files[str(original.relative_to(media))] = expected

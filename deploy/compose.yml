@@ -1,0 +1,43 @@
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: vhness
+      POSTGRES_DB: vhness
+      POSTGRES_PASSWORD_FILE: /run/secrets/database-password
+    secrets: [database-password]
+    volumes: [metadata:/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U vhness -d vhness]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    mem_limit: 768m
+    cpus: 1
+    restart: unless-stopped
+  app:
+    image: ${APP_IMAGE:?Set APP_IMAGE to the verified product image}
+    user: "${APP_UID:-1000}:${APP_GID:-1000}"
+    environment:
+      DATABASE_URL_FILE: /run/secrets/database-url
+      VHNESS_COLLECTION: ${COLLECTION:?Set the reviewed collection identity}
+    secrets: [database-url]
+    volumes:
+      - ${MEDIA_ROOT:?Set the owned media directory}:/media:ro
+    ports: ["127.0.0.1:${APP_PORT:-8080}:8080"]
+    depends_on:
+      db: {condition: service_healthy}
+    read_only: true
+    tmpfs: [/tmp:size=16m]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 512m
+    cpus: 1
+    restart: unless-stopped
+secrets:
+  database-password:
+    file: ${SECRET_ROOT:?Set the private secret directory}/database-password
+  database-url:
+    file: ${SECRET_ROOT:?Set the private secret directory}/database-url
+volumes:
+  metadata:

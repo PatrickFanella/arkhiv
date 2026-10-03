@@ -20,8 +20,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--hours', type=float, default=6)
     parser.add_argument('--resume', action='store_true', help='resume an already reconciled discovery queue')
+    parser.add_argument('--media-budget', type=int, default=512 << 20, help='explicit backup bound for reviewed local originals')
     args = parser.parse_args()
     if not 0 < args.hours <= 12: raise RuntimeError('Inventory run must be bounded to 12 hours or less')
+    if not 0 < args.media_budget <= 32 << 30: raise RuntimeError('Backup bound exceeds approved workflow capacity')
     deadline = time.monotonic() + args.hours * 3600
     evidence = ROOT / 'evidence/inventory-progress.json'
     reconciled = args.resume
@@ -50,7 +52,7 @@ def main():
                 continue
             total = sum(counts.values())
             if total != worker['source_count']: raise RuntimeError('Coverage count differs from source discovery; operator reconciliation needed')
-            subprocess.run(['python3', str(REPO / 'scripts/recovery.py'), '--host', 'nuc', '--destination', '/home/onnwee/Backups/vhness-private-pilot', '--media', str(ROOT / 'media'), '--media-budget', str(512 << 20)], check=True)
+            subprocess.run(['python3', str(REPO / 'scripts/recovery.py'), '--host', 'nuc', '--destination', '/home/onnwee/Backups/vhness-private-pilot', '--media', str(ROOT / 'media'), '--media-budget', str(args.media_budget)], check=True)
             current['completed_at'] = datetime.now(timezone.utc).isoformat()
             (ROOT / 'evidence/inventory-complete.json').write_text(json.dumps(current, indent=2) + '\n')
             print('All discovered identities accounted for; complete metadata backup/restore passed. Rejected/unavailable items remain explicit.', flush=True)

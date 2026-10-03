@@ -5,6 +5,13 @@ streaming, shared schedules, and manifest-bounded local preservation are
 implemented in the review stack. Complete collection coverage and sustained
 qualification remain open. No public deployment is authorized. Updated 2026-10-03.
 
+The owner subsequently requested three deployable products: the configurable
+white-label app plus both branded apps. Bill Nye preservation now covers all
+100 source MP4s, 13,763,456,996 bytes, with an explicit 16 GiB reviewed budget,
+the existing 1 GiB reserve, and independent NUC recovery. The original two-file
+pilot described below remains historical evidence. Source-only Democracy Now!
+policy is unchanged. See [deployment operations](docs/DEPLOYMENT.md).
+
 The owner selected separate Democracy Now! and Bill Nye app repositories with
 a shared engine. Each app owns its design system and deployment; VHNESS naming
 and visual design remain deferred. The [standalone product plan](docs/plans/0002-standalone-products.md)

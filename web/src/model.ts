@@ -1,6 +1,7 @@
 export type SourceFile = { name: string; duration: number; width: number; height: number; bytes: number };
 export type Episode = { id: string; collection_id?: string; title: string; date: string; description: string; creator?: string; synthetic: boolean };
-export type Playback = { id: string; policy: 'source_stream' | 'local_preserve'; url: string; source_url: string; file: SourceFile; snapshot_sha256: string };
+export type Caption = { file: string; label: string; language: string; url: string };
+export type Playback = { id: string; policy: 'source_stream' | 'local_preserve'; url: string; source_url: string; file: SourceFile; snapshot_sha256: string; captions?: Caption[] };
 export type Program = { episode_id: string; file: string; policy: Playback['policy']; start: string; duration: number };
 export type Channel = { server_time: string; revision: string; state: string; reason?: string; offset: number; program?: Program; next?: Program; episode?: Episode; playback?: Playback };
 export type Session = { mode: 'ondemand' | 'channel'; episode: Episode; playback: Playback; offset: number; receivedAt: number; latency: number; generation: number; programKey?: string };
@@ -8,7 +9,7 @@ export function targetOffset(session: Session, now: number): number {
   const elapsed = session.mode === 'channel' ? Math.max(0, (now - session.receivedAt + session.latency) / 1000) : 0;
   return Math.max(0, Math.min(session.playback.file.duration - 0.25, session.offset + elapsed));
 }
-export function assetKey(session: Session): string { return `${session.mode}:${session.episode.id}:${session.playback.url}:${session.generation}:${session.programKey || ""}`; }
+export function assetKey(session: Session): string { return `${session.mode}:${session.episode.id}:${session.playback.url}:${session.generation}:${session.programKey || ""}:${JSON.stringify(session.playback.captions || [])}`; }
 export function playbackURL(value: Playback): string {
   if (value.policy === 'local_preserve') {
     if (!value.url.startsWith('/api/media/') || value.url.includes('..')) throw new Error('Invalid local playback URL.');
@@ -16,6 +17,14 @@ export function playbackURL(value: Playback): string {
   }
   const url = new URL(value.url);
   if (url.protocol !== 'https:' || url.hostname !== 'archive.org' || url.username || url.password || url.port || !url.pathname.startsWith('/download/')) throw new Error('Invalid source playback URL.');
+  return url.href;
+}
+export function captionURL(value: Caption, playback: Playback): string {
+  const source = new URL(playback.source_url);
+  const url = new URL(value.url);
+  const item = source.pathname.split('/').at(-1);
+  const prefix = `/download/${item}/`;
+  if (source.protocol !== 'https:' || source.hostname !== 'archive.org' || source.username || source.password || source.port || !source.pathname.startsWith('/details/') || !item || url.protocol !== 'https:' || url.hostname !== 'archive.org' || url.username || url.password || url.port || !url.pathname.startsWith(prefix) || decodeURIComponent(url.pathname.slice(prefix.length)) !== value.file || !value.file.toLowerCase().endsWith('.vtt') || /[/\\\0]/.test(value.file) || url.search || url.hash) throw new Error('Invalid source caption URL.');
   return url.href;
 }
 export async function request<T>(path: string, signal?: AbortSignal): Promise<T> {

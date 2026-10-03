@@ -107,15 +107,57 @@ func (e Episode) Validate() error {
 }
 
 type Decision struct {
-	Acquisition bool   `json:"acquisition"`
-	Published   bool   `json:"published"`
-	Playback    bool   `json:"playback"`
-	Channel     bool   `json:"channel"`
-	Public      bool   `json:"public"`
-	File        string `json:"file"`
-	Title       string `json:"title,omitempty"`
-	Notes       string `json:"notes"`
+	Acquisition bool            `json:"acquisition"`
+	Published   bool            `json:"published"`
+	Playback    bool            `json:"playback"`
+	Channel     bool            `json:"channel"`
+	Public      bool            `json:"public"`
+	File        string          `json:"file"`
+	Title       string          `json:"title,omitempty"`
+	Notes       string          `json:"notes"`
+	Captions    []CaptionReview `json:"captions,omitempty"`
 }
+
+// CaptionReview records a browser-qualified source WebVTT file. Discovery never
+// enables a track. Local sidecar preservation needs its own acquisition budget.
+type CaptionReview struct {
+	File     string `json:"file"`
+	Label    string `json:"label"`
+	Language string `json:"language"`
+}
+type Caption struct {
+	CaptionReview
+	URL string `json:"url"`
+}
+
+var languagePattern = regexp.MustCompile(`^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$`)
+
+func (e Entry) reviewedCaptions(d Decision) ([]Caption, error) {
+	if len(d.Captions) > 16 || (len(d.Captions) > 0 && e.Policy != Stream) {
+		return nil, fmt.Errorf("source captions require a streaming policy and at most 16 reviewed tracks")
+	}
+	var tracks []Caption
+	seen := make(map[string]bool)
+	for _, review := range d.Captions {
+		if !SafeFile(review.File) || !strings.HasSuffix(strings.ToLower(review.File), ".vtt") || strings.TrimSpace(review.Label) == "" || len(review.Label) > 200 || !languagePattern.MatchString(review.Language) || seen[review.File] {
+			return nil, fmt.Errorf("invalid reviewed WebVTT identity, label, or language")
+		}
+		found := false
+		for _, file := range e.Episode.Files {
+			if file.Name == review.File && !file.Private && file.Bytes > 0 {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return nil, fmt.Errorf("reviewed caption is absent or restricted")
+		}
+		seen[review.File] = true
+		tracks = append(tracks, Caption{CaptionReview: review, URL: "https://archive.org/download/" + url.PathEscape(e.Episode.ID) + "/" + url.PathEscape(review.File)})
+	}
+	return tracks, nil
+}
+
 type Entry struct {
 	Episode       Episode  `json:"episode"`
 	Decision      Decision `json:"decision"`
@@ -163,16 +205,20 @@ func (e Entry) ValidateDecision(d Decision) error {
 	if d.Published && !d.Playback || d.Channel && !d.Playback {
 		return fmt.Errorf("publication and channel use require playback permission")
 	}
+	if _, err := e.reviewedCaptions(d); err != nil {
+		return err
+	}
 	return nil
 }
 
 type Playback struct {
-	ID        string `json:"id"`
-	Policy    Policy `json:"policy"`
-	URL       string `json:"url"`
-	SourceURL string `json:"source_url"`
-	File      File   `json:"file"`
-	Snapshot  string `json:"snapshot_sha256"`
+	ID        string    `json:"id"`
+	Policy    Policy    `json:"policy"`
+	URL       string    `json:"url"`
+	SourceURL string    `json:"source_url"`
+	File      File      `json:"file"`
+	Snapshot  string    `json:"snapshot_sha256"`
+	Captions  []Caption `json:"captions,omitempty"`
 }
 
 func Resolve(e Entry, channel bool) (Playback, error) {
@@ -180,11 +226,15 @@ func Resolve(e Entry, channel bool) (Playback, error) {
 		return Playback{}, fmt.Errorf("episode unavailable or not approved for this viewing mode")
 	}
 	f, _ := e.Selected()
+	tracks, err := e.reviewedCaptions(e.Decision)
+	if err != nil {
+		return Playback{}, err
+	}
 	sourceID := e.Episode.ID
 	if e.Episode.SourceItemID != "" {
 		sourceID = e.Episode.SourceItemID
 	}
-	p := Playback{ID: e.Episode.ID, Policy: e.Policy, SourceURL: "https://archive.org/details/" + url.PathEscape(sourceID), File: f, Snapshot: e.SourceHash}
+	p := Playback{ID: e.Episode.ID, Policy: e.Policy, SourceURL: "https://archive.org/details/" + url.PathEscape(sourceID), File: f, Snapshot: e.SourceHash, Captions: tracks}
 	if e.Policy == Stream {
 		p.URL = "https://archive.org/download/" + url.PathEscape(sourceID) + "/" + url.PathEscape(f.Name)
 	} else {

@@ -52,3 +52,36 @@ func TestScheduleBoundariesAndWithdrawal(t *testing.T) {
 		t.Fatal("overlap allowed")
 	}
 }
+
+func TestSourceCaptionsRequireExplicitReviewAndCurrentEligibility(t *testing.T) {
+	e := Entry{Episode: Episode{ID: "sample", Files: []File{{Name: "a.mp4", Bytes: 10, Duration: 60}, {Name: "English captions.vtt", Bytes: 100}}}, Policy: Stream, Decision: Decision{Published: true, Playback: true, File: "a.mp4", Notes: "Browser qualified sample"}}
+	p, err := Resolve(e, false)
+	if err != nil || len(p.Captions) != 0 {
+		t.Fatal("discovered captions were automatically enabled", p, err)
+	}
+	review := CaptionReview{File: "English captions.vtt", Label: "English", Language: "en"}
+	e.Decision.Captions = []CaptionReview{review}
+	if err = e.ValidateDecision(e.Decision); err != nil {
+		t.Fatal(err)
+	}
+	p, err = Resolve(e, false)
+	if err != nil || len(p.Captions) != 1 || p.Captions[0].URL != "https://archive.org/download/sample/English%20captions.vtt" {
+		t.Fatal("reviewed caption identity", p, err)
+	}
+	for _, invalid := range []CaptionReview{{File: "missing.vtt", Label: "English", Language: "en"}, {File: "../English captions.vtt", Label: "English", Language: "en"}, {File: "a.mp4", Label: "English", Language: "en"}, {File: review.File, Label: "English", Language: "unknown language"}} {
+		decision := e.Decision
+		decision.Captions = []CaptionReview{invalid}
+		if e.ValidateDecision(decision) == nil {
+			t.Fatal("invalid caption accepted", invalid)
+		}
+	}
+	e.Episode.Files[1].Private = true
+	if _, err = Resolve(e, false); err == nil {
+		t.Fatal("restricted caption after source refresh remained eligible")
+	}
+	e.Episode.Files[1].Private = false
+	e.Policy = Local
+	if e.ValidateDecision(e.Decision) == nil {
+		t.Fatal("source captions enabled without independent local sidecar preservation")
+	}
+}

@@ -23,9 +23,12 @@ on-demand viewing and scheduled playback. Democracy Now! will use source-hosted
 streaming only because local video storage is unavailable. Its video files will
 not be downloaded, cached by VHNESS, or transcoded locally.
 
-Status: metadata foundation implemented and under verification. The isolated
-preview shows synthetic metadata; real source playback and channel qualification
-are not complete. See [development instructions](DEVELOPMENT.md).
+Status: the shared engine and configurable white-label frontend are implemented.
+Source/local playback, channel transitions, owner audiovisual confirmation,
+and a continuous source episode have private pilot evidence. All 100 Bill Nye
+MP4s are locally integrity verified. Complete metadata recovery and standalone
+app/deployment qualification are in progress. See [deployment operations](docs/DEPLOYMENT.md)
+and [development instructions](DEVELOPMENT.md).
 Both viewing modes and both delivery designs are in scope; Democracy Now!'s
 streaming-only policy is confirmed. Local preservation remains an explicit,
 budgeted choice for other collections.
