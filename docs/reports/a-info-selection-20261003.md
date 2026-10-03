@@ -12,7 +12,7 @@ sets a 25-item discovery cap, ten results per page and 64 HTTP requests per refr
 Selection includes 15 PDFs and 15 OCR companions, totaling 98,015,146 bytes.
 Each selected file has a recorded source checksum and no private flag. The batch
 cap is 150 MiB, file cap 50 MiB and document cap 25; transfer concurrency stays
-below two. Actual payload acquisition and reader qualification remain pending.
+below two. Actual acquisition preserved all 30 selected assets. Private review, source-blocked reading and fresh independent restore passed; see [second-archive qualification](second-archive-qualification-20261003.md).
 
 The collection uses a distinct name, purple accent and Portuguese/São Paulo
 taxonomy. Source creators and catalog dates are absent; title dates are not silently

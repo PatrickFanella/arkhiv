@@ -1,11 +1,8 @@
 # Managed archive, public release, and second-archive plan
 
-Status: implementation in progress. The merged private pilot was deployed on
-2026-10-02. Audit, backup, monitoring and dry-run retention runners are implemented;
-the four timers have completed initial scheduled runs, and NUC recorded
-notification qualification messages. The recurring restore runner and browser probe are implemented; the corrected initial scheduled NUC restore and actual source refresh passed.
-The owner approved archival access to the reviewed 25 documents and 26 variants, with unknown rights and no asserted reuse license. Public allowlist implementation and second-source qualification remain in progress. Public ingress remains
-unconfigured.
+Status: managed operations and the second real archive are qualified. The six scoped timers have completed initial audit, backup, retention planning, monitoring, source-check and restore runs. NUC recorded notification qualification messages. The A-Info pilot preserves 15 issues alongside the first 25 documents, with all 41 variants verified and rendered after a fresh independent restore. See [second-archive qualification](../reports/second-archive-qualification-20261003.md).
+
+The owner approved public reading/downloads for the exact first-archive 26 variants, with unknown rights and no asserted reuse license. Public allowlisting, branding, monitoring and staging are qualified; the separately authorized ingress activation and actual-domain qualification remain #33–#34. See [public staging](../reports/public-release-staging-20261003.md).
 
 The first private pilot is qualified. PRs #18, #19 and #20 are merged; the
 homelab runtime identifies merged revision `6470472`, verified on October 2. The working
@@ -72,7 +69,7 @@ items discovered through a configured collection/query.
    document/free-space limits. Preserve earlier original versions and editorial
    decisions. New records and changed-content variants remain unpublished pending
    review; deliberate exclusions survive repeated refresh.
-3. **#29 — Scheduled job.** Proposed initial cadence is daily at 04:00
+3. **#29 — Scheduled job.** The installed job runs daily at 04:00
    America/Chicago, with per-collection enable/disable, cadence and policy. Serialize
    writers, resume interrupted phases, respect source Retry-After, and report last
    attempt/success plus checked/acquired/pending/failed counts. Register failures
@@ -85,7 +82,7 @@ workflow; the reader/API and T3 test networks remain isolated.
 
 ## Preservation and release boundaries
 
-Daily integrity and backup schedules are proposed in #22/#23; #26 proposes monthly
+Daily integrity and backup schedules are installed under #22/#23; #26 installs monthly
 fresh-destination restore drills and drills after storage/schema changes. #24
 introduces dry-run retention with pinned qualification snapshots and capacity
 checks. The initial retention proposal is seven daily, four weekly and six monthly

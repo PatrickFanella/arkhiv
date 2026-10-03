@@ -1,5 +1,6 @@
 @import "tailwindcss";
 :root {
+  --accent: #8c2921;
   font-family: Arial, sans-serif;
   color: #25231f;
   background: #eee9df;

@@ -57,3 +57,5 @@ Detailed receipts and screenshots are outside Git on Almaz under
 `/mnt/spektr/server/data/arkhiv/qualification/public-staged-20261003` and on Kvant
 under `~/.local/state/arkhiv/execution-20261003`. This is initial qualification,
 with no public observation window or long-term schedule soak claimed yet.
+
+Desktop native keyboard inspection focused the Arkhiv home link. The native tab was not foreground, so this observation did not establish its focus-visible appearance. A missing global accent fallback was then fixed; all four desktop/narrow deterministic browser tests passed with a visible-outline assertion. The public palette has contrast ratios 7.07:1 for accent links on the page background, 8.56:1 for white button text on the accent, and 11.29:1 for body text on panel backgrounds. Hosted desktop/narrow fixture checks cover loading, empty/error states, labels, keyboard focus and reader controls; the actual corpus probe separately proves real PDF rendering and narrow layout.

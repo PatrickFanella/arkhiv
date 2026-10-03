@@ -11,6 +11,10 @@ test("catalog, page search, local PDF rendering, navigation and download", async
   await expect(page.getByRole("link", { name: "Arkhiv home" })).toBeVisible();
   await page.keyboard.press("Tab");
   await expect(page.getByRole("link", { name: "Arkhiv home" })).toBeFocused();
+  expect(await page.getByRole("link", { name: "Arkhiv home" }).evaluate((e) => {
+    const style = getComputedStyle(e);
+    return style.outlineStyle !== "none" && parseFloat(style.outlineWidth) >= 2;
+  })).toBeTruthy();
   await expect(
     page.getByRole("heading", { name: "Mutual aid fixture" }),
   ).toBeVisible();

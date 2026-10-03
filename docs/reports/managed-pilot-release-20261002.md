@@ -109,3 +109,7 @@ passed. Screenshots and reader receipts remain in the drill's `proof/` directory
 the isolated database/API/web/check stack was removed. Job source is `dbb8fcdf`,
 operator/probe image source `0fd557f`, and web image source `6470472`.
 The initial failure remains retained and is not overwritten by this successful run.
+
+## Canonical documentation closeout
+
+The October 3 replacement instructions identify Machinum under `~/Work/Vaults` as the homelab documentation owner. Task-owned Almaz deployment and NUC backup notes now live there, linked from its Arkhiv operations index. The cross-vault registry audit passed with zero integrity errors. Active edits to shared host briefings were preserved; generated HOMELAB.md files were not edited. The earlier absent-Operations observation remains historical.
