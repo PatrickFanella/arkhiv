@@ -1,0 +1,12 @@
+{
+  "contract_version": 1,
+  "package": "@subcult/archive-viewer",
+  "api_versions": ["1"],
+  "configuration_version": 1,
+  "schema_strategy": "checksum-locked-additive-migrations",
+  "compatibility_window": "current and previous reviewed release",
+  "registry": "https://git.subcult.tv/api/packages/subculture-collective/npm/",
+  "engine_repository": "git.subcult.tv/subculture-collective/archive-engine",
+  "rollout": "reviewed-per-consumer",
+  "media": ["video"]
+}

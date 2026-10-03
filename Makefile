@@ -5,6 +5,7 @@ verify:
 	pnpm build:packages
 	pnpm check:packages
 	python3 scripts/check_package_consumer.py
+	python3 -m unittest discover -s scripts -p 'test_*.py'
 	pnpm --dir web typecheck
 	pnpm --dir web lint
 	pnpm --dir web test
