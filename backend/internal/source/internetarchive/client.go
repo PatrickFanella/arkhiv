@@ -53,7 +53,7 @@ type metadataCache struct {
 
 func Allowed(u *url.URL) bool {
 	h := strings.ToLower(u.Hostname())
-	return u.Scheme == "https" && u.User == nil && (h == "archive.org" || strings.HasSuffix(h, ".us.archive.org")) && (u.Port() == "" || u.Port() == "443")
+	return u.Scheme == "https" && u.User == nil && (h == "archive.org" || strings.HasSuffix(h, ".us.archive.org") || strings.HasSuffix(h, ".eu.archive.org")) && (u.Port() == "" || u.Port() == "443")
 }
 func New() *Client {
 	return &Client{Base: "https://archive.org", HTTP: &http.Client{Timeout: 5 * time.Minute, CheckRedirect: func(r *http.Request, via []*http.Request) error {
