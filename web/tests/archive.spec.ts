@@ -8,6 +8,7 @@ test("catalog, page search, local PDF rendering, navigation and download", async
   request,
 }) => {
   await page.goto("/?collection=fixture-zines");
+  await expect(page.getByRole("link", { name: "Arkhiv home" })).toBeVisible();
   await page.keyboard.press("Tab");
   await expect(page.getByRole("link", { name: "Arkhiv home" })).toBeFocused();
   await expect(

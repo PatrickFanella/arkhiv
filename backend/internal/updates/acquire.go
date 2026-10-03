@@ -86,6 +86,17 @@ func Acquire(ctx context.Context, c config.Collection, client *ia.Client, store 
 		if actual, ok := inventory.Files[f.Name]; !ok || !equal(actual, *f) {
 			continue
 		}
+		companion, hasCompanion := inventory.Files[strings.TrimSuffix(f.Name, ".pdf")+"_djvu.txt"]
+		pairBytes := f.Bytes()
+		if hasCompanion {
+			if companion.Private == "true" || companion.Bytes() <= 0 || companion.Bytes() > c.Limits.FileBytes || (companion.MD5 == "" && companion.SHA1 == "") {
+				continue
+			}
+			pairBytes += companion.Bytes()
+		}
+		if result.Bytes+pairBytes > c.Limits.TotalBytes {
+			break
+		}
 		var disk syscall.Statfs_t
 		if e = syscall.Statfs(store.Path, &disk); e != nil {
 			return result, e
@@ -94,7 +105,7 @@ func Acquire(ctx context.Context, c config.Collection, client *ia.Client, store 
 		if floor == 0 {
 			floor = 2 << 30
 		}
-		if uint64(disk.Bavail)*uint64(disk.Bsize) < uint64(floor)+uint64(f.Bytes()) {
+		if uint64(disk.Bavail)*uint64(disk.Bsize) < uint64(floor)+uint64(pairBytes) {
 			return result, fmt.Errorf("update stopped: low disk capacity")
 		}
 		hash, n, reused, downloadErr := ingest.Download(ctx, client, store, v.item, *f, c.Limits.FileBytes)
@@ -106,6 +117,14 @@ func Acquire(ctx context.Context, c config.Collection, client *ia.Client, store 
 		var existing string
 		lookupErr := db.Pool.QueryRow(ctx, `SELECT d.id FROM variants v JOIN documents d ON d.id=v.document_id WHERE d.collection_id=$1 AND d.source_item=$2 AND v.filename=$3 AND v.asset_sha=$4 ORDER BY d.id LIMIT 1`, c.ID, v.item, f.Name, hash).Scan(&existing)
 		if lookupErr == nil {
+			if existing == documentID && hasCompanion {
+				if e = preserveCompanion(ctx, c, client, store, db, v.item, hash, companion, v.snapshot); e != nil {
+					result.Failed++
+					err = fmt.Errorf("source OCR acquisition failed; preserved checkpoint retained")
+					continue
+				}
+				result.Bytes += companion.Bytes()
+			}
 			if e = index.Extract(ctx, db, store, hash); e != nil {
 				result.Failed++
 				err = fmt.Errorf("source update extraction failed; unpublished edition retained")
@@ -123,7 +142,7 @@ func Acquire(ctx context.Context, c config.Collection, client *ia.Client, store 
 		}
 		title := strings.TrimSuffix(f.Name, ".pdf")
 		for _, selected := range c.Selection {
-			if selected.File == f.Name {
+			if selected.File == f.Name && (selected.Item == v.item || (selected.Item == "" && c.Item == v.item)) {
 				title = selected.Title
 				break
 			}
@@ -133,6 +152,14 @@ func Acquire(ctx context.Context, c config.Collection, client *ia.Client, store 
 		itemConfig.Item = v.item
 		if e = db.Import(ctx, itemConfig, selection, hash, n, v.snapshot); e != nil {
 			return result, e
+		}
+		if hasCompanion {
+			if e = preserveCompanion(ctx, c, client, store, db, v.item, hash, companion, v.snapshot); e != nil {
+				result.Failed++
+				err = fmt.Errorf("source OCR acquisition failed; preserved checkpoint retained")
+				continue
+			}
+			result.Bytes += companion.Bytes()
 		}
 		if e = index.Extract(ctx, db, store, hash); e != nil {
 			result.Failed++
@@ -155,4 +182,16 @@ func Acquire(ctx context.Context, c config.Collection, client *ia.Client, store 
 		return result, e
 	}
 	return
+}
+
+func preserveCompanion(ctx context.Context, c config.Collection, client *ia.Client, store *storage.Store, db *catalog.DB, item, asset string, file ia.File, snapshot string) error {
+	hash, size, _, err := ingest.Download(ctx, client, store, item, file, c.Limits.FileBytes)
+	if err != nil {
+		return err
+	}
+	if _, err = db.Pool.Exec(ctx, `INSERT INTO assets(sha256,size) VALUES($1,$2) ON CONFLICT DO NOTHING`, hash, size); err != nil {
+		return err
+	}
+	_, err = db.Pool.Exec(ctx, `INSERT INTO asset_companions(asset_sha,companion_sha,filename,source_snapshot) VALUES($1,$2,$3,$4) ON CONFLICT DO NOTHING`, asset, hash, file.Name, snapshot)
+	return err
 }

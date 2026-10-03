@@ -62,6 +62,18 @@ func run(ctx context.Context, args []string) error {
 		if e != nil {
 			return e
 		}
+		if c.Discovery.Query != "" {
+			p, err := ingest.PlanCollection(ctx, c, ia.New())
+			if err != nil {
+				return err
+			}
+			if *output != "" {
+				if err = config.SaveJSON(*output, p); err != nil {
+					return err
+				}
+			}
+			return json.NewEncoder(os.Stdout).Encode(p)
+		}
 		m, raw, e := ia.New().Metadata(ctx, c.Item)
 		if e != nil {
 			return e

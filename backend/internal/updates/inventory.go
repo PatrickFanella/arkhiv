@@ -133,18 +133,9 @@ func Refresh(ctx context.Context, c config.Collection, client *ia.Client, store 
 			db.Pool.Exec(cleanup, `UPDATE source_refresh_runs SET status='failed',finished_at=now(),result=$2 WHERE id=$1`, result.Run, b)
 		}
 	}()
-	m, raw, e := client.Metadata(ctx, c.Item)
+	records, scope, discovery, e := gather(ctx, c, client, store)
 	if e != nil {
 		err = e
-		return
-	}
-	current, e := Complete(m)
-	if e != nil {
-		err = e
-		return
-	}
-	snap := catalog.ID(c.Item, string(raw))
-	if err = store.WriteBytes("snapshots/"+snap+".json", raw); err != nil {
 		return
 	}
 	tx, e := db.Pool.Begin(ctx)
@@ -157,45 +148,84 @@ func Refresh(ctx context.Context, c config.Collection, client *ia.Client, store 
 	if _, err = tx.Exec(ctx, `SELECT pg_advisory_xact_lock(hashtextextended($1,74209114))`, c.ID); err != nil {
 		return
 	}
-	previous := Inventory{Files: map[string]ia.File{}}
-	var old []byte
-	e = tx.QueryRow(ctx, `SELECT inventory FROM source_inventories WHERE collection_id=$1 AND source_item=$2`, c.ID, c.Item).Scan(&old)
-	if e != nil && e != pgx.ErrNoRows {
-		err = e
-		return
+	seen := map[string]bool{}
+	for _, record := range records {
+		seen[record.Item] = true
 	}
-	if e == nil {
-		if err = json.Unmarshal(old, &previous); err != nil {
+	if c.Discovery.Query != "" {
+		rows, e := tx.Query(ctx, `SELECT source_item FROM source_inventories WHERE collection_id=$1 AND scope=$2`, c.ID, scope)
+		if e != nil {
+			err = e
+			return
+		}
+		for rows.Next() {
+			var item string
+			if e = rows.Scan(&item); e != nil {
+				rows.Close()
+				err = e
+				return
+			}
+			if !seen[item] {
+				raw, _ := json.Marshal(map[string]any{"absent_from_complete_query": json.RawMessage(discovery)})
+				snapshot := catalog.ID(item, string(raw))
+				if err = store.WriteBytes("snapshots/"+snapshot+".json", raw); err != nil {
+					rows.Close()
+					return
+				}
+				records = append(records, sourceRecord{item, snapshot, raw, Inventory{Metadata: map[string]any{"source_status": "absent from complete query"}, Files: map[string]ia.File{}}})
+			}
+		}
+		err = rows.Err()
+		rows.Close()
+		if err != nil {
 			return
 		}
 	}
-	if _, err = tx.Exec(ctx, `INSERT INTO source_snapshots(id,item_id,raw) VALUES($1,$2,$3) ON CONFLICT DO NOTHING`, snap, c.Item, raw); err != nil {
-		return
-	}
-	for _, change := range Diff(previous, current) {
-		result.Checked++
-		switch change.Kind {
-		case "added":
-			result.Added++
-		case "content":
-			result.Content++
-		case "metadata":
-			result.Metadata++
-		case "removed":
-			result.Removed++
-		case "uncertain":
-			result.Uncertain++
+	for _, record := range records {
+		previous := Inventory{Files: map[string]ia.File{}}
+		var old []byte
+		e = tx.QueryRow(ctx, `SELECT inventory FROM source_inventories WHERE collection_id=$1 AND source_item=$2 AND scope=$3`, c.ID, record.Item, scope).Scan(&old)
+		if e != nil && e != pgx.ErrNoRows {
+			err = e
+			return
 		}
-		detail, _ := json.Marshal(change)
-		id := catalog.ID(c.ID, c.Item, string(detail))
-		if _, err = tx.Exec(ctx, `INSERT INTO source_changes(id,collection_id,source_item,filename,kind,snapshot_id,detail) VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT DO NOTHING`, id, c.ID, c.Item, change.File, change.Kind, snap, detail); err != nil {
+		if e == nil {
+			if err = json.Unmarshal(old, &previous); err != nil {
+				return
+			}
+		}
+		if _, err = tx.Exec(ctx, `INSERT INTO source_snapshots(id,item_id,raw) VALUES($1,$2,$3) ON CONFLICT DO NOTHING`, record.Snapshot, record.Item, record.Raw); err != nil {
+			return
+		}
+		for _, change := range Diff(previous, record.Inventory) {
+			switch change.Kind {
+			case "added":
+				result.Added++
+			case "content":
+				result.Content++
+			case "metadata":
+				result.Metadata++
+			case "removed":
+				result.Removed++
+			case "uncertain":
+				result.Uncertain++
+			}
+			detail, _ := json.Marshal(change)
+			id := catalog.ID(c.ID, record.Item, string(detail))
+			if _, err = tx.Exec(ctx, `INSERT INTO source_changes(id,collection_id,source_item,filename,kind,snapshot_id,detail) VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT DO NOTHING`, id, c.ID, record.Item, change.File, change.Kind, record.Snapshot, detail); err != nil {
+				return
+			}
+		}
+		result.Checked += len(record.Inventory.Files)
+		encoded, _ := json.Marshal(record.Inventory)
+		if _, err = tx.Exec(ctx, `INSERT INTO source_inventories(collection_id,source_item,snapshot_id,inventory,scope) VALUES($1,$2,$3,$4,$5) ON CONFLICT(collection_id,source_item) DO UPDATE SET snapshot_id=excluded.snapshot_id,inventory=excluded.inventory,scope=excluded.scope,checked_at=now()`, c.ID, record.Item, record.Snapshot, encoded, scope); err != nil {
 			return
 		}
 	}
-	result.Checked = len(current.Files)
-	encoded, _ := json.Marshal(current)
-	if _, err = tx.Exec(ctx, `INSERT INTO source_inventories(collection_id,source_item,snapshot_id,inventory) VALUES($1,$2,$3,$4) ON CONFLICT(collection_id,source_item) DO UPDATE SET snapshot_id=excluded.snapshot_id,inventory=excluded.inventory,checked_at=now()`, c.ID, c.Item, snap, encoded); err != nil {
-		return
+	if c.Discovery.Query != "" {
+		if _, err = tx.Exec(ctx, `INSERT INTO source_discoveries(collection_id,scope,raw) VALUES($1,$2,$3) ON CONFLICT(collection_id,scope) DO UPDATE SET raw=excluded.raw,checked_at=now()`, c.ID, scope, discovery); err != nil {
+			return
+		}
 	}
 	if err = tx.QueryRow(ctx, `SELECT count(*) FROM source_changes WHERE collection_id=$1 AND decision='pending'`, c.ID).Scan(&result.Pending); err != nil {
 		return

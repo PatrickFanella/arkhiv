@@ -19,6 +19,7 @@ type Limits struct {
 	Concurrency int   `json:"concurrency" yaml:"concurrency"`
 }
 type Selection struct {
+	Item     string   `json:"item,omitempty" yaml:"item"`
 	File     string   `json:"file" yaml:"file"`
 	Key      string   `json:"key" yaml:"key"`
 	Title    string   `json:"title" yaml:"title"`
@@ -34,7 +35,15 @@ type Updates struct {
 	CadenceHours     int    `json:"cadence_hours" yaml:"cadence_hours"`
 	MinimumFreeBytes int64  `json:"minimum_free_bytes" yaml:"minimum_free_bytes"`
 }
+type Discovery struct {
+	Query       string `json:"query" yaml:"query"`
+	MaxItems    int    `json:"max_items" yaml:"max_items"`
+	PageSize    int    `json:"page_size" yaml:"page_size"`
+	MaxRequests int    `json:"max_requests" yaml:"max_requests"`
+}
+
 type Collection struct {
+	Discovery    Discovery   `json:"discovery" yaml:"discovery"`
 	Updates      Updates     `json:"updates" yaml:"updates"`
 	ID           string      `json:"id" yaml:"id"`
 	Name         string      `json:"name" yaml:"name"`
@@ -67,7 +76,7 @@ func Load(path string) (Collection, error) {
 	return c, c.Validate()
 }
 func (c Collection) Validate() error {
-	if !ValidID(c.ID) || !ValidID(c.Item) || strings.TrimSpace(c.Name) == "" {
+	if !ValidID(c.ID) || (c.Discovery.Query == "" && !ValidID(c.Item)) || strings.TrimSpace(c.Name) == "" {
 		return fmt.Errorf("valid collection id, item and name required")
 	}
 	if !regexp.MustCompile(`^#[a-fA-F0-9]{6}$`).MatchString(c.Accent) {
@@ -83,14 +92,25 @@ func (c Collection) Validate() error {
 	if c.Updates.CadenceHours < 0 || c.Updates.CadenceHours > 8760 || c.Updates.MinimumFreeBytes < 0 {
 		return fmt.Errorf("invalid update limits")
 	}
+	if c.Discovery.Query != "" && (len(c.Discovery.Query) > 2000 || c.Item != "" || c.Discovery.MaxItems < 1 || c.Discovery.MaxItems > 200 || c.Discovery.PageSize < 1 || c.Discovery.PageSize > 50 || c.Discovery.MaxRequests < 1 || c.Discovery.MaxRequests > 400) {
+		return fmt.Errorf("invalid discovery configuration")
+	}
 	seen := map[string]bool{}
 	keys := map[string]bool{}
 	for _, s := range c.Selection {
-		if s.File == "" || strings.HasPrefix(s.File, "/") || strings.Contains(s.File, "\\") || strings.Contains("/"+s.File+"/", "/../") || s.Key == "" || strings.TrimSpace(s.Title) == "" || seen[s.File] {
+		item := s.Item
+		if item == "" {
+			item = c.Item
+		}
+		if !ValidID(item) {
+			return fmt.Errorf("selection source item required")
+		}
+		identity := item + "\x00" + s.File
+		if s.File == "" || strings.HasPrefix(s.File, "/") || strings.Contains(s.File, "\\") || strings.Contains("/"+s.File+"/", "/../") || s.Key == "" || strings.TrimSpace(s.Title) == "" || seen[identity] {
 			return fmt.Errorf("selection requires unique files, keys and titles")
 		}
-		seen[s.File] = true
-		keys[s.Key] = true
+		seen[identity] = true
+		keys[item+"\x00"+s.Key] = true
 	}
 	if len(keys) > l.Documents {
 		return fmt.Errorf("too many documents")

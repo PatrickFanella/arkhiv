@@ -98,3 +98,14 @@ database had been created with role `drill`. The correction uses the original ro
 name with synthetic drill-only credentials. Saved phase receipts now distinguish
 database startup, catalog restoration, audit and reader proof. A corrected scheduled
 run remains required; this failed run is not a successful restore qualification.
+
+The corrected restore timer triggered at 00:24:15 UTC and completed at 00:24:49.
+It independently fetched `auto-20261003T001423Z` from NUC, verified 149 archive
+files and the 2,236,304-byte dump, and restored into
+`qualification/arkhiv-drill-20261003t002416200747z`. Audit matched 43 assets,
+26 variants and 25 published records. The browser probe matched all 26 download
+hashes and rendered all 26 variants with Archive.org blocked. Search qualification
+passed. Screenshots and reader receipts remain in the drill's `proof/` directory;
+the isolated database/API/web/check stack was removed. Job source is `dbb8fcdf`,
+operator/probe image source `0fd557f`, and web image source `6470472`.
+The initial failure remains retained and is not overwritten by this successful run.

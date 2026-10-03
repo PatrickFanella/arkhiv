@@ -38,10 +38,12 @@ type Metadata struct {
 	Error    string         `json:"error"`
 }
 type Client struct {
-	HTTP  *http.Client
-	Base  string
-	mu    sync.Mutex
-	cache map[string]metadataCache
+	HTTP      *http.Client
+	Base      string
+	mu        sync.Mutex
+	cache     map[string]metadataCache
+	limited   bool
+	remaining int
 }
 
 type metadataCache struct {
@@ -51,7 +53,7 @@ type metadataCache struct {
 
 func Allowed(u *url.URL) bool {
 	h := strings.ToLower(u.Hostname())
-	return u.Scheme == "https" && u.User == nil && (h == "archive.org" || strings.HasSuffix(h, ".us.archive.org")) && (u.Port() == "" || u.Port() == "443")
+	return u.Scheme == "https" && u.User == nil && (h == "archive.org" || strings.HasSuffix(h, ".archive.org")) && (u.Port() == "" || u.Port() == "443")
 }
 func New() *Client {
 	return &Client{Base: "https://archive.org", HTTP: &http.Client{Timeout: 5 * time.Minute, CheckRedirect: func(r *http.Request, via []*http.Request) error {
@@ -63,6 +65,15 @@ func New() *Client {
 }
 func (c *Client) Request(ctx context.Context, path string, headers map[string]string) (*http.Response, error) {
 	for attempt := 0; attempt < 4; attempt++ {
+		c.mu.Lock()
+		if c.limited && c.remaining <= 0 {
+			c.mu.Unlock()
+			return nil, fmt.Errorf("source request budget exhausted")
+		}
+		if c.limited {
+			c.remaining--
+		}
+		c.mu.Unlock()
 		r, e := http.NewRequestWithContext(ctx, http.MethodGet, c.Base+path, nil)
 		if e != nil {
 			return nil, e
