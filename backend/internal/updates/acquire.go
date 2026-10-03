@@ -105,6 +105,7 @@ func Acquire(ctx context.Context, c config.Collection, client *ia.Client, store 
 			continue
 		}
 		companion, hasCompanion := inventory.Files[strings.TrimSuffix(f.Name, ".pdf")+"_djvu.txt"]
+		hasCompanion = hasCompanion && companion.Bytes() > 0
 		pairBytes := f.Bytes()
 		if hasCompanion {
 			if companion.Private == "true" || companion.Bytes() <= 0 || companion.Bytes() > c.Limits.FileBytes || (companion.MD5 == "" && companion.SHA1 == "") {

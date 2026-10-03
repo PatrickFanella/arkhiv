@@ -58,8 +58,8 @@ func Inventory(c config.Collection, m ia.Metadata) (Plan, error) {
 	}
 	for _, sel := range c.Selection {
 		name := strings.TrimSuffix(sel.File, ".pdf") + "_djvu.txt"
-		if _, ok := files[name]; ok {
-			selected[name] = true
+		if companion, ok := files[name]; ok {
+			selected[name] = companion.Bytes() > 0
 			companionFor[name] = sel.File
 		}
 	}
@@ -100,7 +100,11 @@ func Inventory(c config.Collection, m ia.Metadata) (Plan, error) {
 			p.Bytes += f.Bytes()
 		}
 		if companionFor[f.Name] != "" {
-			reason = "selected OCR companion"
+			if selected[f.Name] {
+				reason = "selected OCR companion"
+			} else {
+				reason = "empty or unavailable OCR companion; PDF remains selected"
+			}
 		}
 		p.Candidates = append(p.Candidates, Candidate{File: f, Selected: selected[f.Name], Reason: reason, CompanionFor: companionFor[f.Name]})
 	}
@@ -115,7 +119,10 @@ func Inventory(c config.Collection, m ia.Metadata) (Plan, error) {
 	for _, sel := range c.Selection {
 		name := strings.TrimSuffix(sel.File, ".pdf") + "_djvu.txt"
 		if f, ok := files[name]; ok {
-			if f.Bytes() <= 0 || f.Bytes() > c.Limits.FileBytes || f.Private == "true" {
+			if f.Bytes() == 0 {
+				continue
+			}
+			if f.Bytes() < 0 || f.Bytes() > c.Limits.FileBytes || f.Private == "true" {
 				return p, fmt.Errorf("invalid OCR companion: %s", name)
 			}
 			if !companions[name] {
@@ -301,7 +308,7 @@ func acquireItem(ctx context.Context, c config.Collection, client *ia.Client, st
 		}
 		if err == nil {
 			companionName := strings.TrimSuffix(sel.File, ".pdf") + "_djvu.txt"
-			if companion, ok := by[companionName]; ok {
+			if companion, ok := by[companionName]; ok && companion.Bytes() > 0 {
 				ch, cn, cr, ce := Download(ctx, client, store, c.Item, companion, c.Limits.FileBytes)
 				status := "verified"
 				if cr {

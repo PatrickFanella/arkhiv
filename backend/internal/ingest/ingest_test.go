@@ -147,3 +147,15 @@ func TestInventoryShowsSelectedCompanionsAndReviewSuggestions(t *testing.T) {
 		t.Fatal("companion exceeded batch cap")
 	}
 }
+
+func TestEmptyOCRCompanionDoesNotBlockOriginalPDF(t *testing.T) {
+	c := config.Collection{Item: "item", Selection: []config.Selection{{File: "book.pdf", Key: "book", Title: "Book"}}, Limits: config.Limits{Documents: 1, TotalBytes: 10, FileBytes: 10, Concurrency: 1}}
+	m := ia.Metadata{Files: []ia.File{{Name: "book.pdf", Size: "10"}, {Name: "book_djvu.txt", Size: "0"}}}
+	plan, err := Inventory(c, m)
+	if err != nil || plan.Bytes != 10 || !plan.Candidates[0].Selected || plan.Candidates[1].Selected || plan.Candidates[1].CompanionFor != "book.pdf" {
+		t.Fatal("empty source OCR blocked the readable original", plan, err)
+	}
+	if plan.Candidates[1].Reason == "selected OCR companion" {
+		t.Fatal("empty OCR falsely reported selected")
+	}
+}
