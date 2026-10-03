@@ -4,7 +4,7 @@ Status: implementation in progress. The merged private pilot was deployed on
 2026-10-02. Audit, backup, monitoring and dry-run retention runners are implemented;
 the four timers have completed initial scheduled runs, and NUC recorded
 notification qualification messages. The recurring restore runner and browser probe are implemented; the corrected initial scheduled NUC restore and actual source refresh passed.
-Public access and second-source qualification remain in progress. Public ingress remains
+The owner approved archival access to the reviewed 25 documents and 26 variants, with unknown rights and no asserted reuse license. Public allowlist implementation and second-source qualification remain in progress. Public ingress remains
 unconfigured.
 
 The first private pilot is qualified. PRs #18, #19 and #20 are merged; the
@@ -102,8 +102,7 @@ release and scoped ingress; public activation requires the separate release acti
 #34 verifies the actual public domain and defines an initial observation window.
 
 The second-source gate #35 selects a bounded real archive with a different structure,
-access/reuse evidence and explicit update policy. The owner requested another zine collection; the exact bounded source is
-still being researched. #38 requires actual ingestion, source-unreachable reading, and independent
+access/reuse evidence and explicit update policy. The owner requested another zine collection; the selected source is 15 A-Info zines from São Paulo, discovered through a bounded title query. #38 requires actual ingestion, source-unreachable reading, and independent
 fresh restoration while the first archive continues working. Epic #15 owns that
 outcome. Immediate operations are in the managed phase; epic #16 retains later
 curator UI/accounts and evidence-driven OCR/search improvements.
@@ -113,7 +112,7 @@ curator UI/accounts and evidence-driven OCR/search improvements.
 Existing gates are `make verify`, `make test-integration`, `make test-browser`,
 and `make test-recovery`. `make test-operations` runs job, backup, notification and retention checks
 and is included in `make verify`; `make test-updates` verifies durable inventory and acquisition behavior against
-disposable PostgreSQL; multi-item discovery remains downstream work.
+disposable PostgreSQL; bounded multi-item discovery and complete-query failure checks are implemented and verified.
 
 Fixture checks cover job interruption, overlap, disk/transport/checksum failure,
 complete-inventory boundaries, evolving sources, publication exclusion, and safe

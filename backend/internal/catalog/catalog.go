@@ -16,7 +16,10 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type DB struct{ Pool *pgxpool.Pool }
+type DB struct {
+	Pool       *pgxpool.Pool
+	PublicOnly bool
+}
 
 func Open(ctx context.Context, url string) (*DB, error) {
 	p, e := pgxpool.New(ctx, url)
@@ -27,7 +30,7 @@ func Open(ctx context.Context, url string) (*DB, error) {
 		p.Close()
 		return nil, fmt.Errorf("database unavailable")
 	}
-	return &DB{p}, nil
+	return &DB{Pool: p}, nil
 }
 func ID(parts ...string) string {
 	b, _ := json.Marshal(parts)
@@ -150,12 +153,13 @@ func defaultRights(s string) string {
 }
 
 type Variant struct {
-	ID         string `json:"id"`
-	Filename   string `json:"filename"`
-	SHA        string `json:"sha256"`
-	Size       int64  `json:"size"`
-	Pages      int    `json:"pages"`
-	TextStatus string `json:"text_status"`
+	PublicApproved bool   `json:"public_approved"`
+	ID             string `json:"id"`
+	Filename       string `json:"filename"`
+	SHA            string `json:"sha256"`
+	Size           int64  `json:"size"`
+	Pages          int    `json:"pages"`
+	TextStatus     string `json:"text_status"`
 }
 type Document struct {
 	ID         string         `json:"id"`
@@ -178,7 +182,7 @@ type Hit struct {
 func (d *DB) Get(ctx context.Context, id string, public bool) (Document, error) {
 	var doc Document
 	var b []byte
-	e := d.Pool.QueryRow(ctx, `SELECT id,collection_id,source_item,source_key,metadata||overrides,published,rights,review_note FROM documents WHERE id=$1 AND (NOT $2 OR published)`, id, public).Scan(&doc.ID, &doc.Collection, &doc.Item, &doc.Key, &b, &doc.Published, &doc.Rights, &doc.Review)
+	e := d.Pool.QueryRow(ctx, `SELECT id,collection_id,source_item,source_key,metadata||overrides,published,rights,review_note FROM documents WHERE id=$1 AND (NOT $2 OR published) AND (NOT $3 OR (published AND EXISTS(SELECT 1 FROM variants WHERE document_id=documents.id AND public_approved)))`, id, public, d.PublicOnly).Scan(&doc.ID, &doc.Collection, &doc.Item, &doc.Key, &b, &doc.Published, &doc.Rights, &doc.Review)
 	if e != nil {
 		return doc, e
 	}
@@ -190,14 +194,14 @@ func (d *DB) Get(ctx context.Context, id string, public bool) (Document, error) 
 	}
 	doc.Variants = []Variant{}
 	doc.Hits = []Hit{}
-	rows, e := d.Pool.Query(ctx, `SELECT v.id,v.filename,v.asset_sha,a.size,COALESCE(x.pages,0),COALESCE(x.status,'pending') FROM variants v JOIN assets a ON a.sha256=v.asset_sha LEFT JOIN derivatives x ON x.asset_sha=v.asset_sha WHERE document_id=$1 ORDER BY v.filename,v.id`, id)
+	rows, e := d.Pool.Query(ctx, `SELECT v.id,v.filename,v.asset_sha,a.size,COALESCE(x.pages,0),COALESCE(x.status,'pending'),v.public_approved FROM variants v JOIN assets a ON a.sha256=v.asset_sha LEFT JOIN derivatives x ON x.asset_sha=v.asset_sha WHERE document_id=$1 AND (NOT $2 OR v.public_approved) ORDER BY v.filename,v.id`, id, d.PublicOnly)
 	if e != nil {
 		return doc, e
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var v Variant
-		if e = rows.Scan(&v.ID, &v.Filename, &v.SHA, &v.Size, &v.Pages, &v.TextStatus); e != nil {
+		if e = rows.Scan(&v.ID, &v.Filename, &v.SHA, &v.Size, &v.Pages, &v.TextStatus, &v.PublicApproved); e != nil {
 			return doc, e
 		}
 		doc.Variants = append(doc.Variants, v)
@@ -251,13 +255,13 @@ func (d *DB) Edit(ctx context.Context, id string, overrides map[string]any, righ
 	return tx.Commit(ctx)
 }
 func (d *DB) List(ctx context.Context, c, q, subject, language string, limit, offset int, public bool) ([]Document, int, error) {
-	const where = `FROM documents d WHERE ($1='' OR collection_id=$1) AND (NOT $2 OR published) AND ($3='' OR to_tsvector('simple',(metadata||overrides)::text) @@ plainto_tsquery('simple',$3) OR EXISTS(SELECT 1 FROM variants v JOIN page_text t ON t.asset_sha=v.asset_sha WHERE v.document_id=d.id AND t.search @@ plainto_tsquery('simple',$3))) AND ($4='' OR (metadata||overrides)->'subjects' ? $4) AND ($5='' OR (metadata||overrides)->>'language'=$5)`
-	args := []any{c, public, q, subject, language}
+	const where = `FROM documents d WHERE ($1='' OR collection_id=$1) AND (NOT $2 OR published) AND (NOT $6 OR (published AND EXISTS(SELECT 1 FROM variants WHERE document_id=d.id AND public_approved))) AND ($3='' OR to_tsvector('simple',(metadata||overrides)::text) @@ plainto_tsquery('simple',$3) OR EXISTS(SELECT 1 FROM variants v JOIN page_text t ON t.asset_sha=v.asset_sha WHERE v.document_id=d.id AND (NOT $6 OR v.public_approved) AND t.search @@ plainto_tsquery('simple',$3))) AND ($4='' OR (metadata||overrides)->'subjects' ? $4) AND ($5='' OR (metadata||overrides)->>'language'=$5)`
+	args := []any{c, public, q, subject, language, d.PublicOnly}
 	var total int
 	if e := d.Pool.QueryRow(ctx, `SELECT count(*) `+where, args...).Scan(&total); e != nil {
 		return nil, 0, e
 	}
-	rows, e := d.Pool.Query(ctx, `SELECT id `+where+` ORDER BY lower(COALESCE((metadata||overrides)->>'title','')),id LIMIT $6 OFFSET $7`, append(args, limit, offset)...)
+	rows, e := d.Pool.Query(ctx, `SELECT id `+where+` ORDER BY lower(COALESCE((metadata||overrides)->>'title','')),id LIMIT $7 OFFSET $8`, append(args, limit, offset)...)
 	if e != nil {
 		return nil, 0, e
 	}
@@ -282,7 +286,7 @@ func (d *DB) List(ctx context.Context, c, q, subject, language string, limit, of
 			return nil, 0, e
 		}
 		if q != "" {
-			rs, e := d.Pool.Query(ctx, `SELECT t.page,v.id,left(t.text,350) FROM variants v JOIN page_text t ON t.asset_sha=v.asset_sha WHERE v.document_id=$1 AND t.search @@ plainto_tsquery('simple',$2) ORDER BY t.page,v.id LIMIT 5`, id, q)
+			rs, e := d.Pool.Query(ctx, `SELECT t.page,v.id,left(t.text,350) FROM variants v JOIN page_text t ON t.asset_sha=v.asset_sha WHERE v.document_id=$1 AND (NOT $3 OR v.public_approved) AND t.search @@ plainto_tsquery('simple',$2) ORDER BY t.page,v.id LIMIT 5`, id, q, d.PublicOnly)
 			if e != nil {
 				return nil, 0, e
 			}
@@ -305,7 +309,7 @@ func (d *DB) List(ctx context.Context, c, q, subject, language string, limit, of
 	return docs, total, nil
 }
 func (d *DB) Collections(ctx context.Context) ([]json.RawMessage, error) {
-	rows, e := d.Pool.Query(ctx, `SELECT config - 'selection' FROM collections ORDER BY id`)
+	rows, e := d.Pool.Query(ctx, `SELECT jsonb_build_object('id',id,'name',config->'name','introduction',config->'introduction','accent',config->'accent') FROM collections c WHERE NOT $1 OR EXISTS(SELECT 1 FROM documents d JOIN variants v ON v.document_id=d.id WHERE d.collection_id=c.id AND d.published AND v.public_approved) ORDER BY id`, d.PublicOnly)
 	if e != nil {
 		return nil, e
 	}
