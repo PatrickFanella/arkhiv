@@ -1,0 +1,58 @@
+name: consumer-upgrade-proposals
+on:
+  push:
+    branches: [main]
+    paths:
+      - docs/releases/*.json
+      - docs/reference/consumer-registry.json
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Reviewed release version with a committed receipt
+        required: true
+      adoption_refs:
+        description: Stack on the reviewed initial adoption branches
+        required: false
+        default: 'false'
+      runner:
+        description: Optional repository-scoped qualification runner
+        required: false
+        default: ubuntu-latest
+jobs:
+  propose:
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Propose compatible consumer upgrades
+        env:
+          ARCHIVE_RELEASE_VERSION: ${{ inputs.version }}
+          ARCHIVE_ADOPTION_REFS: ${{ inputs.adoption_refs || 'false' }}
+          ARCHIVE_PACKAGE_READ_TOKEN: ${{ secrets.ARCHIVE_PACKAGE_READ_TOKEN }}
+          ARCHIVE_UPGRADE_TOKEN: ${{ secrets.ARCHIVE_UPGRADE_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "$ARCHIVE_PACKAGE_READ_TOKEN"
+          test -n "$ARCHIVE_UPGRADE_TOKEN"
+          tool_dir=$(mktemp -d)
+          auth_dir=$(mktemp -d)
+          trap 'rm -rf "$tool_dir" "$auth_dir"' EXIT
+          chmod 700 "$auth_dir"
+          printf '%s\n' '@subcult:registry=https://git.subcult.tv/api/packages/subculture-collective/npm/' '//git.subcult.tv/api/packages/subculture-collective/npm/:_authToken=${ARCHIVE_PACKAGE_READ_TOKEN}' > "$auth_dir/npmrc"
+          chmod 600 "$auth_dir/npmrc"
+          export NPM_CONFIG_USERCONFIG="$auth_dir/npmrc"
+          npm install --prefix "$tool_dir" pnpm@10.33.0
+          export PATH="$tool_dir/node_modules/.bin:$PATH"
+          if [ -z "$ARCHIVE_RELEASE_VERSION" ]; then
+            ARCHIVE_RELEASE_VERSION=$(node -p "require('./packages/viewer/package.json').version")
+          fi
+          if [ "$ARCHIVE_ADOPTION_REFS" = true ]; then
+            python3 scripts/propose_release_upgrades.py --version "$ARCHIVE_RELEASE_VERSION" --adoption-refs
+          else
+            test "$ARCHIVE_ADOPTION_REFS" = false
+            python3 scripts/propose_release_upgrades.py --version "$ARCHIVE_RELEASE_VERSION"
+          fi

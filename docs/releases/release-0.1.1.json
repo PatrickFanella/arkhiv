@@ -1,0 +1,28 @@
+{
+  "contract_version": 1,
+  "package": "@subcult/archive-viewer",
+  "api_versions": [
+    "1"
+  ],
+  "configuration_version": 1,
+  "schema_strategy": "checksum-locked-additive-migrations",
+  "compatibility_window": "current and previous reviewed release",
+  "registry": "https://git.subcult.tv/api/packages/subculture-collective/npm/",
+  "engine_repository": "git.subcult.tv/subculture-collective/archive-engine",
+  "rollout": "reviewed-per-consumer",
+  "media": [
+    "video"
+  ],
+  "source_revision": "8827514b215162e5536f2b83a65681ba70e38f30",
+  "version": "0.1.1",
+  "license": "GPL-3.0-only",
+  "package_sha256": "dc10561e22c24ebff40f0dd9f020aa4c9d626da8a66b9ca010de5b00bf4aa9bb",
+  "package_file": "subcult-archive-viewer-0.1.1.tgz",
+  "engine_digest": "git.subcult.tv/subculture-collective/archive-engine@sha256:a45670a3c54a9059e87b689ce456eab2522011ffca6423842cd4700d69803787",
+  "migrations": {
+    "0001_metadata.sql": "a4db4802a66764c56b3a77c128b27e608b1f3a5767f3482464700b9bbe744537",
+    "0002_local_preservation.sql": "cbe2dda6e3a5b20db392bf63269faaaa08f6f44550ea7f0831b229eba9b7a3e2",
+    "0003_file_based_sources.sql": "48f2cc4d492a10512fb5644365a26cce856e87f1328dbedfa7a943064faf3043",
+    "0004_budget_reviews.sql": "0904c5f0a2fb8367dc21128e31e1e86fa1371593d76aa674f4cb43161f13acb9"
+  }
+}

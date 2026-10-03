@@ -111,6 +111,24 @@ class UpgradeTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'configuration'):
             proposal({**self.release, 'configuration_version': 2}, self.consumer, self.root, self.artifact, request)
 
+    def test_stacked_proposal_reuse_requires_matching_reviewed_base(self):
+        self.consumer['repository'] = 'subculture-collective/example'
+        branch = 'archive-upgrade/v0.1.1-' + 'b' * 40
+        def request(path, method='GET', payload=None):
+            self.assertEqual(method, 'GET')
+            if path == '/user':
+                return {'login': 'subcult-agent'}
+            if '/pulls?' in path:
+                return [{'head': {'ref': branch}, 'base': {'ref': 'feat/adoption'},
+                         'state': 'open', 'html_url': 'https://git.subcult.tv/example/pulls/2'}]
+            if '/contents/' in path:
+                return {'content': base64.b64encode(json.dumps(self.release).encode()).decode()}
+            return {'default_branch': 'main'}
+        self.assertEqual(proposal(self.release, self.consumer, self.root, self.artifact,
+                                  request, base_ref='feat/adoption'), 'https://git.subcult.tv/example/pulls/2')
+        with self.assertRaisesRegex(ValueError, 'different base'):
+            proposal(self.release, self.consumer, self.root, self.artifact, request)
+
 
 if __name__ == '__main__':
     unittest.main()

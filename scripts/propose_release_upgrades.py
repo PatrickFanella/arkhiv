@@ -1,0 +1,59 @@
+"""Propose a reviewed release for registered consumers with independent checks."""
+import argparse
+import json
+import os
+from pathlib import Path
+import re
+import shlex
+import subprocess
+import tempfile
+
+from download_release_package import download
+from propose_consumer_upgrade import proposal
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--version', required=True)
+    parser.add_argument('--adoption-refs', action='store_true', help='Explicitly stack on registered adoption branches that are still in review')
+    args = parser.parse_args()
+    if not re.fullmatch(r'\d+\.\d+\.\d+', args.version):
+        raise SystemExit('Expected a stable semantic release version')
+    root = Path(__file__).resolve().parents[1]
+    release = json.loads((root / 'docs/releases' / ('release-' + args.version + '.json')).read_text())
+    if release['version'] != args.version:
+        raise SystemExit('Release filename and metadata disagree')
+    if release['package_file'] != 'subcult-archive-viewer-' + args.version + '.tgz':
+        raise SystemExit('Unexpected release package filename')
+    registry = json.loads((root / 'docs/reference/consumer-registry.json').read_text())
+    # Reset inherited helpers; never use a human or checkout action credential.
+    os.environ.update({'GIT_CONFIG_COUNT': '3', 'GIT_CONFIG_KEY_0': 'credential.helper', 'GIT_CONFIG_VALUE_0': '',
+        'GIT_CONFIG_KEY_1': 'credential.helper',
+        'GIT_CONFIG_VALUE_1': '!' + shlex.join(['python3', str(root / 'scripts/upgrade_git_credential.py')]),
+        'GIT_CONFIG_KEY_2': 'credential.useHttpPath', 'GIT_CONFIG_VALUE_2': 'true', 'GIT_TERMINAL_PROMPT': '0'})
+    with tempfile.TemporaryDirectory(prefix='archive-proposals-') as temporary:
+        work = Path(temporary)
+        artifact = download(release, work / release['package_file'])
+        for consumer in registry['consumers']:
+            if consumer['adoption'] != 'package':
+                print(consumer['repository'], 'package adoption pending', flush=True)
+                continue
+            base_ref = None
+            if consumer.get('adoption_status') == 'pull-request':
+                if not args.adoption_refs:
+                    print(consumer['repository'], 'adoption remains in review; select --adoption-refs for a stacked proposal', flush=True)
+                    continue
+                base_ref = consumer['adoption_ref']
+            clone = work / consumer['repository'].split('/')[-1]
+            subprocess.run(['git', 'clone', '--quiet', 'https://git.subcult.tv/' + consumer['repository'] + '.git', str(clone)], check=True)
+            if base_ref:
+                subprocess.run(['git', 'switch', '--detach', 'origin/' + base_ref], cwd=clone, check=True)
+                revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=clone, text=True).strip()
+                if revision != consumer['adoption_revision']:
+                    raise ValueError('Reviewed adoption branch moved; refresh its qualification before proposing')
+            result = proposal(release, consumer, clone, artifact, base_ref=base_ref)
+            print(consumer['repository'], result or 'Release already applied; no PR', flush=True)
+
+
+if __name__ == '__main__':
+    main()
