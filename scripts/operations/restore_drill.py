@@ -11,7 +11,12 @@ from runner import Runner, atomic, verify_backup
 
 
 def drill(config):
-    r = Runner(config)
+    bounded = dict(config)
+    budget = int(config.get("timeout_seconds", 900))
+    if budget < 180:
+        raise ValueError("restore requires at least 180 seconds including cleanup")
+    bounded["timeout_seconds"] = budget - 90
+    r = Runner(bounded)
     latest = json.loads((r.state / 'latest-backup.json').read_text())
     name = latest['name']
     if not re.fullmatch(r'auto-\d{8}T\d{6}Z', name):
