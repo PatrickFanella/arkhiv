@@ -26,6 +26,24 @@ class RestoreSafetyTest(unittest.TestCase):
                     restore_drill.drill(config)
                 remote.assert_not_called()
 
+    def test_public_role_has_no_login_and_is_created_before_catalog_restore(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            config = self.config(root)
+            calls = []
+            def execute(self, args):
+                calls.append(args)
+                if 'restore' in args:
+                    raise RuntimeError('stop after role setup')
+                return ''
+            with patch.object(runner.Runner, 'remote', return_value=''), patch.object(runner.Runner, 'command', execute), patch.object(restore_drill, 'verify_backup', return_value={}):
+                with self.assertRaises(RuntimeError):
+                    restore_drill.drill(config)
+            role = next(i for i, args in enumerate(calls) if 'CREATE ROLE arkhiv_public NOLOGIN' in args)
+            restore = next(i for i, args in enumerate(calls) if 'restore' in args)
+            self.assertLess(role, restore)
+            self.assertEqual(calls[-1][-2:], ['down', '--volumes'])
+
     def test_partial_stack_start_is_cleaned_without_touching_primary(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

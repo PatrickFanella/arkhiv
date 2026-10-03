@@ -56,6 +56,9 @@ def drill(config):
         started = True
         atomic(work / 'phase.json', {'phase': 'database-start'})
         r.execute(compose + ['up', '-d', '--wait', 'db'])
+        # Replay the public SELECT grants without copying a deployment password.
+        # This role cannot log in to the isolated qualification database.
+        r.execute(compose + ['exec', '-T', 'db', 'psql', '-U', 'arkhiv', '-d', 'arkhiv', '-v', 'ON_ERROR_STOP=1', '-c', 'CREATE ROLE arkhiv_public NOLOGIN'])
         atomic(work / 'phase.json', {'phase': 'catalog-restore'})
         r.execute(compose + ['run', '--rm', '-T', 'operator', 'restore', '--backup', '/input', '--destination', '/drill/restored'])
         atomic(work / 'phase.json', {'phase': 'restored-audit'})

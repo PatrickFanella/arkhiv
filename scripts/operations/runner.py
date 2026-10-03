@@ -226,6 +226,18 @@ class Runner:
 
     def monitor(self):
         problems = []
+        readiness = self.c.get('public_readiness_url')
+        if readiness:
+            if not readiness.startswith(('https://', 'http://127.0.0.1:')):
+                raise ValueError('invalid public readiness destination')
+            try:
+                with urllib.request.urlopen(readiness, timeout=5) as response:
+                    ready = json.loads(response.read(16384))
+                    healthy = response.status == 200 and ready.get('status') == 'ok' and ready.get('public') is True and ready.get('revision') == self.c['public_revision']
+                if not healthy:
+                    problems.append({'job': 'public-reader', 'status': 'unexpected-readiness', 'stale': False})
+            except (OSError, ValueError):
+                problems.append({'job': 'public-reader', 'status': 'unavailable', 'stale': False})
         for job, max_age in self.c.get('stale_seconds', {}).items():
             path = self.state / (job + '.json')
             data = json.loads(path.read_text()) if path.exists() else {}

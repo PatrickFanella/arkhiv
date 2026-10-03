@@ -133,6 +133,21 @@ class OperationsTest(unittest.TestCase):
             r.run('monitor')
             self.assertEqual(send.call_count, 2)
 
+    def test_public_readiness_checks_mode_revision_and_failure(self):
+        config = self.config() | {'public_readiness_url': 'http://127.0.0.1:54614/api/ready', 'public_revision': 'qualified'}
+        r = runner.Runner(config, execute=lambda args: '{}')
+        response = MagicMock()
+        response.__enter__.return_value.status = 200
+        def check(body):
+            response.__enter__.return_value.read.return_value = json.dumps(body).encode()
+            with patch.object(runner.urllib.request, 'urlopen', return_value=response):
+                return r.monitor()['problems']
+        self.assertEqual(check({'status': 'ok', 'public': True, 'revision': 'qualified'}), [])
+        self.assertEqual(check({'status': 'ok', 'public': False, 'revision': 'qualified'})[0]['job'], 'public-reader')
+        self.assertEqual(check({'status': 'ok', 'public': True, 'revision': 'old'})[0]['status'], 'unexpected-readiness')
+        with patch.object(runner.urllib.request, 'urlopen', side_effect=OSError('offline')):
+            self.assertEqual(r.monitor()['problems'][0]['status'], 'unavailable')
+
     def test_deadline_and_safe_errors(self):
         r = runner.Runner(self.config())
         r.deadline = 0
