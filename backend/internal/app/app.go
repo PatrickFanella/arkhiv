@@ -2,22 +2,55 @@ package app
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"git.subcult.tv/subculture-collective/vhness/internal/catalog"
 	"git.subcult.tv/subculture-collective/vhness/internal/domain"
+	"git.subcult.tv/subculture-collective/vhness/internal/preservation"
+	"github.com/jackc/pgx/v5"
 )
 
 type Server struct {
-	DB    *catalog.DB
-	Clock func() time.Time
-	Web   string
+	DB                *catalog.DB
+	Clock             func() time.Time
+	Media             string
+	Web               string
+	failures          sync.Mutex
+	resolutionFailure *ResolutionFailure
+}
+type ResolutionFailure struct {
+	ID     string    `json:"episode_id"`
+	Mode   string    `json:"mode"`
+	Reason string    `json:"reason"`
+	Time   time.Time `json:"at"`
+	Count  int64     `json:"count_since_start"`
+}
+
+func (s *Server) failure(r *http.Request, reason string) {
+	s.failures.Lock()
+	defer s.failures.Unlock()
+	count := int64(1)
+	if s.resolutionFailure != nil {
+		count += s.resolutionFailure.Count
+	}
+	s.resolutionFailure = &ResolutionFailure{r.PathValue("id"), r.URL.Query().Get("mode"), reason, time.Now().UTC(), count}
+}
+func (s *Server) failureStatus() *ResolutionFailure {
+	s.failures.Lock()
+	defer s.failures.Unlock()
+	if s.resolutionFailure == nil {
+		return nil
+	}
+	copy := *s.resolutionFailure
+	return &copy
 }
 
 func write(w http.ResponseWriter, status int, v any) {
@@ -38,9 +71,18 @@ func (s *Server) Handler() http.Handler {
 		write(w, 200, map[string]string{"status": "ready"})
 	})
 	mux.HandleFunc("GET /api/episodes", s.list)
+	mux.HandleFunc("GET /api/collections", func(w http.ResponseWriter, r *http.Request) {
+		collections, err := s.DB.Collections(r.Context())
+		if err != nil {
+			write(w, 503, map[string]string{"error": "collections unavailable"})
+			return
+		}
+		write(w, 200, collections)
+	})
 	mux.HandleFunc("GET /api/episodes/{id}", s.episode)
 	mux.HandleFunc("GET /api/playback/{id}", s.playback)
 	mux.HandleFunc("GET /api/channel", s.channel)
+	mux.HandleFunc("GET /api/media/{id}", s.media)
 	mux.HandleFunc("GET /api/status", s.status)
 	if s.Web != "" {
 		files := http.FileServer(http.Dir(s.Web))
@@ -61,7 +103,7 @@ func (s *Server) Handler() http.Handler {
 	return mux
 }
 func (s *Server) list(w http.ResponseWriter, r *http.Request) {
-	entries, err := s.DB.Entries(r.Context())
+	entries, err := s.DB.Summaries(r.Context())
 	if err != nil {
 		write(w, 503, map[string]string{"error": "catalog unavailable"})
 		return
@@ -70,6 +112,9 @@ func (s *Server) list(w http.ResponseWriter, r *http.Request) {
 	query := strings.ToLower(r.URL.Query().Get("q"))
 	year := r.URL.Query().Get("year")
 	for _, e := range entries {
+		if selected := r.URL.Query().Get("collection"); selected != "" && e.Episode.CollectionID != selected {
+			continue
+		}
 		if !e.Decision.Published {
 			continue
 		}
@@ -105,31 +150,31 @@ func (s *Server) list(w http.ResponseWriter, r *http.Request) {
 	write(w, 200, map[string]any{"episodes": list[start:end], "total": total, "page": page})
 }
 func (s *Server) episode(w http.ResponseWriter, r *http.Request) {
-	entries, err := s.DB.Entries(r.Context())
-	if err != nil {
+	e, err := s.DB.Entry(r.Context(), r.PathValue("id"))
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		write(w, 503, map[string]string{"error": "catalog unavailable"})
 		return
 	}
-	e, ok := entries[r.PathValue("id")]
-	if !ok || !e.Decision.Published {
+	if err != nil || !e.Decision.Published {
 		write(w, 404, map[string]string{"error": "episode unavailable"})
 		return
 	}
 	write(w, 200, e)
 }
 func (s *Server) playback(w http.ResponseWriter, r *http.Request) {
-	entries, err := s.DB.Entries(r.Context())
-	if err != nil {
+	e, err := s.DB.Entry(r.Context(), r.PathValue("id"))
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		write(w, 503, map[string]string{"error": "catalog unavailable"})
 		return
 	}
-	e, ok := entries[r.PathValue("id")]
-	if !ok {
+	if err != nil {
+		s.failure(r, "episode unavailable")
 		write(w, 404, map[string]string{"error": "episode unavailable"})
 		return
 	}
 	p, err := domain.Resolve(e, r.URL.Query().Get("mode") == "channel")
 	if err != nil {
+		s.failure(r, err.Error())
 		write(w, 404, map[string]string{"error": err.Error()})
 		return
 	}
@@ -142,15 +187,25 @@ func (s *Server) channel(w http.ResponseWriter, r *http.Request) {
 	}
 	schedule, err := s.DB.Schedule(r.Context())
 	if err != nil {
+		if !errors.Is(err, pgx.ErrNoRows) {
+			write(w, 503, map[string]string{"error": "schedule unavailable"})
+			return
+		}
 		write(w, 200, domain.Now{ServerTime: now.UTC(), State: "unavailable", Reason: "channel has no schedule"})
 		return
 	}
-	entries, err := s.DB.Entries(r.Context())
+	entries, err := s.DB.ScheduleEntries(r.Context(), schedule)
 	if err != nil {
 		write(w, 503, map[string]string{"error": "catalog unavailable"})
 		return
 	}
-	write(w, 200, schedule.At(now, entries))
+	state := schedule.At(now, entries)
+	if state.Episode != nil {
+		// Polling viewers need identity and attribution, not the parent item's
+		// entire file inventory. Complete inventories remain in the catalog.
+		state.Episode.Files = nil
+	}
+	write(w, 200, state)
 }
 func (s *Server) status(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("collection")
@@ -167,5 +222,65 @@ func (s *Server) status(w http.ResponseWriter, r *http.Request) {
 		write(w, 503, map[string]string{"error": "queue status unavailable"})
 		return
 	}
-	write(w, 200, map[string]any{"worker": state, "items": counts, "video_storage": "disabled for source_stream", "playback_proof": "server status does not prove client playback"})
+	inventory, err := s.DB.Inventory(r.Context(), id)
+	if err != nil {
+		write(w, 503, map[string]string{"error": "inventory status unavailable"})
+		return
+	}
+	collection, err := s.DB.GetCollection(r.Context(), id)
+	if err != nil {
+		write(w, 503, map[string]string{"error": "collection status unavailable"})
+		return
+	}
+	now := time.Now().UTC()
+	if s.Clock != nil {
+		now = s.Clock().UTC()
+	}
+	channel := map[string]any{"state": "unavailable"}
+	if schedule, err := s.DB.Schedule(r.Context()); err == nil {
+		entries, err := s.DB.ScheduleEntries(r.Context(), schedule)
+		if err == nil {
+			state := schedule.At(now, entries)
+			gaps := 0
+			for i := 1; i < len(schedule.Programs); i++ {
+				prior := schedule.Programs[i-1]
+				if schedule.Programs[i].Start.After(prior.Start.Add(time.Duration(prior.Duration * float64(time.Second)))) {
+					gaps++
+				}
+			}
+			last := schedule.Programs[len(schedule.Programs)-1]
+			channel = map[string]any{"state": state.State, "reason": state.Reason, "revision": state.Revision, "horizon": last.Start.Add(time.Duration(last.Duration * float64(time.Second))), "gaps": gaps}
+		}
+	}
+	write(w, 200, map[string]any{"worker": state, "items": counts, "inventory": inventory, "collection": collection, "channel": channel, "metadata_retention": "all snapshots, observations, decisions, and schedules retained; no automatic pruning", "metadata_growth_alert": inventory.DatabaseBytes > 1<<30, "client_playback_status": "unverified by server; consult browser qualification", "last_server_resolution_failure": s.failureStatus(), "video_storage": collection.Policy})
+}
+
+func (s *Server) media(w http.ResponseWriter, r *http.Request) {
+	e, err := s.DB.Entry(r.Context(), r.PathValue("id"))
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		write(w, 503, map[string]string{"error": "catalog unavailable"})
+		return
+	}
+	if err != nil || e.Policy != domain.Local || !e.Watchable() || s.Media == "" {
+		write(w, 404, map[string]string{"error": "episode unavailable"})
+		return
+	}
+	selected, _ := e.Selected()
+	f, err := preservation.Verify(s.Media, e.LocalPath, e.LocalSHA256, selected.Bytes)
+	if err != nil {
+		s.failure(r, "local original failed integrity check")
+		write(w, 503, map[string]string{"error": "local original failed integrity check"})
+		return
+	}
+	defer f.Close()
+	info, err := f.Stat()
+	if err != nil {
+		write(w, 503, map[string]string{"error": "local original unavailable"})
+		return
+	}
+	w.Header().Set("Content-Type", "video/mp4")
+	w.Header().Set("Cache-Control", "private, no-cache")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.Header().Set("ETag", `"sha256-`+e.LocalSHA256+`"`)
+	http.ServeContent(w, r, selected.Name, info.ModTime(), f)
 }

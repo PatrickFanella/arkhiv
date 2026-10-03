@@ -37,7 +37,7 @@ func (b *Backoff) Error() string {
 }
 func Allowed(u *url.URL) bool {
 	h := strings.ToLower(u.Hostname())
-	return u.Scheme == "https" && u.User == nil && (h == "archive.org" || strings.HasSuffix(h, ".us.archive.org")) && (u.Port() == "" || u.Port() == "443")
+	return u.Scheme == "https" && u.User == nil && (h == "archive.org" || strings.HasSuffix(h, ".us.archive.org") || strings.HasSuffix(h, ".ca.archive.org")) && (u.Port() == "" || u.Port() == "443")
 }
 func New() *Client {
 	return &Client{Base: "https://archive.org", Clock: time.Now, HTTP: &http.Client{Timeout: 30 * time.Second, CheckRedirect: func(r *http.Request, via []*http.Request) error {
@@ -115,8 +115,8 @@ func (c *Client) Discover(ctx context.Context, collection string, page, rows int
 		return nil, 0, r, err
 	}
 	var d struct {
-		Response struct {
-			Count int64 `json:"numFound"`
+		Response *struct {
+			Count *int64 `json:"numFound"`
 			Docs  []struct {
 				ID string `json:"identifier"`
 			} `json:"docs"`
@@ -125,7 +125,7 @@ func (c *Client) Discover(ctx context.Context, collection string, page, rows int
 	if err = json.Unmarshal(r.Raw, &d); err != nil {
 		return nil, 0, r, err
 	}
-	if d.Response.Count < 0 || len(d.Response.Docs) > rows {
+	if d.Response == nil || d.Response.Count == nil || *d.Response.Count < 0 || len(d.Response.Docs) > rows {
 		return nil, 0, r, fmt.Errorf("invalid discovery response")
 	}
 	ids := []string{}
@@ -135,5 +135,5 @@ func (c *Client) Discover(ctx context.Context, collection string, page, rows int
 		}
 		ids = append(ids, doc.ID)
 	}
-	return ids, d.Response.Count, r, nil
+	return ids, *d.Response.Count, r, nil
 }

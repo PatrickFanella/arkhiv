@@ -16,6 +16,7 @@ import (
 	"git.subcult.tv/subculture-collective/vhness/internal/app"
 	"git.subcult.tv/subculture-collective/vhness/internal/catalog"
 	"git.subcult.tv/subculture-collective/vhness/internal/domain"
+	"git.subcult.tv/subculture-collective/vhness/internal/preservation"
 	"git.subcult.tv/subculture-collective/vhness/internal/source"
 	"git.subcult.tv/subculture-collective/vhness/internal/worker"
 )
@@ -35,13 +36,17 @@ func load(p string, v any) error {
 }
 func run() error {
 	if len(os.Args) < 2 {
-		return fmt.Errorf("usage: vhness migrate|collection|import|fetch|inspect|review|schedule|discover|refresh|report|seed|serve")
+		return fmt.Errorf("usage: vhness migrate|collection|import|import-item|fetch|inspect|acquire|audit|review|schedule|discover|refresh|report|seed|serve")
 	}
 	cmd := os.Args[1]
 	f := flag.NewFlagSet(cmd, flag.ContinueOnError)
 	id := f.String("id", "", "source item identity")
 	collection := f.String("collection", domain.DemocracyNow, "collection identity")
 	file := f.String("file", "", "JSON input")
+	sourceItem := f.String("source-item", "", "explicit multi-file source movie item")
+	episodeFile := f.String("episode-file", "", "exact file to materialize from a selected source item")
+	synthetic := f.Bool("synthetic", false, "explicit generated local fixture metadata")
+	fixtureOriginal := f.String("fixture-original", "", "generated fixture original, only for vhness-local-fixture")
 	policy := f.String("policy", string(domain.Stream), "delivery policy")
 	budget := f.Int64("budget", 0, "local byte budget")
 	reserve := f.Int64("reserve", 0, "free-space reserve")
@@ -65,7 +70,27 @@ func run() error {
 	case "migrate":
 		return d.Migrate(ctx, env("VHNESS_MIGRATIONS", "../migrations"))
 	case "collection":
-		return d.Collection(ctx, domain.Collection{ID: *collection, Policy: domain.Policy(*policy), Budget: *budget, Reserve: *reserve})
+		return d.Collection(ctx, domain.Collection{ID: *collection, Policy: domain.Policy(*policy), Budget: *budget, Reserve: *reserve, SourceItem: *sourceItem})
+	case "import-item":
+		c, err := d.GetCollection(ctx, *collection)
+		if err != nil {
+			return err
+		}
+		raw, err := os.ReadFile(*file)
+		if err != nil {
+			return err
+		}
+		e, err := source.ItemFile(c, *id, *episodeFile, raw)
+		if err != nil {
+			return err
+		}
+		if err = d.Snapshot(ctx, *id, raw, 200, "", "", nil); err != nil {
+			return err
+		}
+		if err = d.ItemEpisode(ctx, e, domain.Digest(raw)); err != nil {
+			return err
+		}
+		return json.NewEncoder(os.Stdout).Encode(map[string]string{"episode_id": e.ID, "source_item": e.SourceItemID, "file": *episodeFile})
 	case "import":
 		raw, err := os.ReadFile(*file)
 		if err != nil {
@@ -74,6 +99,12 @@ func run() error {
 		e, err := source.Normalize(*id, *collection, raw)
 		if err != nil {
 			return err
+		}
+		if *synthetic {
+			if *collection != "vhness-local-fixture" {
+				return fmt.Errorf("synthetic import requires vhness-local-fixture")
+			}
+			e.Synthetic = true
 		}
 		return d.Snapshot(ctx, *id, raw, 200, "", "", &e)
 	case "fetch":
@@ -86,6 +117,90 @@ func run() error {
 			return err
 		}
 		return d.Snapshot(ctx, *id, response.Raw, response.Status, response.ETag, response.Modified, &e)
+	case "audit":
+		c, err := d.GetCollection(ctx, *collection)
+		if err != nil {
+			return err
+		}
+		if c.Policy != domain.Local {
+			return fmt.Errorf("integrity audit requires a local collection")
+		}
+		entries, err := d.LocalEntries(ctx, *collection)
+		if err != nil {
+			return err
+		}
+		failures := 0
+		results := map[string]string{}
+		for id, e := range entries {
+			raw, checkErr := d.PreservationReceipt(ctx, id)
+			var receipt preservation.Receipt
+			if checkErr == nil {
+				checkErr = json.Unmarshal(raw, &receipt)
+			}
+			if checkErr == nil && (receipt.Path != e.LocalPath || receipt.SHA256 != e.LocalSHA256 || receipt.Manifest.Snapshot != e.LocalSnapshot || receipt.Manifest.File != e.LocalFile || receipt.Manifest.ID != id) {
+				checkErr = fmt.Errorf("preservation lineage mismatch")
+			}
+			if checkErr == nil {
+				f, verifyErr := preservation.Verify(os.Getenv("VHNESS_MEDIA"), e.LocalPath, e.LocalSHA256, receipt.Manifest.Bytes)
+				checkErr = verifyErr
+				if f != nil {
+					f.Close()
+				}
+			}
+			if checkErr != nil {
+				failures++
+				results[id] = checkErr.Error()
+			} else {
+				results[id] = "verified"
+			}
+		}
+		if err = json.NewEncoder(os.Stdout).Encode(map[string]any{"originals": len(entries), "failures": failures, "results": results}); err != nil {
+			return err
+		}
+		if failures > 0 {
+			return fmt.Errorf("integrity audit failed for %d originals", failures)
+		}
+		return nil
+	case "acquire":
+		if *timeout <= 0 || *timeout > 30*time.Minute {
+			return fmt.Errorf("acquisition deadline must be within 30 minutes")
+		}
+		var manifest preservation.Manifest
+		if err = load(*file, &manifest); err != nil {
+			return err
+		}
+		c, err := d.GetCollection(ctx, manifest.Collection)
+		if err != nil {
+			return err
+		}
+		e, err := d.Entry(ctx, manifest.ID)
+		if err != nil {
+			return err
+		}
+		acquisitionCtx, cancel := context.WithTimeout(ctx, *timeout)
+		defer cancel()
+		mediaRoot := os.Getenv("VHNESS_MEDIA")
+		if !filepath.IsAbs(mediaRoot) {
+			return fmt.Errorf("absolute VHNESS_MEDIA required")
+		}
+		collectionRoot := filepath.Join(mediaRoot, c.ID)
+		acquirer := preservation.New(collectionRoot)
+		if *fixtureOriginal != "" {
+			acquirer = preservation.GeneratedFixture(collectionRoot, *fixtureOriginal)
+		}
+		receipt, err := acquirer.Acquire(acquisitionCtx, c, e, manifest)
+		if err != nil {
+			return err
+		}
+		receipt.Path = filepath.Join(c.ID, receipt.Path)
+		raw, err := json.Marshal(receipt)
+		if err != nil {
+			return err
+		}
+		if err = d.BindLocal(ctx, manifest.ID, manifest.Snapshot, manifest.File, receipt.Path, receipt.SHA256, raw); err != nil {
+			return err
+		}
+		return json.NewEncoder(os.Stdout).Encode(receipt)
 	case "review":
 		var decision domain.Decision
 		if err := load(*file, &decision); err != nil {
@@ -99,6 +214,11 @@ func run() error {
 		}
 		return d.SaveSchedule(ctx, s)
 	case "discover", "refresh":
+		if c, collectionErr := d.GetCollection(ctx, *collection); collectionErr != nil {
+			return collectionErr
+		} else if c.SourceItem != "" {
+			return fmt.Errorf("file-based sources require explicit import-item selection")
+		}
 		if _, err = d.GetCollection(ctx, *collection); err != nil {
 			return err
 		}
@@ -163,7 +283,7 @@ func run() error {
 		}
 		return nil
 	case "serve":
-		server := &http.Server{Addr: env("API_ADDR", "127.0.0.1:8080"), Handler: (&app.Server{DB: d, Web: os.Getenv("VHNESS_WEB")}).Handler(), ReadHeaderTimeout: 5 * time.Second, IdleTimeout: 60 * time.Second}
+		server := &http.Server{Addr: env("API_ADDR", "127.0.0.1:8080"), Handler: (&app.Server{DB: d, Web: os.Getenv("VHNESS_WEB"), Media: os.Getenv("VHNESS_MEDIA")}).Handler(), ReadHeaderTimeout: 5 * time.Second, IdleTimeout: 60 * time.Second}
 		go func() {
 			<-ctx.Done()
 			shutdown, cancel := context.WithTimeout(context.Background(), 10*time.Second)

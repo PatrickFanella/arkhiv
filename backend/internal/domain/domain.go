@@ -29,17 +29,21 @@ func Digest(b []byte) string  { h := sha256.Sum256(b); return hex.EncodeToString
 func Duration(n float64) bool { return n > 0 && n <= 86400 && !math.IsInf(n, 0) && !math.IsNaN(n) }
 
 type Collection struct {
-	ID      string `json:"id"`
-	Policy  Policy `json:"policy"`
-	Budget  int64  `json:"budget_bytes"`
-	Reserve int64  `json:"reserve_bytes"`
+	ID         string `json:"id"`
+	Policy     Policy `json:"policy"`
+	Budget     int64  `json:"budget_bytes"`
+	Reserve    int64  `json:"reserve_bytes"`
+	SourceItem string `json:"source_item,omitempty"`
 }
 
 func (c Collection) Validate() error {
 	if !ValidID(c.ID) || (c.Policy != Stream && c.Policy != Local) {
 		return fmt.Errorf("invalid collection or delivery policy")
 	}
-	if c.ID == DemocracyNow && c.Policy != Stream {
+	if c.SourceItem != "" && (!ValidID(c.SourceItem) || c.Policy != Local || c.SourceItem == DemocracyNow) {
+		return fmt.Errorf("file-based item requires an explicitly local source item")
+	}
+	if c.ID == DemocracyNow && (c.Policy != Stream || c.SourceItem != "") {
 		return fmt.Errorf("Democracy Now! must remain source-streaming only")
 	}
 	if c.Policy == Local && (c.Budget <= 0 || c.Reserve <= 0) {
@@ -54,6 +58,7 @@ type File struct {
 	Source   string          `json:"source"`
 	Original string          `json:"original,omitempty"`
 	Bytes    int64           `json:"bytes"`
+	SHA1     string          `json:"sha1,omitempty"`
 	MD5      string          `json:"md5,omitempty"`
 	Duration float64         `json:"duration"`
 	Width    int             `json:"width"`
@@ -68,24 +73,33 @@ func (f File) Candidate() bool {
 func SafeFile(s string) bool { return s != "" && s != "." && !strings.ContainsAny(s, "/\\\x00") }
 
 type Episode struct {
-	ID           string `json:"id"`
-	CollectionID string `json:"collection_id"`
-	Title        string `json:"title"`
-	Date         string `json:"date"`
-	Description  string `json:"description"`
-	Creator      string `json:"creator,omitempty"`
-	Rights       string `json:"rights,omitempty"`
-	LicenseURL   string `json:"license_url,omitempty"`
-	Files        []File `json:"files"`
-	Synthetic    bool   `json:"synthetic"`
+	ID                string   `json:"id"`
+	CollectionID      string   `json:"collection_id"`
+	SourceItemID      string   `json:"source_item_id,omitempty"`
+	SourceCollections []string `json:"source_collections,omitempty"`
+	SourceFile        string   `json:"source_file,omitempty"`
+	Title             string   `json:"title"`
+	Date              string   `json:"date"`
+	Description       string   `json:"description"`
+	Creator           string   `json:"creator,omitempty"`
+	Rights            string   `json:"rights,omitempty"`
+	LicenseURL        string   `json:"license_url,omitempty"`
+	Files             []File   `json:"files"`
+	Synthetic         bool     `json:"synthetic"`
 }
 
 func (e Episode) Validate() error {
-	if !ValidID(e.ID) || !ValidID(e.CollectionID) || strings.TrimSpace(e.Title) == "" {
+	if (e.SourceItemID != "" && (!ValidID(e.SourceItemID) || !SafeFile(e.SourceFile))) || !ValidID(e.ID) || !ValidID(e.CollectionID) || strings.TrimSpace(e.Title) == "" {
 		return fmt.Errorf("invalid episode identity")
 	}
 	if e.Date != "" {
-		if _, err := time.Parse("2006-01-02", e.Date); err != nil {
+		layout := "2006-01-02"
+		if len(e.Date) == 4 {
+			layout = "2006"
+		} else if len(e.Date) == 7 {
+			layout = "2006-01"
+		}
+		if _, err := time.Parse(layout, e.Date); err != nil {
 			return fmt.Errorf("invalid broadcast date")
 		}
 	}
@@ -103,16 +117,21 @@ type Decision struct {
 	Notes       string `json:"notes"`
 }
 type Entry struct {
-	Episode     Episode  `json:"episode"`
-	Decision    Decision `json:"decision"`
-	Policy      Policy   `json:"policy"`
-	SourceHash  string   `json:"source_hash"`
-	Unavailable bool     `json:"unavailable"`
-	LocalPath   string   `json:"-"`
-	LocalSHA256 string   `json:"-"`
+	Episode       Episode  `json:"episode"`
+	Decision      Decision `json:"decision"`
+	Policy        Policy   `json:"policy"`
+	SourceHash    string   `json:"source_hash"`
+	Unavailable   bool     `json:"unavailable"`
+	LocalPath     string   `json:"-"`
+	LocalSHA256   string   `json:"-"`
+	LocalFile     string   `json:"-"`
+	LocalSnapshot string   `json:"-"`
 }
 
 func (e Entry) Selected() (File, bool) {
+	if e.Episode.SourceFile != "" && e.Decision.File != e.Episode.SourceFile {
+		return File{}, false
+	}
 	for _, f := range e.Episode.Files {
 		if f.Name == e.Decision.File && f.Candidate() {
 			return f, true
@@ -122,7 +141,7 @@ func (e Entry) Selected() (File, bool) {
 }
 func (e Entry) Watchable() bool {
 	_, ok := e.Selected()
-	return ok && e.Decision.Published && e.Decision.Playback && !e.Unavailable && (e.Policy == Stream || e.LocalPath != "")
+	return ok && e.Decision.Published && e.Decision.Playback && !e.Unavailable && (e.Policy == Stream || (e.LocalPath != "" && e.LocalSHA256 != "" && e.LocalFile == e.Decision.File && e.LocalSnapshot == e.SourceHash))
 }
 func (e Entry) ValidateDecision(d Decision) error {
 	if strings.TrimSpace(d.Notes) == "" {
@@ -131,12 +150,12 @@ func (e Entry) ValidateDecision(d Decision) error {
 	if d.Public {
 		return fmt.Errorf("public release is not enabled")
 	}
-	if d.Acquisition && e.Policy != Local {
+	if d.Acquisition && (e.Policy != Local || e.Episode.DemocracySource()) {
 		return fmt.Errorf("source-stream collections cannot acquire media")
 	}
 	copy := e
 	copy.Decision = d
-	if d.Playback || d.Published || d.Channel {
+	if d.Playback || d.Published || d.Channel || d.Acquisition {
 		if _, ok := copy.Selected(); !ok {
 			return fmt.Errorf("review requires an eligible selected file")
 		}
@@ -161,9 +180,13 @@ func Resolve(e Entry, channel bool) (Playback, error) {
 		return Playback{}, fmt.Errorf("episode unavailable or not approved for this viewing mode")
 	}
 	f, _ := e.Selected()
-	p := Playback{ID: e.Episode.ID, Policy: e.Policy, SourceURL: "https://archive.org/details/" + url.PathEscape(e.Episode.ID), File: f, Snapshot: e.SourceHash}
+	sourceID := e.Episode.ID
+	if e.Episode.SourceItemID != "" {
+		sourceID = e.Episode.SourceItemID
+	}
+	p := Playback{ID: e.Episode.ID, Policy: e.Policy, SourceURL: "https://archive.org/details/" + url.PathEscape(sourceID), File: f, Snapshot: e.SourceHash}
 	if e.Policy == Stream {
-		p.URL = "https://archive.org/download/" + url.PathEscape(e.Episode.ID) + "/" + url.PathEscape(f.Name)
+		p.URL = "https://archive.org/download/" + url.PathEscape(sourceID) + "/" + url.PathEscape(f.Name)
 	} else {
 		p.URL = "/api/media/" + url.PathEscape(e.Episode.ID)
 	}
@@ -248,4 +271,16 @@ func (s Schedule) At(t time.Time, entries map[string]Entry) Now {
 		return n
 	}
 	return n
+}
+
+func (e Episode) DemocracySource() bool {
+	if e.CollectionID == DemocracyNow || e.SourceItemID == DemocracyNow {
+		return true
+	}
+	for _, id := range e.SourceCollections {
+		if id == DemocracyNow {
+			return true
+		}
+	}
+	return false
 }

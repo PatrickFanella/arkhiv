@@ -57,7 +57,7 @@ def prepare():
     with socket.socket() as sock:
         sock.bind(('127.0.0.1', 0)); api_port = sock.getsockname()[1]
     if (ROOT / 'runtime.json').exists(): api_port = settings()['port']
-    env = {'DATABASE_URL': f'postgres://vhness:{password.read_text()}@127.0.0.1:{port}/vhness?sslmode=disable', 'API_ADDR': f'127.0.0.1:{api_port}', 'VHNESS_WEB': str(ROOT / 'web'), 'VHNESS_MIGRATIONS': str(REPO / 'migrations')}
+    env = {'DATABASE_URL': f'postgres://vhness:{password.read_text()}@127.0.0.1:{port}/vhness?sslmode=disable', 'API_ADDR': f'127.0.0.1:{api_port}', 'VHNESS_WEB': str(ROOT / 'web'), 'VHNESS_MIGRATIONS': str(REPO / 'migrations'), 'VHNESS_MEDIA': str(ROOT / 'media')}
     p = ROOT / 'environment.json'; p.write_text(json.dumps(env)); p.chmod(0o600)
     return api_port
 
@@ -74,7 +74,7 @@ def build():
         if not candidate.exists() or candidate.read_bytes() != path.read_bytes():
             raise RuntimeError('Frontend differs from verified snapshot; run isolated make verify before pilot build')
     shutil.copytree(output, ROOT / 'web', dirs_exist_ok=True)
-    identity = {'source': str(REPO), 'revision': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=REPO, text=True).strip(), 'dirty': bool(subprocess.check_output(['git', 'status', '--porcelain'], cwd=REPO)), 'binary_sha256': hashlib.sha256((ROOT / 'bin/vhness').read_bytes()).hexdigest(), 'video_storage': 'none; Democracy Now! source streaming only'}
+    identity = {'source': str(REPO), 'revision': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=REPO, text=True).strip(), 'dirty': bool(subprocess.check_output(['git', 'status', '--porcelain'], cwd=REPO)), 'binary_sha256': hashlib.sha256((ROOT / 'bin/vhness').read_bytes()).hexdigest(), 'video_storage': 'explicit collection manifests only; Democracy Now! source streaming only'}
     (ROOT / 'evidence/artifact.json').write_text(json.dumps(identity, indent=2) + '\n')
 
 def start():
@@ -112,6 +112,6 @@ def main():
     elif args.action == 'stop': stop()
     elif args.action == 'run': cli(args.args)
     else:
-        print(json.dumps({'api_running': bool(live_pid()), 'url': f"http://127.0.0.1:{settings()['port']}" if (ROOT / 'runtime.json').exists() else None, 'root': str(ROOT), 'video_storage': 'none'}, indent=2))
+        print(json.dumps({'api_running': bool(live_pid()), 'url': f"http://127.0.0.1:{settings()['port']}" if (ROOT / 'runtime.json').exists() else None, 'root': str(ROOT), 'video_storage': 'explicit collection manifests only; Democracy Now! source streaming only'}, indent=2))
 
 if __name__ == '__main__': main()
