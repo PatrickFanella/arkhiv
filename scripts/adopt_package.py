@@ -81,6 +81,11 @@ assert not (repo/"web/src/engine").exists(),"Legacy adapter is still present"
 print("Shared package and immutable engine pins verified:",release["version"],release["source_revision"])
 ''' + tail)
     shutil.copyfile(Path(__file__).with_name('build_consumer_image.py'), root / 'scripts/build_image.py')
+    for name, line in [('.gitignore', '/.pnpm-store/'), ('.dockerignore', '**/.pnpm-store')]:
+        file = root / name
+        text = file.read_text() if file.exists() else ''
+        if line not in text.splitlines():
+            file.write_text(text.rstrip() + '\n' + line + '\n')
     (root / 'AGENTS.md').write_text('''# Standalone video app
 
 This repository owns its frontend, design system and deployment configuration.

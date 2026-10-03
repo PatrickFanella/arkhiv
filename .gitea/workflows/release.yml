@@ -83,3 +83,5 @@ jobs:
         with:
           name: shared-platform-release
           path: .artifacts/
+          include-hidden-files: true
+          if-no-files-found: error
