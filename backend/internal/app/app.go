@@ -159,12 +159,7 @@ func (s *Server) list(w http.ResponseWriter, r *http.Request) {
 		ep.Files = nil
 		list = append(list, ep)
 	}
-	sort.Slice(list, func(i, j int) bool {
-		if list[i].Date == list[j].Date {
-			return list[i].ID < list[j].ID
-		}
-		return list[i].Date > list[j].Date
-	})
+	sort.Slice(list, func(i, j int) bool { return domain.BrowseLess(list[i], list[j]) })
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
 	if page < 1 {
 		page = 1

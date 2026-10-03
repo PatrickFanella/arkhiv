@@ -9,11 +9,39 @@ import (
 	"math"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
 
 const DemocracyNow = "democracy_now_vid"
+
+// BrowseLess retains broadcast-date ordering for news and the source's numbered
+// file order for episodes materialized from the same complete-series item.
+func BrowseLess(a, b Episode) bool {
+	if a.SourceItemID != b.SourceItemID {
+		return a.SourceItemID < b.SourceItemID
+	}
+	if a.SourceItemID != "" {
+		prefixA, _, _ := strings.Cut(a.SourceFile, " ")
+		prefixB, _, _ := strings.Cut(b.SourceFile, " ")
+		ai, errA := strconv.Atoi(prefixA)
+		bi, errB := strconv.Atoi(prefixB)
+		if (errA == nil) != (errB == nil) {
+			return errA == nil
+		}
+		if errA == nil && errB == nil && ai != bi {
+			return ai < bi
+		}
+		if a.SourceFile != b.SourceFile {
+			return a.SourceFile < b.SourceFile
+		}
+	}
+	if a.Date != b.Date {
+		return a.Date > b.Date
+	}
+	return a.ID < b.ID
+}
 
 type Policy string
 

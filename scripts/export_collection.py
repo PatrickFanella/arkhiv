@@ -31,7 +31,8 @@ def main():
         # All removal is confined to this disposable derived copy. The original
         # dump, active databases, source metadata, and media are never altered.
         query=f"""BEGIN;
-CREATE TEMP TABLE keep_items AS SELECT id AS item FROM episodes WHERE collection_id='{collection}' UNION SELECT item_id FROM metadata_queue WHERE collection_id='{collection}' UNION SELECT source_item FROM collections WHERE id='{collection}' AND source_item<>'';
+CREATE TEMP TABLE keep_items AS SELECT id AS item FROM episodes WHERE collection_id='{collection}' UNION SELECT item_id FROM metadata_queue WHERE collection_id='{collection}' UNION SELECT id FROM collections WHERE id='{collection}' UNION SELECT source_item FROM collections WHERE id='{collection}' AND source_item<>'';
+CREATE TEMP TABLE expected_snapshots AS SELECT count(*) AS rows,md5(coalesce(string_agg(sha256,'' ORDER BY sha256),'')) AS digest FROM snapshots WHERE item_id IN(SELECT item FROM keep_items) OR sha256 IN(SELECT source_hash FROM episodes WHERE collection_id='{collection}');
 DELETE FROM current_schedule WHERE revision IN (SELECT revision FROM schedules s WHERE EXISTS(SELECT 1 FROM jsonb_array_elements(s.payload->'programs') p WHERE NOT EXISTS(SELECT 1 FROM episodes e WHERE e.id=p->>'episode_id' AND e.collection_id='{collection}')));
 DELETE FROM schedules s WHERE EXISTS(SELECT 1 FROM jsonb_array_elements(s.payload->'programs') p WHERE NOT EXISTS(SELECT 1 FROM episodes e WHERE e.id=p->>'episode_id' AND e.collection_id='{collection}'));
 DELETE FROM decision_history WHERE episode_id IN (SELECT id FROM episodes WHERE collection_id<>'{collection}');
@@ -43,13 +44,14 @@ DELETE FROM collection_budget_reviews WHERE collection_id<>'{collection}';
 DELETE FROM collections WHERE id<>'{collection}';
 DELETE FROM observations o WHERE NOT EXISTS(SELECT 1 FROM keep_items k WHERE k.item=o.item_id);
 DELETE FROM snapshots s WHERE NOT EXISTS(SELECT 1 FROM keep_items k WHERE k.item=s.item_id) AND NOT EXISTS(SELECT 1 FROM episodes e WHERE e.source_hash=s.sha256);
+DO $$ BEGIN IF NOT EXISTS(SELECT 1 FROM expected_snapshots e WHERE e.rows=(SELECT count(*) FROM snapshots) AND e.digest=(SELECT md5(coalesce(string_agg(sha256,'' ORDER BY sha256),'')) FROM snapshots)) THEN RAISE EXCEPTION 'Collection snapshot lineage changed during export'; END IF; END $$;
 COMMIT;"""
         run(['docker','exec',name,'psql','-U','postgres','-d','postgres','-v','ON_ERROR_STOP=1','-c',query],stdout=subprocess.DEVNULL)
-        stats=capture(['docker','exec',name,'psql','-U','postgres','-d','postgres','-At','-c',"SELECT (SELECT count(*) FROM collections),(SELECT count(*) FROM episodes),(SELECT count(*) FROM snapshots),(SELECT count(*) FROM snapshots WHERE encode(sha256(raw),'hex')<>sha256)"],text=True).strip().split('|')
+        stats=capture(['docker','exec',name,'psql','-U','postgres','-d','postgres','-At','-c',f"SELECT (SELECT count(*) FROM collections),(SELECT count(*) FROM episodes),(SELECT count(*) FROM snapshots),(SELECT count(*) FROM snapshots WHERE encode(sha256(raw),'hex')<>sha256),(SELECT count(*) FROM snapshots WHERE item_id='{collection}'),(SELECT count(*) FROM observations)"],text=True).strip().split('|')
         if stats[0]!='1' or stats[3]!='0':raise RuntimeError('Export scope or source-byte verification failed')
         with output.open('wb') as stream:run(['docker','exec',name,'pg_dump','-U','postgres','-d','postgres','-Fc'],stdout=stream)
         output.chmod(0o600)
-        receipt={'collection':collection,'source_dump_sha256':checksum(snapshot),'export_sha256':checksum(output),'bytes':output.stat().st_size,'episodes':int(stats[1]),'snapshots':int(stats[2]),'invalid_raw_snapshots':int(stats[3]),'boundary':'Collection-only derived recovery copy; no original metadata or media removed'}
+        receipt={'collection':collection,'source_dump_sha256':checksum(snapshot),'export_sha256':checksum(output),'bytes':output.stat().st_size,'episodes':int(stats[1]),'snapshots':int(stats[2]),'invalid_raw_snapshots':int(stats[3]),'collection_response_snapshots':int(stats[4]),'observations':int(stats[5]),'boundary':'Collection-only derived recovery copy; source snapshot identities verified before and after filtering, including complete collection/discovery responses; no original metadata or media removed'}
         output.with_suffix('.receipt.json').write_text(json.dumps(receipt,indent=2)+'\n');output.with_suffix('.receipt.json').chmod(0o600)
         print(json.dumps(receipt))
     finally:run(['docker','rm','-f','-v',name],stdout=subprocess.DEVNULL)
