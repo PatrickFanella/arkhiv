@@ -110,6 +110,43 @@ func TestPrivatePlaybackAndMediaIntegration(t *testing.T) {
 		t.Fatal(err)
 	}
 	server.Collection = c.ID
+	transportPath := "/api/catalog/v1/items/multi-talk/representations/print"
+	if w := get(transportPath+"/resolve", nil); w.Code != 404 {
+		t.Fatal("listing inherited transport", w.Code)
+	}
+	pdf := []byte("%PDF-1.4 synthetic policy fixture")
+	if err = os.WriteFile(filepath.Join(root, "talk.pdf"), pdf, 0600); err != nil {
+		t.Fatal(err)
+	}
+	readReview := domain.TransportReview{Snapshot: domain.Digest(sourceRaw), Files: []string{"talk.pdf"}, Read: true, Notes: "Synthetic local policy fixture"}
+	localApproval := domain.PreservationApproval{Snapshot: domain.Digest(sourceRaw), IndependentRecoverySHA256: domain.Digest([]byte("synthetic recovery fixture")), Manifest: []domain.LocalOriginal{{File: "talk.pdf", Bytes: int64(len(pdf)), SHA256: domain.Digest(pdf), Path: "talk.pdf"}}}
+	if err = d.ReviewTransport(ctx, "multi-talk", "print", c.ID, readReview, localApproval); err != nil {
+		t.Fatal(err)
+	}
+	if w := get(transportPath+"/resolve", nil); w.Code != 200 {
+		t.Fatal("reviewed print resolution", w.Code, w.Body.String())
+	}
+	if w := get(transportPath+"/media", map[string]string{"Range": "bytes=2-6"}); w.Code != 206 || w.Body.String() != string(pdf[2:7]) {
+		t.Fatal("reviewed print range", w.Code, w.Body.String())
+	}
+	if w := get(transportPath+"/media?action=download", nil); w.Code != 404 {
+		t.Fatal("reading inherited download", w.Code)
+	}
+	if w := get(transportPath+"/resolve?collection=mixed-fixture", nil); w.Code != 404 {
+		t.Fatal("transport crossed instance scope", w.Code)
+	}
+	readReview.Read = false
+	readReview.Notes = "Revoke synthetic reading"
+	if err = d.ReviewTransport(ctx, "multi-talk", "print", c.ID, readReview, localApproval); err != nil {
+		t.Fatal(err)
+	}
+	if w := get(transportPath+"/media", map[string]string{"If-None-Match": `"sha256-` + domain.Digest(pdf) + `"`}); w.Code != 404 {
+		t.Fatal("withdrawn conditional original exposed", w.Code)
+	}
+	var reviewCount int
+	if err = d.Pool.QueryRow(ctx, `SELECT count(*) FROM representation_transport_history WHERE item_id='multi-talk' AND collection_id=$1`, c.ID).Scan(&reviewCount); err != nil || reviewCount != 2 {
+		t.Fatal("transport audit history", err, reviewCount)
+	}
 	if err = json.Unmarshal(get("/api/catalog/v1/items/multi-talk", nil).Body.Bytes(), &item); err != nil || len(item.Representations) != 1 || len(item.Collections) != 1 || item.Collections[0] != c.ID {
 		t.Fatal("representation scope leaked", err, item)
 	}

@@ -1,6 +1,8 @@
 # Multi-media platform roadmap
 
-Status: planned, 2026-10-03. VHNESS is the canonical base. No implementation, migration, acquisition or deployment is claimed by this roadmap.
+Status: implementation underway, 2026-10-03. Arkhiv is the product name; VHNESS remains the canonical repository. P1 and P2 are qualified, and the initial P3 catalog is delivered in PR #63. Gitea issues own the remaining gates. Software changes do not imply production migration, acquisition or deployment.
+
+[Qualified shared video update](../reports/shared-video-upgrades-2026-10-03.md) · [Current implementation record](../reports/platform-progress-2026-10-03.md)
 
 [Design and ownership](0003-multimedia-platform.md) · [Tracking issue](https://git.subcult.tv/subculture-collective/VHNESS/issues/35) · [Milestones](https://git.subcult.tv/subculture-collective/VHNESS/milestones)
 
