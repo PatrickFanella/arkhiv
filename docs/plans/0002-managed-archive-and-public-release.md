@@ -2,7 +2,7 @@
 
 Status: managed operations and the second real archive are qualified. The six scoped timers have completed initial audit, backup, retention planning, monitoring, source-check and restore runs. NUC recorded notification qualification messages. The A-Info pilot preserves 15 issues alongside the first 25 documents, with all 41 variants verified and rendered after a fresh independent restore. See [second-archive qualification](../reports/second-archive-qualification-20261003.md).
 
-The owner approved public reading/downloads for the exact first-archive 26 variants, with unknown rights and no asserted reuse license. Public allowlisting, branding, monitoring and staging are qualified; the separately authorized ingress activation and actual-domain qualification remain #33–#34. See [public staging](../reports/public-release-staging-20261003.md).
+The owner approved public reading/downloads for the exact first-archive 26 variants, with unknown rights and no asserted reuse license. Public allowlisting, branding, monitoring, owner-authorized activation and actual-domain qualification are complete under #30–#34. The ten-minute initial window passed with 21 healthy samples; all 26 PDFs and private/revoked routes were checked through the actual HTTPS domain. See [public qualification](../reports/public-release-qualification-20261003.md).
 
 The first private pilot is qualified. PRs #18, #19 and #20 are merged; the
 homelab runtime identifies merged revision `6470472`, verified on October 2. The working
@@ -125,4 +125,4 @@ notification, pruning, acquisition or public publication action by itself.
 
 The update runner persists acquisition backoff across processes. A controlled source qualification may set `force_source_checks` to bypass collection cadence for that run; disabled collections and source backoff remain enforced. Remove that qualification setting afterward. Fixture qualification includes discovery and acquisition of a new multi-item source record, private review defaults, and duplicate-free replay.
 
-Public-release qualification includes a readiness monitor bound to the exact release revision and a fresh restore with a non-login public role. Public ingress activation remains the separate owner action specified by #33. The #30 access approval is already recorded for the exact 26 reviewed variants.
+Public-release qualification includes a readiness monitor bound to the exact release revision and a fresh restore with a non-login public role. The owner separately authorized #33 ingress activation, and #34 actual-domain qualification is complete. The #30 access approval remains limited to the exact 26 reviewed variants.

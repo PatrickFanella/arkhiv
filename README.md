@@ -12,12 +12,11 @@ The [private pilot qualification](docs/reports/pilot-qualification-20261002.md) 
 all originals were verified, the independent NUC backup was restored, and on-site
 reading/search/downloads worked with Archive.org blocked. The initial implementation merged in PR #19; hardening and the qualification
 report merged in [PR #20](https://git.subcult.tv/subculture-collective/arkhiv/pulls/20).
-Public release is a separate decision.
+The owner-approved first collection is live at [arkhiv.subcult.tv](https://arkhiv.subcult.tv). Its 26 reviewed PDF variants are available for public reading/downloads with unknown rights, source attribution, correction/removal contact and no asserted reuse license.
 
 The [next delivery plan](docs/plans/0002-managed-archive-and-public-release.md)
 covers merged-revision rollout, scheduled preservation and active-source updates,
-public release, and a second real archive. Those jobs and release steps are planned
-in Gitea issues #21–#38; they are not activated by the plan.
+public release, and a second real archive. Managed jobs are installed and initially qualified. A-Info adds 15 privately reviewed issues; a fresh independent NUC restore verified all 40 documents/41 PDF variants with source access blocked. Gitea #21–#38 records the separate implementation and live evidence.
 
 ## Development
 
@@ -67,9 +66,7 @@ metadata remains independent of editorial overrides.
 
 Source code is GPL-3.0-only; that license does not apply to acquired documents.
 
-The public release will use `https://arkhiv.subcult.tv`, with correction and removal
-requests directed to `info@subcult.tv`. Public access remains gated by the reviewed
-allowlist work in [the roadmap](docs/plans/0002-managed-archive-and-public-release.md).
+The public site uses `https://arkhiv.subcult.tv`, with correction and removal requests directed to `info@subcult.tv`. Only the exact reviewed first-archive variants are public approved; A-Info remains private. The [roadmap](docs/plans/0002-managed-archive-and-public-release.md) records access review, activation and qualification separately.
 Managed job runners are documented in [the operations runbook](docs/runbooks/managed-operations.md).
 
 ## Reviewed public access

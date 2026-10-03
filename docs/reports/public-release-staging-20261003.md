@@ -59,3 +59,7 @@ under `~/.local/state/arkhiv/execution-20261003`. This is initial qualification,
 with no public observation window or long-term schedule soak claimed yet.
 
 Desktop native keyboard inspection focused the Arkhiv home link. The native tab was not foreground, so this observation did not establish its focus-visible appearance. A missing global accent fallback was then fixed; all four desktop/narrow deterministic browser tests passed with a visible-outline assertion. The public palette has contrast ratios 7.07:1 for accent links on the page background, 8.56:1 for white button text on the accent, and 11.29:1 for body text on panel backgrounds. Hosted desktop/narrow fixture checks cover loading, empty/error states, labels, keyboard focus and reader controls; the actual corpus probe separately proves real PDF rendering and narrow layout.
+
+## Subsequent activation
+
+The owner separately authorized public activation. Caddy installed only the Arkhiv route/import and reloaded successfully at 2026-10-03 01:49:08 UTC. The web now uses CI-qualified source `5280c4c` with the header focus correction. Actual-domain checks passed for all 26 PDFs and denied routes; the [public qualification report](public-release-qualification-20261003.md) records final observation and monitoring. The pending/404 statements above describe staging before this later action.
