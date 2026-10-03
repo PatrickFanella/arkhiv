@@ -199,3 +199,7 @@ scheduled preservation operations remain follow-up work.
 ## Catalog design follow-up
 
 The owner selected **A — Front Cover** on October 3. The [selected interface](../design/catalog-previews.md) uses actual catalog metadata and local cover scans. Search, pagination, document reading, downloads, provenance and rights/contact remain available. Comparison prototypes and unused layouts are removed. Required repository verification and desktop/narrow browser checks qualify the implementation; deployment remains separate.
+
+## Full collection follow-up
+
+The owner authorized automatic archival access for the complete Anarchist source. [The full-collection plan](0004-full-anarchist-collection.md) supersedes the original pilot scope and individual approval policy for this collection only.

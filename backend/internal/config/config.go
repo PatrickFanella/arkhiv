@@ -42,16 +42,37 @@ type Discovery struct {
 	MaxRequests int    `json:"max_requests" yaml:"max_requests"`
 }
 
+type PublicAccess struct {
+	Policy    string `json:"policy" yaml:"policy"`
+	Item      string `json:"item" yaml:"item"`
+	Review    string `json:"review" yaml:"review"`
+	PublicURL string `json:"public_url" yaml:"public_url"`
+	Contact   string `json:"correction_contact" yaml:"correction_contact"`
+}
+
+func (p PublicAccess) Automatic() bool { return p.Policy == "verified-automatic" }
+
+func (p PublicAccess) Validate(c Collection) error {
+	if p.Policy == "" || p.Policy == "manual" {
+		return nil
+	}
+	if !p.Automatic() || !ValidID(p.Item) || p.Item != c.Item || strings.TrimSpace(p.Review) == "" || !strings.HasPrefix(p.PublicURL, "https://") || strings.TrimSpace(p.Contact) == "" {
+		return fmt.Errorf("automatic access requires an explicit source item, owner decision, HTTPS URL and contact")
+	}
+	return nil
+}
+
 type Collection struct {
-	Discovery    Discovery   `json:"discovery" yaml:"discovery"`
-	Updates      Updates     `json:"updates" yaml:"updates"`
-	ID           string      `json:"id" yaml:"id"`
-	Name         string      `json:"name" yaml:"name"`
-	Introduction string      `json:"introduction" yaml:"introduction"`
-	Accent       string      `json:"accent" yaml:"accent"`
-	Item         string      `json:"item" yaml:"item"`
-	Limits       Limits      `json:"limits" yaml:"limits"`
-	Selection    []Selection `json:"selection" yaml:"selection"`
+	PublicAccess PublicAccess `json:"public_access" yaml:"public_access"`
+	Discovery    Discovery    `json:"discovery" yaml:"discovery"`
+	Updates      Updates      `json:"updates" yaml:"updates"`
+	ID           string       `json:"id" yaml:"id"`
+	Name         string       `json:"name" yaml:"name"`
+	Introduction string       `json:"introduction" yaml:"introduction"`
+	Accent       string       `json:"accent" yaml:"accent"`
+	Item         string       `json:"item" yaml:"item"`
+	Limits       Limits       `json:"limits" yaml:"limits"`
+	Selection    []Selection  `json:"selection" yaml:"selection"`
 }
 
 var safeID = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,100}$`)
@@ -82,9 +103,12 @@ func (c Collection) Validate() error {
 	if !regexp.MustCompile(`^#[a-fA-F0-9]{6}$`).MatchString(c.Accent) {
 		return fmt.Errorf("accent must be a six-digit hex color")
 	}
+	if err := c.PublicAccess.Validate(c); err != nil {
+		return err
+	}
 	l := c.Limits
-	if l.Documents < 1 || l.Documents > 50 || l.FileBytes < 1 || l.FileBytes > 250<<20 || l.TotalBytes < 1 || l.TotalBytes > 2<<30 || l.Concurrency < 1 || l.Concurrency > 2 {
-		return fmt.Errorf("limits exceed pilot bounds")
+	if l.Documents < 1 || l.Documents > 1000 || l.FileBytes < 1 || l.FileBytes > 250<<20 || l.TotalBytes < 1 || l.TotalBytes > 8<<30 || l.Concurrency < 1 || l.Concurrency > 2 {
+		return fmt.Errorf("limits exceed collection bounds")
 	}
 	if c.Updates.Policy != "" && c.Updates.Policy != "review" && c.Updates.Policy != "acquire" {
 		return fmt.Errorf("updates policy must be review or acquire")
