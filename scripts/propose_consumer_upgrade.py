@@ -1,0 +1,93 @@
+#!/usr/bin/env python3
+"""Create one reviewed upgrade PR per release in an isolated registered consumer clone."""
+import argparse
+import base64
+import json
+import os
+from pathlib import Path
+import subprocess
+import tempfile
+import urllib.parse
+import urllib.request
+
+from upgrade_consumer import prepare, validate
+
+
+def api(path, method='GET', payload=None):
+    token = os.environ['ARCHIVE_UPGRADE_TOKEN']
+    request = urllib.request.Request('https://git.subcult.tv/api/v1' + path,
+        method=method, data=json.dumps(payload).encode() if payload is not None else None,
+        headers={'Authorization': 'token ' + token, 'Content-Type': 'application/json', 'User-Agent': 'tea'})
+    with urllib.request.urlopen(request, timeout=30) as response:
+        raw = response.read()
+        return json.loads(raw) if raw else None
+
+
+def proposal(release, consumer, clone, artifact, request=api):
+    if request('/user')['login'] != 'subcult-agent':
+        raise ValueError('Upgrade proposals require the subcult-agent identity')
+    repository = consumer['repository']
+    base = '/repos/' + repository
+    metadata = request(base)
+    branch = 'archive-upgrade/v' + release['version'] + '-' + release['source_revision']
+    # Validate the base consumer before consulting or creating a proposal.
+    current = json.loads((clone / consumer['release_file']).read_text())
+    validate(release, consumer, current, artifact)
+    if current == release:
+        return None
+    pulls = []
+    page = 1
+    while True:
+        batch = request(base + '/pulls?state=all&limit=50&page=' + str(page))
+        pulls.extend(batch)
+        if len(batch) < 50:
+            break
+        page += 1
+    for pull in pulls:
+        if pull['head']['ref'] == branch:
+            if pull['base']['ref'] != metadata['default_branch']:
+                raise ValueError('Existing proposal targets a different base')
+            if pull['state'] == 'closed' and not pull.get('merged'):
+                raise ValueError('Upgrade was declined; do not reopen automatically')
+            content = request(base + '/contents/' + consumer['release_file'] + '?ref=' + urllib.parse.quote(branch, safe=''))
+            proposed = json.loads(base64.b64decode(content['content']))
+            if proposed != release:
+                raise ValueError('Existing proposal differs from this release')
+            return pull['html_url']
+    subprocess.run(['git', 'switch', '-c', branch], cwd=clone, check=True)
+    prepare(clone, consumer, release, artifact)
+    files = [consumer[key] for key in ('package_file', 'lock_file', 'release_file', 'engine_file')]
+    subprocess.run(['git', 'add', '--', *files], cwd=clone, check=True)
+    subprocess.run(['git', '-c', 'user.name=SUBCULT Agent', '-c', 'user.email=info@subcult.tv', '-c', 'commit.gpgsign=false',
+                    'commit', '-m', 'Upgrade shared archive platform to ' + release['version']], cwd=clone, check=True)
+    subprocess.run(['git', 'push', 'origin', branch], cwd=clone, check=True)
+    result = request(base + '/pulls', 'POST', {
+        'base': metadata['default_branch'], 'head': branch,
+        'title': 'Upgrade shared archive platform to ' + release['version'],
+        'body': 'Updates the frontend lock, immutable engine digest and compatibility receipt together.\n\n'
+                'Consumer checks passed in the isolated proposal checkout. Hosted checks and private qualification remain required. '
+                'This PR does not deploy the consumer.\n\nSource: `' + release['source_revision'] + '`; package SHA-256: `' + release['package_sha256'] + '`.',
+    })
+    return result['html_url']
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--registry', type=Path, required=True)
+    parser.add_argument('--consumer', required=True)
+    parser.add_argument('--release', type=Path, required=True)
+    parser.add_argument('--package-artifact', type=Path, required=True)
+    args = parser.parse_args()
+    registry = json.loads(args.registry.read_text())
+    consumer = next(c for c in registry['consumers'] if c['repository'] == args.consumer)
+    release = json.loads(args.release.read_text())
+    if consumer['adoption'] != 'package':
+        raise SystemExit('Consumer package adoption is pending')
+    with tempfile.TemporaryDirectory(prefix='archive-upgrade-') as work:
+        clone = Path(work) / 'consumer'
+        subprocess.run(['git', 'clone', '--quiet', 'https://git.subcult.tv/' + consumer['repository'] + '.git', str(clone)], check=True)
+        print(proposal(release, consumer, clone, args.package_artifact.resolve()) or 'Release already applied; no PR')
+
+
+if __name__ == '__main__':
+    main()

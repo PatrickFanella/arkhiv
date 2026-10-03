@@ -1,12 +1,17 @@
 name: shared-platform-release
 on:
   workflow_dispatch:
+    inputs:
+      runner:
+        description: 'Runner label; use a repository-scoped temporary runner for isolated qualification'
+        required: false
+        default: ubuntu-latest
   push:
     tags:
       - 'archive-v*'
 jobs:
   release:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     services:
       postgres:
         image: postgres:17
