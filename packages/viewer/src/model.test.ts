@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { assetKey, captionURL, playbackURL, targetOffset, type Session } from './model';
+import { assetKey, captionURL, playbackURL, targetOffset, type Session } from './model.js';
 
 const session: Session = { mode: 'channel', episode: { id: 'item', title: 'Example', date: '2026-10-02', description: '', synthetic: false }, playback: { id: 'item', policy: 'source_stream', url: 'https://archive.org/download/item/a.mp4', source_url: 'https://archive.org/details/item', file: { name: 'a.mp4', duration: 60, bytes: 1, width: 854, height: 480 }, snapshot_sha256: 'example' }, offset: 20, receivedAt: 1000, latency: 100, generation: 1 };
 describe('shared clock playback', () => {

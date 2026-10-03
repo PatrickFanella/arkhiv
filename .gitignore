@@ -45,3 +45,8 @@ __pycache__/
 
 /.playwright-cli/
 /output/playwright/
+
+/packages/*/dist/
+/packages/*/node_modules/
+/packages/*/coverage/
+/.artifacts/

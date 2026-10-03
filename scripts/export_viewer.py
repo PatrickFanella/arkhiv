@@ -18,9 +18,9 @@ def main():
     destination.mkdir(parents=True, exist_ok=True)
     hashes = {}
     for name in FILES:
-        source = repo / 'web/src' / name
-        shutil.copy2(source, destination / name)
-        hashes[name] = hashlib.sha256(source.read_bytes()).hexdigest()
+        source = repo / 'packages/viewer/src' / name
+        (destination / name).write_text(source.read_text().replace(".js'", "'"))
+        hashes[name] = hashlib.sha256((destination / name).read_bytes()).hexdigest()
     manifest = {'repository': 'https://git.subcult.tv/subculture-collective/VHNESS', 'revision': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=repo, text=True).strip(), 'api_version': '1', 'files': hashes, 'license': 'GPL-3.0', 'ownership': 'Generated copy; edit upstream, export at a reviewed revision, then verify and commit the app upgrade.'}
     (destination / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
 
