@@ -195,3 +195,7 @@ have page text and one has document-level OCR without page mapping. See the
 [operator runbook](../runbooks/pilot-operations.md). The independent NUC restore, rendered reader checks with Archive.org blocked,
 and hosted CI passed; evidence is in the qualification report. Public ingress and
 scheduled preservation operations remain follow-up work.
+
+## Catalog design follow-up
+
+The owner requested a modern magazine layout. Three [development-only studies](../design/catalog-previews.md) compare distinct compositions. Select and implement a direction against the existing catalog and reader before replacing the qualified interface.
