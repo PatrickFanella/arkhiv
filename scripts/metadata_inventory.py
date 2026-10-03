@@ -25,6 +25,7 @@ def main():
     deadline = time.monotonic() + args.hours * 3600
     evidence = ROOT / 'evidence/inventory-progress.json'
     reconciled = args.resume
+    final_reconciliation_started = False
     if reconciled and not status()['worker']['discovery_complete']:
         raise RuntimeError('Resume requires a complete identifier discovery checkpoint')
     while time.monotonic() < deadline:
@@ -38,6 +39,15 @@ def main():
             wait = (datetime.fromisoformat(retry) - datetime.now(timezone.utc)).total_seconds()
             if wait > 0: time.sleep(min(60, wait, max(0, deadline-time.monotonic()))); continue
         if reconciled and worker['discovery_complete'] and not counts.get('pending') and not counts.get('retry'):
+            if not final_reconciliation_started:
+                # The source can add/backfill items during a long inventory.
+                # Repeat discovery once before declaring point-in-time coverage.
+                final_reconciliation_started = True
+                result = subprocess.run([str(ROOT / 'bin/vhness'), 'refresh', '--pages', '100', '--items', '0', '--timeout', '10m'], env=environment(), cwd=REPO / 'backend')
+                if result.returncode:
+                    time.sleep(min(30, max(0, deadline-time.monotonic())))
+                    continue
+                continue
             total = sum(counts.values())
             if total != worker['source_count']: raise RuntimeError('Coverage count differs from source discovery; operator reconciliation needed')
             subprocess.run(['python3', str(REPO / 'scripts/recovery.py'), '--host', 'nuc', '--destination', '/home/onnwee/Backups/vhness-private-pilot', '--media', str(ROOT / 'media'), '--media-budget', str(512 << 20)], check=True)
@@ -47,7 +57,8 @@ def main():
             return
         # Reconciliation also retains complete search responses on this verified implementation.
         command = 'refresh' if not reconciled else 'discover'
-        result = subprocess.run([str(ROOT / 'bin/vhness'), command, '--pages', '100' if not reconciled else '0', '--items', '0' if not reconciled else '1000', '--timeout', '10m'], env=environment(), cwd=REPO / 'backend', stdout=subprocess.PIPE, text=True)
+        needs_discovery = not reconciled or not worker['discovery_complete']
+        result = subprocess.run([str(ROOT / 'bin/vhness'), command, '--pages', '100' if needs_discovery else '0', '--items', '0' if needs_discovery else '1000', '--timeout', '10m'], env=environment(), cwd=REPO / 'backend', stdout=subprocess.PIPE, text=True)
         if result.stdout: print(result.stdout.strip(), flush=True)
         if command == 'refresh' and result.returncode == 0: reconciled = True
         if result.returncode: time.sleep(min(30, max(0, deadline-time.monotonic())))

@@ -37,6 +37,7 @@ func TestPrivatePlaybackAndMediaIntegration(t *testing.T) {
 		t.Fatal(err)
 	}
 	config.ConnConfig.RuntimeParams["search_path"] = schema
+	config.MaxConns = 2
 	pool, err := pgxpool.NewWithConfig(ctx, config)
 	if err != nil {
 		t.Fatal(err)
@@ -126,5 +127,26 @@ func TestPrivatePlaybackAndMediaIntegration(t *testing.T) {
 	os.WriteFile(filepath.Join(root, "original.mp4"), []byte("corrupted"), 0600)
 	if w := get("/api/media/"+e.ID, nil); w.Code != 503 {
 		t.Fatal("corrupt original served", w.Code)
+	}
+	// Reproduce a DB operation unable to acquire a connection, without
+	// disrupting another runtime or changing the disposable database itself.
+	held := make([]*pgxpool.Conn, 0, 2)
+	for range 2 {
+		connection, err := pool.Acquire(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		held = append(held, connection)
+	}
+	began := time.Now()
+	response = get("/api/ready", nil)
+	for _, connection := range held {
+		connection.Release()
+	}
+	if response.Code != 503 || time.Since(began) > 4*time.Second {
+		t.Fatal("blocked database readiness must fail within its deadline", response.Code, time.Since(began))
+	}
+	if w := get("/api/ready", nil); w.Code != 200 {
+		t.Fatal("readiness did not recover after DB capacity returned", w.Code)
 	}
 }

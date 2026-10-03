@@ -19,7 +19,8 @@ export function playbackURL(value: Playback): string {
   return url.href;
 }
 export async function request<T>(path: string, signal?: AbortSignal): Promise<T> {
-  const response = await fetch(path, { signal });
+  const deadline = AbortSignal.timeout(10_000);
+  const response = await fetch(path, { signal: signal ? AbortSignal.any([signal, deadline]) : deadline });
   const data = await response.json() as T & { error?: string };
   if (!response.ok) throw new Error(data.error || 'The request could not be completed.');
   return data;
