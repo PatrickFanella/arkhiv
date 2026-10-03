@@ -19,8 +19,22 @@ describe('published component contract', () => {
     const html = renderToStaticMarkup(<main><Screen viewer={v}><h1>Consumer identity</h1></Screen><Library viewer={v} heading="Brand collection" /></main>);
     expect(html).toContain('Consumer identity');
     expect(html).toContain('Brand collection');
+    expect(html).toContain('aria-label="Brand collection"');
+    expect(html).toContain('aria-busy="false"');
     expect(html).toContain('No episodes match this search.');
     expect(html).toContain('aria-label="Catalog pages"');
+  });
+  it('marks pending searches busy and distinguishes an explicit failure', () => {
+    const v = viewer();
+    v.catalog = null;
+    const pending = renderToStaticMarkup(<Library viewer={v} />);
+    expect(pending).toContain('aria-busy="true"');
+    expect(pending).toContain('Loading episodes…');
+    v.error = 'Catalog unavailable';
+    const failed = renderToStaticMarkup(<Library viewer={v} />);
+    expect(failed).toContain('aria-busy="false"');
+    expect(failed).toContain('role="alert"');
+    expect(failed).not.toContain('Loading episodes…');
   });
   it('keeps exhausted schedule visible and does not offer an active tune action', () => {
     const html = renderToStaticMarkup(<ChannelPanel viewer={viewer()} />);

@@ -34,13 +34,13 @@ export function ChannelPanel({ viewer }: { viewer: Viewer }) {
 
 export function Library({ viewer, heading = 'Episode library', mark = 'TV', yearFilter = true }: { viewer: Viewer; heading?: string; mark?: string; yearFilter?: boolean }) {
   const v = viewer;
-  return <section className="shelf" id="library" aria-label="Episode library">
+  return <section className="shelf" id="library" aria-label={heading} aria-busy={!v.catalog && !v.error}>
     <div className="shelf-heading"><h2>{heading}</h2><div className="filters">
       {yearFilter && <label>Year<input inputMode="numeric" placeholder="Any year" maxLength={4} value={v.year} onChange={event => { v.setYear(event.target.value.replace(/\D/g, '')); v.setPage(1); }} /></label>}
       <label>Search episodes<input type="search" placeholder="Title or description" value={v.query} onChange={event => { v.setQuery(event.target.value); v.setPage(1); }} /></label>
     </div></div>
     {v.error && <p role="alert">{v.error}</p>}{!v.catalog && !v.error && <p role="status">Loading episodes…</p>}
-    {v.catalog && <><p className="count">{v.catalog.total} cataloged {v.catalog.total === 1 ? 'episode' : 'episodes'}</p>
+    {v.catalog && <><p className="count" role="status">{v.catalog.total} cataloged {v.catalog.total === 1 ? 'episode' : 'episodes'}</p>
       {v.catalog.episodes.length === 0 && <p>No episodes match this search.</p>}
       <div className="episodes">{v.catalog.episodes.map(episode => <article key={episode.id}>
         <button className="episode-art" aria-label={`Watch ${episode.title}`} onClick={() => { void v.watch(episode); }}><span>{mark}</span><time dateTime={episode.date}>{episode.date || 'Date unknown'}</time></button>
