@@ -68,6 +68,8 @@ func TestRefreshIntegration(t *testing.T) {
 	payload := fixtures.PDF("synthetic update test")
 	identifiers := []string{"a", "b"}
 	broken := false
+	throttled := false
+	downloadRequests := 0
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/advancedsearch.php" {
 			page := 1
@@ -88,6 +90,12 @@ func TestRefreshIntegration(t *testing.T) {
 			return
 		}
 		if strings.HasPrefix(r.URL.Path, "/download/") {
+			downloadRequests++
+			if throttled {
+				w.Header().Set("Retry-After", "3600")
+				w.WriteHeader(http.StatusServiceUnavailable)
+				return
+			}
 			w.Write(payload)
 			return
 		}
@@ -258,6 +266,23 @@ func TestRefreshIntegration(t *testing.T) {
 	if err != nil || newItem.Added != 1 {
 		t.Fatal("new item detection", newItem, err)
 	}
+	secondConfig.Updates.Policy = "acquire"
+	additionBatch, err := Acquire(ctx, secondConfig, client, store, db)
+	if err != nil || additionBatch.Acquired != 1 || additionBatch.Reused != 2 {
+		t.Fatal("new discovered item acquisition", additionBatch, err)
+	}
+	withAddition, total, err := db.List(ctx, secondConfig.ID, "", "", "", 50, 0, false)
+	if err != nil || total != 3 {
+		t.Fatal("new item catalog", total, err)
+	}
+	for _, doc := range withAddition {
+		if doc.Published || doc.Variants[0].PublicApproved {
+			t.Fatal("discovered item bypassed private review")
+		}
+	}
+	if replay, err := Acquire(ctx, secondConfig, client, store, db); err != nil || replay.Acquired != 0 || replay.Reused != 0 {
+		t.Fatal("new item replay duplicated acquisition", replay, err)
+	}
 	identifiers = []string{"a", "c"}
 	removedItem, err := Refresh(ctx, secondConfig, client, store, db)
 	if err != nil || removedItem.Removed != 1 {
@@ -283,9 +308,43 @@ func TestRefreshIntegration(t *testing.T) {
 	if due, status, err := Due(ctx, c, db, false); err != nil || due || status != "source-backoff" {
 		t.Fatal("manual request bypassed source backoff", due, status, err)
 	}
+
+	// A payload Retry-After survives the process and prevents another payload call.
+	rateConfig := config.Collection{ID: "source-backoff", Item: "zines", Name: "Rate-limited fixture", Limits: c.Limits, Updates: config.Updates{Enabled: true, Policy: "acquire", CadenceHours: 24}}
+	payload = fixtures.PDF("new rate limited source file")
+	md := md5.Sum(payload)
+	metadata.Files = []ia.File{{Name: "backoff.pdf", Size: fmt.Sprint(len(payload)), MD5: hex.EncodeToString(md[:])}}
+	if _, err := Refresh(ctx, rateConfig, client, store, db); err != nil {
+		t.Fatal(err)
+	}
+	throttled = true
+	beforeRequests := downloadRequests
+	if _, err := Acquire(ctx, rateConfig, client, store, db); err == nil {
+		t.Fatal("payload backoff was ignored")
+	}
+	if downloadRequests != beforeRequests+1 {
+		t.Fatal("requests continued after source backoff")
+	}
+	if due, status, err := Due(ctx, rateConfig, db, false); err != nil || due || status != "source-backoff" {
+		t.Fatal("payload backoff not durable", due, status, err)
+	}
+	if _, err := Acquire(ctx, rateConfig, client, store, db); err == nil || downloadRequests != beforeRequests+1 {
+		t.Fatal("new acquisition bypassed backoff")
+	}
+	// Expired payload backoff resumes pending acquisition instead of waiting another cadence.
+	if _, err := db.Pool.Exec(ctx, `UPDATE source_refresh_runs SET result=jsonb_set(result,'{retry_at}',to_jsonb(now()-interval '1 second')) WHERE collection_id=$1 AND status='failed'`, rateConfig.ID); err != nil {
+		t.Fatal(err)
+	}
+	if due, status, err := Due(ctx, rateConfig, db, true); err != nil || !due || status != "resume-acquisition" {
+		t.Fatal("payload retry lost behind cadence", due, status, err)
+	}
+	throttled = false
+	if acquired, err := Acquire(ctx, rateConfig, client, store, db); err != nil || acquired.Acquired != 1 {
+		t.Fatal("payload retry did not resume", acquired, err)
+	}
 	var failedRuns int
 	db.Pool.QueryRow(ctx, `SELECT count(*) FROM source_refresh_runs WHERE status='failed'`).Scan(&failedRuns)
-	if failedRuns != 3 {
+	if failedRuns != 4 {
 		t.Fatal("missing durable failure receipt")
 	}
 }

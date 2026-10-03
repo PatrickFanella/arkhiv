@@ -125,3 +125,5 @@ Issues have native dependencies, explicit test commands, separate operator evide
 and unchecked queue checklists. No `ready-for-agent` or `agent:queued` label is
 added. #30 and #35 are operator decision gates. This plan creates no deployment,
 notification, pruning, acquisition or public publication action by itself.
+
+The update runner persists acquisition backoff across processes. A controlled source qualification may set `force_source_checks` to bypass collection cadence for that run; disabled collections and source backoff remain enforced. Remove that qualification setting afterward. Fixture qualification includes discovery and acquisition of a new multi-item source record, private review defaults, and duplicate-free replay.

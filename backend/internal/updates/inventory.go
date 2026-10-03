@@ -29,6 +29,7 @@ type Change struct {
 	After  *ia.File `json:"after,omitempty"`
 }
 type Result struct {
+	Phase     string     `json:"phase,omitempty"`
 	Run       string     `json:"run"`
 	Checked   int        `json:"checked"`
 	Added     int        `json:"added"`

@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"git.subcult.tv/subculture-collective/arkhiv/internal/catalog"
 	"git.subcult.tv/subculture-collective/arkhiv/internal/config"
@@ -43,6 +44,7 @@ func run(ctx context.Context, args []string) error {
 	variant := flags.String("variant", "", "variant ID for grouping or public revocation")
 	id := flags.String("id", "", "document ID")
 	offset := flags.Int("offset", 0, "review queue offset, 500 events per page")
+	forceCheck := flags.Bool("force-source-check", false, "bypass refresh cadence for operator qualification; retain enable and backoff gates")
 	scheduled := flags.Bool("scheduled", false, "honor per-collection enable and cadence")
 	decision := flags.String("decision", "", "source change decision: approve, reject or hold")
 	note := flags.String("review", "", "recorded review note")
@@ -153,11 +155,15 @@ func run(ctx context.Context, args []string) error {
 			}
 			return json.NewEncoder(os.Stdout).Encode(queue)
 		}
-		due, status, err := updates.Due(ctx, c, db, *scheduled)
+		honorCadence := *scheduled && (!*forceCheck || !c.Updates.Enabled)
+		due, status, err := updates.Due(ctx, c, db, honorCadence)
 		if err != nil {
 			return err
 		}
 		if !due {
+			if status == "source-backoff" {
+				return errors.New("source backoff active; successful source receipt unchanged")
+			}
 			return json.NewEncoder(os.Stdout).Encode(map[string]any{"status": status, "checked": 0, "acquired": 0})
 		}
 		report, err := updates.Refresh(ctx, c, ia.New(), s, db)
@@ -187,7 +193,24 @@ func run(ctx context.Context, args []string) error {
 		if e != nil {
 			return e
 		}
+		if err := db.Collection(ctx, c); err != nil {
+			return err
+		}
+		due, status, err := updates.Due(ctx, c, db, false)
+		if err != nil {
+			return err
+		}
+		if !due {
+			return fmt.Errorf("source acquisition deferred: %s", status)
+		}
 		receipt, e := ingest.Acquire(ctx, c, ia.New(), s, db)
+		var backoff *ia.RetryError
+		if errors.As(e, &backoff) {
+			cleanup, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			e = errors.Join(e, db.SourceBackoff(cleanup, c.ID, "initial-acquisition", backoff.At))
+			cancel()
+		}
+
 		if *output != "" {
 			if we := config.SaveJSON(*output, receipt); we != nil {
 				return we
