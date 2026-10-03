@@ -291,6 +291,95 @@ func TestArchiveIntegration(t *testing.T) {
 	if e != nil || refreshed.Metadata["title"] != "Reviewed title" || !refreshed.Published || len(refreshed.Variants) != 1 {
 		t.Fatal("refresh lost editorial state", e)
 	}
+
+	// Public access is a separate exact-variant decision, never inferred from rights or private publication.
+	if err := db.Edit(ctx, id, nil, "unknown", "owner access review; no reuse license", nil); err != nil {
+		t.Fatal(err)
+	}
+	publicDB := &catalog.DB{Pool: db.Pool, PublicOnly: true}
+	publicHandler := ArchiveHandler(publicDB, store)
+	publicRequest := func(method, path string) *httptest.ResponseRecorder {
+		r := httptest.NewRequest(method, path, nil)
+		r.Header.Set("If-None-Match", etag)
+		r.Header.Set("Range", "bytes=0-4")
+		w := httptest.NewRecorder()
+		publicHandler.ServeHTTP(w, r)
+		return w
+	}
+	deny := func(v string) {
+		for _, suffix := range []string{"", "?download=1", "/cover", "/search?q=knownword"} {
+			for _, method := range []string{"GET", "HEAD"} {
+				if w := publicRequest(method, "/api/assets/"+v+suffix); w.Code != 404 || w.Header().Get("Cache-Control") != "no-store" {
+					t.Fatal("public asset leak", method, suffix, w.Code)
+				}
+			}
+		}
+	}
+	deny(asset.ID)
+	deny(private.Variants[0].ID)
+	deny("unknown")
+	if w := publicRequest("GET", "/api/collections"); w.Body.String() != "[]\n" {
+		t.Fatal("unapproved collection leak", w.Body.String())
+	}
+	if w := publicRequest("GET", "/api/documents?collection=fixture-zines&q=knownword"); !strings.Contains(w.Body.String(), `"total":0`) {
+		t.Fatal("unapproved search leak", w.Body.String())
+	}
+	review := catalog.PublicReview{Format: 1, Collection: "fixture-zines", PublicURL: "https://example.invalid", Contact: "info@example.invalid", Approval: "owner approved archival access; no reuse license", Documents: []catalog.PublicDocument{{ID: id, Source: "synthetic", Approved: true, Rights: "unknown", Variants: []catalog.Variant{asset}}}}
+	raw, _ := json.Marshal(review)
+	wrong := review
+	wrong.Documents = append([]catalog.PublicDocument(nil), review.Documents...)
+	wrong.Documents[0].Variants = append([]catalog.Variant(nil), review.Documents[0].Variants...)
+	wrong.Documents[0].Variants[0].SHA = strings.Repeat("0", 64)
+	bad, _ := json.Marshal(wrong)
+	if _, err := db.ApprovePublic(ctx, store, bad, "owner review"); err == nil {
+		t.Fatal("approved a mismatched original")
+	}
+	deny(asset.ID)
+	if count, err := db.ApprovePublic(ctx, store, raw, "owner reviewed fixture"); err != nil || count != 1 {
+		t.Fatal("public approval", count, err)
+	}
+	if w := publicRequest("GET", "/api/documents/"+id); w.Code != 200 || strings.Contains(w.Body.String(), "owner reviewed fixture") {
+		t.Fatal("approved public document", w.Body.String())
+	}
+	if w := publicRequest("GET", "/api/documents?collection=fixture-zines&q=knownword"); !strings.Contains(w.Body.String(), `"total":1`) {
+		t.Fatal("approved search", w.Body.String())
+	}
+	if w := publicRequest("GET", "/api/collections"); strings.Contains(w.Body.String(), "limits") || strings.Contains(w.Body.String(), "updates") || strings.Contains(w.Body.String(), "discovery") || strings.Contains(w.Body.String(), "selection") {
+		t.Fatal("private config leak")
+	}
+	// An unapproved sibling can share bytes, but has no public variant identity.
+	sibling := catalog.ID(id, "unapproved-sibling")
+	if _, err := db.Pool.Exec(ctx, `INSERT INTO variants(id,document_id,filename,asset_sha,source_snapshot) VALUES($1,$2,'unapproved.pdf',$3,$4)`, sibling, id, private.Variants[0].SHA, snap); err != nil {
+		t.Fatal(err)
+	}
+	deny(sibling)
+	if w := publicRequest("GET", "/api/documents?collection=fixture-zines&q=Private"); !strings.Contains(w.Body.String(), `"total":0`) {
+		t.Fatal("unapproved sibling text leak", w.Body.String())
+	}
+	if w := publicRequest("GET", "/api/documents/"+id); strings.Contains(w.Body.String(), sibling) {
+		t.Fatal("unapproved sibling leak")
+	}
+	if err := db.RevokePublic(ctx, asset.ID, "owner removal request"); err != nil {
+		t.Fatal(err)
+	}
+	deny(asset.ID)
+	for _, path := range []string{"/api/documents/" + id, "/api/documents?collection=fixture-zines&q=knownword", "/api/facets?collection=fixture-zines", "/api/collections"} {
+		w := publicRequest("GET", path)
+		if strings.Contains(w.Body.String(), "Reviewed title") || strings.Contains(w.Body.String(), "mutual aid") || strings.Contains(w.Body.String(), "fixture-zines") {
+			t.Fatal("revoked catalog leak", path, w.Body.String())
+		}
+	}
+	if err := store.Verify(asset.SHA, asset.Size); err != nil {
+		t.Fatal("revocation changed preserved original", err)
+	}
+	var decisions int
+	if err := db.Pool.QueryRow(ctx, `SELECT count(*) FROM public_access_events WHERE variant_id=$1`, asset.ID).Scan(&decisions); err != nil || decisions != 2 {
+		t.Fatal("missing access decision history", decisions, err)
+	}
+	if _, err := db.Pool.Exec(ctx, `DELETE FROM variants WHERE id=$1`, sibling); err != nil {
+		t.Fatal(err)
+	}
+
 	// Missing derivatives must prevent publication even with a review note.
 	_, e = db.Pool.Exec(ctx, `DELETE FROM derivatives WHERE asset_sha=$1`, private.Variants[0].SHA)
 	if e != nil {

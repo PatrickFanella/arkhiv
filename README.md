@@ -71,3 +71,30 @@ The public release will use `https://arkhiv.subcult.tv`, with correction and rem
 requests directed to `info@subcult.tv`. Public access remains gated by the reviewed
 allowlist work in [the roadmap](docs/plans/0002-managed-archive-and-public-release.md).
 Managed job runners are documented in [the operations runbook](docs/runbooks/managed-operations.md).
+
+## Reviewed public access
+
+Private publication and public approval are separate decisions. `ARKHIV_PUBLIC=1`
+starts the API with the variant allowlist enforced on collections, catalog, search,
+facets, covers, reading and downloads. It does not run migrations; deploy migrations
+with the operator first and use a separate read-only database role and read-only
+archive mount. The private pilot API remains available for internal qualification.
+
+The owner approved public archival access to the exact 25-document, 26-variant
+manifest in `collections/anarchist-zines-public-review.json`. Rights remain unknown;
+Arkhiv asserts no reuse license. The public URL is `https://arkhiv.subcult.tv` and
+correction/removal contact is `info@subcult.tv`. Build-time `VITE_PUBLIC_URL` and
+`VITE_CORRECTION_CONTACT` customize those values for another installation.
+
+Apply a reviewed manifest with the operator command `approve-public --manifest PATH
+--review "owner decision and evidence"`. It verifies source/document identity,
+original filename, SHA-256, size, private publication and readable extraction before
+committing the entire approval. `revoke-public --variant ID --review "reason"`
+withdraws catalog, search, cover, reader and download access and preserves originals
+and decision history. New variants start unapproved, including additions to a
+privately published document. The source updater never grants public access.
+
+`web/nginx.public.conf` routes only to the dedicated public API and disables proxy
+caching. Catalog and document responses use `Cache-Control: no-store`; approval is
+checked before conditional or range handling. Copies already downloaded by a reader
+cannot be recalled by revocation.

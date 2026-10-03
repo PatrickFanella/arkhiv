@@ -33,14 +33,14 @@ func main() {
 }
 func run(ctx context.Context, args []string) error {
 	if len(args) == 0 {
-		return errors.New("usage: arkhiv plan|refresh|acquire-changes|changes|review-change|acquire|migrate|list|inspect|edit|group|publish|unpublish|extract|audit|backup|restore|seed-fixture [flags]")
+		return errors.New("usage: arkhiv approve-public|revoke-public|plan|refresh|acquire-changes|changes|review-change|acquire|migrate|list|inspect|edit|group|publish|unpublish|extract|audit|backup|restore|seed-fixture [flags]")
 	}
 	command := args[0]
 	flags := flag.NewFlagSet(command, flag.ContinueOnError)
 	conf := flags.String("config", "../collections/anarchist-zines.yaml", "collection YAML")
 	archive := flags.String("archive", os.Getenv("ARKHIV_ARCHIVE"), "archive root")
 	migrations := flags.String("migrations", "../migrations", "migration directory")
-	variant := flags.String("variant", "", "variant ID for grouping")
+	variant := flags.String("variant", "", "variant ID for grouping or public revocation")
 	id := flags.String("id", "", "document ID")
 	offset := flags.Int("offset", 0, "review queue offset, 500 events per page")
 	scheduled := flags.Bool("scheduled", false, "honor per-collection enable and cadence")
@@ -50,6 +50,7 @@ func run(ctx context.Context, args []string) error {
 	patch := flags.String("metadata", "{}", "editorial override JSON")
 	destination := flags.String("destination", "", "new backup or restore path")
 	backup := flags.String("backup", "", "backup source")
+	manifest := flags.String("manifest", "", "reviewed immutable public access manifest")
 	output := flags.String("output", "", "inventory/receipt output JSON")
 	if e := flags.Parse(args[1:]); e != nil {
 		return e
@@ -122,6 +123,24 @@ func run(ctx context.Context, args []string) error {
 	}
 	defer syscall.Flock(int(lock.Fd()), syscall.LOCK_UN)
 	switch command {
+	case "approve-public":
+		f, err := os.Open(*manifest)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+		raw, err := io.ReadAll(io.LimitReader(f, (1<<20)+1))
+		if err != nil {
+			return err
+		}
+		count, err := db.ApprovePublic(ctx, s, raw, *note)
+		if err != nil {
+			return err
+		}
+		return json.NewEncoder(os.Stdout).Encode(map[string]any{"approved_variants": count, "reuse_license_asserted": false})
+	case "revoke-public":
+		return db.RevokePublic(ctx, *variant, *note)
+
 	case "refresh", "changes":
 		c, err := config.Load(*conf)
 		if err != nil {

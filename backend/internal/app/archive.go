@@ -69,7 +69,7 @@ func ArchiveHandler(db *catalog.DB, store *storage.Store) http.Handler {
 		respond(w, d)
 	})
 	mux.HandleFunc("GET /api/facets", func(w http.ResponseWriter, r *http.Request) {
-		rows, e := db.Pool.Query(r.Context(), `SELECT DISTINCT jsonb_array_elements_text(CASE WHEN jsonb_typeof((metadata||overrides)->'subjects')='array' THEN (metadata||overrides)->'subjects' ELSE '[]'::jsonb END) FROM documents WHERE published AND collection_id=$1 ORDER BY 1`, r.URL.Query().Get("collection"))
+		rows, e := db.Pool.Query(r.Context(), `SELECT DISTINCT jsonb_array_elements_text(CASE WHEN jsonb_typeof((metadata||overrides)->'subjects')='array' THEN (metadata||overrides)->'subjects' ELSE '[]'::jsonb END) FROM documents WHERE published AND collection_id=$1 AND (NOT $2 OR EXISTS(SELECT 1 FROM variants WHERE document_id=documents.id AND public_approved)) ORDER BY 1`, r.URL.Query().Get("collection"), db.PublicOnly)
 		if e != nil {
 			fail(w, 503, "catalog unavailable")
 			return
@@ -93,7 +93,7 @@ func ArchiveHandler(db *catalog.DB, store *storage.Store) http.Handler {
 	assets := func(w http.ResponseWriter, r *http.Request) {
 		var hash, name string
 		var size int64
-		e := db.Pool.QueryRow(r.Context(), `SELECT v.asset_sha,v.filename,a.size FROM variants v JOIN documents d ON d.id=v.document_id JOIN assets a ON a.sha256=v.asset_sha WHERE v.id=$1 AND d.published`, r.PathValue("id")).Scan(&hash, &name, &size)
+		e := db.Pool.QueryRow(r.Context(), `SELECT v.asset_sha,v.filename,a.size FROM variants v JOIN documents d ON d.id=v.document_id JOIN assets a ON a.sha256=v.asset_sha WHERE v.id=$1 AND d.published AND (NOT $2 OR v.public_approved)`, r.PathValue("id"), db.PublicOnly).Scan(&hash, &name, &size)
 		if e != nil {
 			fail(w, 404, "asset unavailable")
 			return
@@ -138,11 +138,11 @@ func ArchiveHandler(db *catalog.DB, store *storage.Store) http.Handler {
 			return
 		}
 		var allowed bool
-		if e := db.Pool.QueryRow(r.Context(), `SELECT EXISTS(SELECT 1 FROM variants v JOIN documents d ON d.id=v.document_id WHERE v.id=$1 AND d.published)`, r.PathValue("id")).Scan(&allowed); e != nil || !allowed {
+		if e := db.Pool.QueryRow(r.Context(), `SELECT EXISTS(SELECT 1 FROM variants v JOIN documents d ON d.id=v.document_id WHERE v.id=$1 AND d.published AND (NOT $2 OR v.public_approved))`, r.PathValue("id"), db.PublicOnly).Scan(&allowed); e != nil || !allowed {
 			fail(w, 404, "asset unavailable")
 			return
 		}
-		rows, e := db.Pool.Query(r.Context(), `SELECT t.page,left(t.text,350) FROM variants v JOIN page_text t ON t.asset_sha=v.asset_sha WHERE v.id=$1 AND t.search @@ plainto_tsquery('simple',$2) ORDER BY t.page LIMIT 50`, r.PathValue("id"), q)
+		rows, e := db.Pool.Query(r.Context(), `SELECT t.page,left(t.text,350) FROM variants v JOIN documents d ON d.id=v.document_id JOIN page_text t ON t.asset_sha=v.asset_sha WHERE v.id=$1 AND d.published AND (NOT $3 OR v.public_approved) AND t.search @@ plainto_tsquery('simple',$2) ORDER BY t.page LIMIT 50`, r.PathValue("id"), q, db.PublicOnly)
 		if e != nil {
 			fail(w, 503, "search unavailable")
 			return

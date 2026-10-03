@@ -22,6 +22,9 @@ func main() {
 		addr = ":8080"
 	}
 	handler := app.Handler()
+	if os.Getenv("ARKHIV_PUBLIC") == "1" && os.Getenv("DATABASE_URL") == "" {
+		log.Fatal("public mode requires catalog")
+	}
 	if url := os.Getenv("DATABASE_URL"); url != "" {
 		db, err := catalog.Open(context.Background(), url)
 		if err != nil {
@@ -32,8 +35,11 @@ func main() {
 		if migrations == "" {
 			migrations = "../migrations"
 		}
-		if err = db.Migrate(context.Background(), migrations); err != nil {
-			log.Fatal(err)
+		db.PublicOnly = os.Getenv("ARKHIV_PUBLIC") == "1"
+		if !db.PublicOnly {
+			if err = db.Migrate(context.Background(), migrations); err != nil {
+				log.Fatal(err)
+			}
 		}
 		store, err := storage.Open(os.Getenv("ARKHIV_ARCHIVE"))
 		if err != nil {
