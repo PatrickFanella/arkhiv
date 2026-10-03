@@ -1,5 +1,9 @@
 # VHNESS
 
+The owner selected a shared engine with separate Democracy Now! and Bill Nye
+app repositories, each with its own design system and deployment. VHNESS naming
+and visual identity remain deferred. See the [standalone product plan](docs/plans/0002-standalone-products.md).
+
 VHNESS is a proposed video library with on-demand viewing and a shared scheduled
 television channel. Its first collection is
 [Democracy Now! on Internet Archive](https://archive.org/details/democracy_now_vid).
