@@ -1,21 +1,23 @@
 import { useEffect, useRef, useState } from 'react';
 import { assetKey, request, type Channel, type Episode, type Playback, type Session } from './model.js';
+import { catalogFeedback, type Catalog, type CatalogResult } from './catalogFeedback.js';
+export type { Catalog } from './catalogFeedback.js';
 
 export type Collection = { id: string; title: string; policy: 'source_stream' | 'local_preserve'; episodes: number };
-export type Catalog = { episodes: Episode[]; total: number; page: number };
 export type ViewerOptions = {
   /** Disable scrolling for custom navigation, or select a consumer-owned target. */
   scrollTarget?: string | false;
 };
 export function useViewer(defaultCollection: string, options: ViewerOptions = {}) {
-  const [catalog, setCatalog] = useState<Catalog | null>(null);
+  const [catalogResult, setCatalogResult] = useState<CatalogResult>({ key: '', state: 'pending' });
   const [query, setQuery] = useState('');
   const [collection, setCollection] = useState(defaultCollection);
   const [collections, setCollections] = useState<Collection[]>([]);
   useEffect(() => { const controller = new AbortController(); void request<Collection[]>('/api/collections', controller.signal).then(setCollections).catch(() => {}); return () => controller.abort(); }, []);
   const [year, setYear] = useState('');
   const [page, setPage] = useState(1);
-  const [error, setError] = useState('');
+  const catalogURL = `/api/episodes?collection=${encodeURIComponent(collection)}&q=${encodeURIComponent(query)}&year=${encodeURIComponent(year)}&page=${page}`;
+  const { catalog, error } = catalogFeedback(catalogResult, catalogURL);
   const [playError, setPlayError] = useState('');
   const [resolving, setResolving] = useState(false);
   const [channel, setChannel] = useState<Channel | null>(null);
@@ -26,11 +28,11 @@ export function useViewer(defaultCollection: string, options: ViewerOptions = {}
   const currentKey = useRef('');
   useEffect(() => {
     const controller = new AbortController();
-    request<Catalog>(`/api/episodes?collection=${encodeURIComponent(collection)}&q=${encodeURIComponent(query)}&year=${encodeURIComponent(year)}&page=${page}`, controller.signal)
-      .then(result => { setCatalog(result); setError(''); })
-      .catch((reason: unknown) => { if (!controller.signal.aborted) setError(reason instanceof Error ? reason.message : 'Catalog unavailable.'); });
+    request<Catalog>(catalogURL, controller.signal)
+      .then(result => { if (!controller.signal.aborted) setCatalogResult({ key: catalogURL, state: 'ready', catalog: result }); })
+      .catch((reason: unknown) => { if (!controller.signal.aborted) setCatalogResult({ key: catalogURL, state: 'error', error: reason instanceof Error ? reason.message : 'Catalog unavailable.' }); });
     return () => controller.abort();
-  }, [query, year, page, collection]);
+  }, [catalogURL]);
   useEffect(() => {
     const controller = new AbortController();
     let inFlight = false;
