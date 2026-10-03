@@ -4,4 +4,4 @@ Owner-supplied visual references reviewed on 2026-10-03. Original filenames and 
 
 Modern magazine typography, cover-led composition, generous margins, and column layouts.
 
-The [three catalog studies](../design/catalog-previews.md) interpret these references with original HTML/CSS artwork.
+The owner selected **A — Front Cover**. See the [selected catalog design](../design/catalog-previews.md) for implementation and content boundaries.
