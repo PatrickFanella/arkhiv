@@ -1,15 +1,15 @@
 # Standalone product qualification — October 3, 2026
 
 Three independently deployable frontends use the shared VHNESS engine at revision
-`9f6ad5b1fa3f20e2c3f063f30ed98d8d4a96b532`. Private deployments on Kvant use
+`1980c704e7495557c06fb9e6ac63e47ecc244dab`. Private deployments on Kvant use
 separate databases, credentials and immutable UTC replay schedules. Public ingress
 is not configured. VHNESS naming and its eventual identity remain undecided.
 
 | Product | Repository and reviewed frontend revision | Private preview |
 | --- | --- | --- |
-| Configurable white-label template | [video-archive-template](https://git.subcult.tv/subculture-collective/video-archive-template), `78fa07be503ab255a5b1b4af82258a9865c07e28` | http://127.0.0.1:48071 |
-| Democracy Now! broadcast archive | [democracy-now-tv](https://git.subcult.tv/subculture-collective/democracy-now-tv), `110ab93d8e0bc5a246d76e36b78ee0e6867c1764` | http://127.0.0.1:48072 |
-| Bill Nye science television | [bill-nye-tv](https://git.subcult.tv/subculture-collective/bill-nye-tv), `52cf8abbd160bbbbc5e46a9461c30ea9d34e6732` | http://127.0.0.1:48073 |
+| Configurable white-label template | [video-archive-template](https://git.subcult.tv/subculture-collective/video-archive-template), `0cd10bbe7a8fdf1371da1d8123ff5036637dd1d0` | http://127.0.0.1:48071 |
+| Democracy Now! broadcast archive | [democracy-now-tv](https://git.subcult.tv/subculture-collective/democracy-now-tv), `03195eabf9ebc7e086f9ec63babba0511c08036b` | http://127.0.0.1:48072 |
+| Bill Nye science television | [bill-nye-tv](https://git.subcult.tv/subculture-collective/bill-nye-tv), `ae0933cf2d1373bacd3fec94f0cc5c0aab1e6bf1` | http://127.0.0.1:48073 |
 
 The template accepts site JSON with a collection, title, introductory copy, local
 logo and six colors. A browser configuration fixture changed the document title
@@ -101,9 +101,9 @@ The full isolated engine gate passed formatting, vet, race/build, disposable
 PostgreSQL and HTTP regressions, frontend type/lint/tests and production build.
 Each frontend passed frozen dependency, generated adapter/tool/asset hash,
 type/lint/test and build checks. Template tests include configuration validation.
-Local Docker builds succeeded. Engine hosted runs 12199/12200 passed. Final
-Democracy Now! runs 12205 (retry 2)/12206, Bill Nye 12207/12208 and template
-12209/12210 passed. Earlier concurrent global-pnpm failures are retained; the app
+Local Docker builds succeeded. Final engine hosted runs 12215/12216 passed. Final
+Democracy Now! runs 12217/12218, Bill Nye 12219/12220 and template
+12221/12222 passed. Earlier concurrent global-pnpm failures are retained; the app
 workflows now install job-local pnpm. One setup-node cache failure passed on retry.
 
 All three private deployment health checks pass. Containers run as user 1000
@@ -127,7 +127,8 @@ pixels. Both branded mobile layouts have no horizontal overflow and use contain
 video sizing. Keyboard Tab reaches the skip link; semantic buttons, inputs,
 replay labels, dates/source links and optional controls are present. Bill Nye
 power-off unmounts the player; power-on restores it. The optional effect can be
-enabled/disabled. Video fullscreen entry and exit passed in the source app.
+enabled/disabled. Reduced-motion episode selection uses automatic scrolling;
+all three final adapters were checked with the reduced-motion media preference. Video fullscreen entry and exit passed in the source app.
 This is Linux Chromium evidence, not physical mobile, Safari or Firefox proof.
 
 A synthetic browser-only reviewed-caption/VTT fixture produced a native showing
