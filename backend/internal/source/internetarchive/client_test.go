@@ -62,7 +62,7 @@ func TestMalformedMetadataAndRestrictedHosts(t *testing.T) {
 	for _, v := range []struct {
 		u       string
 		allowed bool
-	}{{"https://archive.org/metadata/item", true}, {"https://ia801234.us.archive.org/a.pdf", true}, {"https://dn760008.eu.archive.org/a.pdf", true}, {"https://dn760008.eu.archive.org.evil.invalid/a.pdf", false}, {"http://archive.org/file", false}, {"https://archive.org.evil.invalid/file", false}, {"https://user@archive.org/file", false}, {"https://archive.org:8080/file", false}} {
+	}{{"https://archive.org/metadata/item", true}, {"https://ia801234.us.archive.org/a.pdf", true}, {"https://dn760008.eu.archive.org/a.pdf", true}, {"https://dn711102.ca.archive.org/a.pdf", true}, {"https://archive.org.attacker.invalid/a.pdf", false}, {"https://127.0.0.1/a.pdf", false}, {"https://dn760008.eu.archive.org.evil.invalid/a.pdf", false}, {"http://archive.org/file", false}, {"https://archive.org.evil.invalid/file", false}, {"https://user@archive.org/file", false}, {"https://archive.org:8080/file", false}} {
 		u, _ := url.Parse(v.u)
 		if Allowed(u) != v.allowed {
 			t.Fatal("host constraint", v.u)
