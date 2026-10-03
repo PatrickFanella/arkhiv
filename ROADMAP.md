@@ -1,9 +1,10 @@
 # VHNESS roadmap
 
-Status: implementation and private qualification in progress. Metadata, source
-streaming, shared schedules, and manifest-bounded local preservation are
-implemented in the review stack. Complete collection coverage and sustained
-qualification remain open. No public deployment is authorized. Updated 2026-10-03.
+Status: private pilot qualification complete; three standalone products have
+verified deployable images and private previews. Full metadata coverage, natural
+full-episode playback, both viewing modes and independent recovery passed.
+Public deployment remains a separate owner decision. Updated 2026-10-03.
+See [dated qualification](docs/reports/standalone-products-2026-10-03.md).
 
 The owner subsequently requested three deployable products: the configurable
 white-label app plus both branded apps. Bill Nye preservation now covers all
@@ -16,14 +17,14 @@ The owner selected separate Democracy Now! and Bill Nye app repositories with
 a shared engine. Each app owns its design system and deployment; VHNESS naming
 and visual design remain deferred. The [standalone product plan](docs/plans/0002-standalone-products.md)
 records runtime isolation, asset intake, visual directions, and delivery gates.
-This extends the pilot roadmap without expanding either delivery policy.
+The configurable [white-label template](https://git.subcult.tv/subculture-collective/video-archive-template) also owns its frontend repository. The later full-series preservation authorization supersedes the two-file budget below; Democracy Now! remains source-only.
 
 VHNESS starts with Democracy Now! on Internet Archive. The first private version
 includes a browsable episode library, on-demand viewing, and a shared scheduled
 replay channel. It stores complete metadata and streams video directly from the
 source. Democracy Now! videos are never acquired or cached by VHNESS.
 
-The owner activated the optional preservation pilot for two Bill Nye source MP4s:
+The original optional preservation pilot selected two Bill Nye source MP4s:
 01 Flight and 02 Earth's Crust, totaling 274,780,857 bytes. The approved limit is
 512 MiB with a 1 GiB free-space reserve, stored below
 ~/.local/state/vhness/private-pilot/media/bill-nye and backed up independently
