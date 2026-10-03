@@ -48,9 +48,12 @@ Gitea runs, not these local results.
 complete hosted package/container publication with current credentials:
 
 - VHNESS repository and organization Actions secret lists are empty.
-- The existing `subcult-agent` token has read notification/organization/user and
-  write issue/repository scopes, with no package write scope. Scoped-token creation
-  returned the missing `write:user` permission error.
+- After the owner promoted `subcult-agent`, the authenticated account reports
+  `is_admin: true` and its token includes `write:admin`, alongside read
+  notification/organization/user and write issue/repository scopes. The token
+  still has no package access. Repeating scoped-token creation after promotion
+  returned the missing `write:user` permission error. Account administration and
+  token scopes are separate gates.
 - The existing operator token's token-creation endpoint returned `auth required`.
 - The collaborative Gitea browser is signed out; no authenticated settings session
   is available for token provisioning.
@@ -62,6 +65,13 @@ the existing secret provider, installed as the repository secret
 `ARCHIVE_PACKAGE_TOKEN`, and repository variable `ARCHIVE_REGISTRY_USER` set to
 that token's actual account. The existing operator repository token is not
 substituted into an unattended release job.
+
+The token-creation endpoint currently requires `write:user` on the device token;
+its remaining authentication requirements have not been verified past that gate.
+The direct unblock is to provision a separate token with `read:package` and
+`write:package` into `ARCHIVE_PACKAGE_TOKEN` and set
+`ARCHIVE_REGISTRY_USER` to that token's account. Keep credential values in the
+secret provider or Gitea Actions settings; do not put them in an issue or chat.
 
 Once the credential is available, run the release workflow and verify actual
 registry artifacts/manifest before closing #39. Continue with upgrade PR automation
