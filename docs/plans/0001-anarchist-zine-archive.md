@@ -1,7 +1,7 @@
 # Milestone 1: a preserved, readable Anarchist Zine Archive
 
-Status: private pilot qualified; implementation and qualification merged in PRs #19/#20.
-Delivery closeout: Gitea #21 aligns the private runtime and reconciles completed issues.
+Status: private pilot qualified; implementation and qualification merged in PRs #19/#20. The owner-approved first collection is now public at https://arkhiv.subcult.tv with unknown rights, attribution/contact and no asserted reuse license.
+Delivery closeout: Gitea #21 is complete; the private runtime and original issues/milestones are reconciled.
 Next phases: [managed operations, public release, and second archive](0002-managed-archive-and-public-release.md).
 Evidence: [October 2 qualification report](../reports/pilot-qualification-20261002.md).
 Date: 2026-10-02. Source: https://archive.org/details/ZineArchive.

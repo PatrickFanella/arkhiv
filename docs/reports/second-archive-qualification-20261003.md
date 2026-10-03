@@ -110,7 +110,7 @@ Required isolated `make verify`, race-enabled `make test-updates` and
 on disposable PostgreSQL 17. Actual homelab corpus/restore and native browser
 proof are separate from those fixtures. Public staging separately denies all
 second-archive routes; its [report](public-release-staging-20261003.md) records that
-boundary. Public-domain activation/qualification remains #33–#34.
+boundary. Public-domain activation/qualification subsequently passed #33–#34; see [the public report](public-release-qualification-20261003.md).
 
 Private evidence is on Kvant under `~/.local/state/arkhiv/execution-20261003`
 and on Almaz under `/mnt/spektr/server/data/arkhiv/qualification`, including the

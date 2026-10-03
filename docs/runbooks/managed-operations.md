@@ -1,7 +1,6 @@
 # Managed preservation jobs
 
-The repository provides audit, independent backup, monitoring and dry-run retention
-jobs in `scripts/operations/runner.py`, with systemd units under `deploy/systemd/`.
+The repository provides audit, independent backup, monitoring, dry-run retention, source-update and fresh-restore jobs in `scripts/operations/runner.py`, with systemd units under `deploy/systemd/`.
 These units target the existing Almaz private pilot. Installing code does not prove
 that a timer has fired; retain timer trigger times, journal results and job receipts.
 
@@ -12,9 +11,9 @@ Set `revision` to the full deployed source commit. Keep configuration and state
 operator-owned and private. The runner reads the existing Compose configuration;
 it does not copy or print database credentials.
 
-Install only the four supplied service/timer pairs. Audit runs daily at 02:00,
+Install only the six supplied service/timer pairs. Audit runs daily at 02:00,
 backup at 03:00, retention planning at 03:40, and monitoring every 15 minutes,
-in America/Chicago. The timers also have initial activation delays of 30, 60,
+in America/Chicago. Updates run daily at 04:00 subject to each collection cadence; fresh restore runs monthly on the first day at 05:00. The first four timers also have initial activation delays of 30, 60,
 120 and 150 seconds. This permits an observable first scheduled run. Jobs share
 a nonblocking lock; a skipped overlap preserves the previous successful receipt.
 CLI writes also retain the archive's writer lock.
@@ -44,7 +43,7 @@ Receipts live under `operations/state`: latest per-job result, dated history,
 lock-skipped evidence, latest verified backup and notification state. Service deadlines
 and memory/CPU limits bound jobs. Stop an individual timer to disable its schedule;
 keep receipts and incomplete directories for investigation. To revert this automation,
-stop only `arkhiv-{audit,backup,retention,monitor}.timer` and retain archive, database,
+stop only `arkhiv-{audit,backup,retention,monitor,update,restore}.timer` and retain archive, database,
 independent backups and prior application images.
 
 NUC provides another host and disk, but shares the homelab's physical risk. A future
@@ -56,7 +55,7 @@ Verification: `make test-operations` covers manifest corruption and extra files,
 unsafe paths, overlaps, disk exhaustion, retained last-success timestamps, notification
 retry/deduplication and dry-run retention. `make verify` includes this suite plus the
 catalog integration checks that detect missing or mismatched reader manifests.
-Recurring restore drills and source-refresh jobs remain separate roadmap work.
+Recurring restore drills and source-refresh jobs are implemented and have initial timer qualification; weekly/monthly unattended soak remains a separate observation.
 
 ## Recurring fresh restore
 
@@ -92,3 +91,5 @@ NUC restore still requires its independent live receipt.
 Public staging can set `public_readiness_url` and `public_revision` in the private operations configuration. The monitor requires HTTP 200, `status: ok`, public mode, and the exact qualified revision. A failed or mismatched response uses the existing preservation notice and recovery path. After ingress activation, point the check at the actual public domain.
 
 Fresh restore drills create an `arkhiv_public` role with `NOLOGIN` before replaying catalog grants. This permits restoring backups taken after public-role provisioning without importing the deployment password or exposing the drill database.
+
+The public readiness request identifies the Arkhiv preservation monitor and accepts JSON. Actual edge qualification found that the default Python user agent received 403 while the identified request passed. Keep the safe failed receipt and receiver-observed recovery. Current qualified restore/pre-release auto snapshots are explicitly pinned in the private retention configuration; dry-run planning must keep those pins and the latest complete snapshot.
