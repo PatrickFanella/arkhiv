@@ -54,6 +54,13 @@ func (d *DB) InsertCatalog(ctx context.Context, item domain.CatalogItem, notes s
 			for _, track := range rep.Extension.Audio.Tracks {
 				files = append(files, track.File)
 			}
+			if recording := rep.Extension.Audio.Recording; recording != nil {
+				for _, track := range recording.Tracks {
+					for _, variant := range track.Variants {
+						files = append(files, variant.Name)
+					}
+				}
+			}
 		}
 		for _, file := range files {
 			var present bool

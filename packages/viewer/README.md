@@ -44,3 +44,8 @@ The unreleased `0.2.0` print entry exports `PrintReader` from
 assets; importing the root entry does not load a PDF runtime. See the engine's
 [print module contract](../../docs/reference/print-module.md) for indexing and
 access requirements.
+
+The audio entry exports `AudioPlayer`, reviewed set bounds and station clock
+helpers from `@subcult/archive-viewer/audio`. The engine supplies a verified
+continuous recording URL; the consumer owns station polling and navigation.
+Source credits, warnings and track order remain in the recording contract.
