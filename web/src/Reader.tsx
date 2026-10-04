@@ -112,7 +112,8 @@ export default function Reader({
     };
   }, [pdf, page, width, scale]);
   const go = (n: number) => {
-    if (pdf && Number.isInteger(n) && n >= 1 && n <= pdf.numPages) {
+    if (pdf && Number.isInteger(n) && n >= 1 && n <= pdf.numPages && n !== page) {
+      setLoading(true);
       setPage(n);
       setError("");
       const q = new URLSearchParams(location.search);
@@ -163,7 +164,10 @@ export default function Reader({
           <select
             aria-label="Zoom"
             value={scale}
-            onChange={(e) => setScale(Number(e.target.value))}
+            onChange={(e) => {
+              setLoading(true);
+              setScale(Number(e.target.value));
+            }}
           >
             <option value={1}>Fit width</option>
             <option value={1.25}>125%</option>
