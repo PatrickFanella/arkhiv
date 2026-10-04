@@ -6,6 +6,8 @@ const fs = require('node:fs');
 async function main() {
   const origin = process.env.PROBE_ORIGIN || 'http://web';
   const expected = JSON.parse(fs.readFileSync('/proof/expected.json', 'utf8'));
+  const browserBatchSize = Number(process.env.PROBE_BROWSER_BATCH_SIZE || 25);
+  if (!Number.isInteger(browserBatchSize) || browserBatchSize < 1 || browserBatchSize > 25) throw new Error('invalid browser batch size');
   let browser = await chromium.launch({ headless: true });
   let context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   let sourceRequests = 0;
@@ -64,7 +66,7 @@ async function main() {
     for (const document of documents) {
       for (const variant of document.variants) {
         // Release accumulated PDF workers, fonts and decoded image state.
-        if (renders > 0 && renders % 25 === 0) await restartBrowser();
+        if (renders > 0 && renders % browserBatchSize === 0) await restartBrowser();
         messages.length = 0;
         const response = await get('/api/assets/' + variant.id + '?download=1');
         const data = await response.body();
@@ -130,7 +132,7 @@ async function main() {
     }
     const blocked = await page.evaluate(async () => { try { await fetch('https://archive.org/metadata/ZineArchive'); return false; } catch { return true; } });
     if (!blocked) throw new Error('source access was not blocked');
-    const result = { documents: documents.length, downloads, renders, browserRestarts, sourceBlocked: blocked, sourceRequests, collections: [...renderedCollections], deniedRoutes:(expected.denied||[]).length, narrow:!!expected.narrow };
+    const result = { documents: documents.length, downloads, renders, browserBatchSize, browserRestarts, sourceBlocked: blocked, sourceRequests, collections: [...renderedCollections], deniedRoutes:(expected.denied||[]).length, narrow:!!expected.narrow };
     fs.writeFileSync('/proof/reader.json', JSON.stringify(result, null, 2));
     console.log(JSON.stringify(result));
   } finally { await browser.close(); }
