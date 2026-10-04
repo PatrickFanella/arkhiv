@@ -29,8 +29,13 @@ export function captionURL(value: Caption, playback: Playback): string {
 }
 export async function request<T>(path: string, signal?: AbortSignal): Promise<T> {
   const deadline = AbortSignal.timeout(10_000);
-  const response = await fetch(path, { signal: signal ? AbortSignal.any([signal, deadline]) : deadline });
-  const data = await response.json() as T & { error?: string };
-  if (!response.ok) throw new Error(data.error || 'The request could not be completed.');
-  return data;
+  try {
+    const response = await fetch(path, { signal: signal ? AbortSignal.any([signal, deadline]) : deadline });
+    const data = await response.json() as T & { error?: string };
+    if (!response.ok) throw new Error(data.error || 'The request could not be completed.');
+    return data;
+  } catch (reason) {
+    if (deadline.aborted && !signal?.aborted) throw new Error('The archive took too long to respond. Please try again.');
+    throw reason;
+  }
 }

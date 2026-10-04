@@ -18,6 +18,7 @@ function SelectedItem({selection,onClose}: {selection:Selection;onClose:()=>void
   const [paused,setPaused] = useState(true);
   const [setIndex,setSetIndex] = useState(-1);
   const [error,setError] = useState('');
+  const [attempt,setAttempt] = useState(0);
   const section = useRef<HTMLElement>(null);
   useEffect(()=> {
     if (representation.media !== 'print') return;
@@ -35,10 +36,9 @@ function SelectedItem({selection,onClose}: {selection:Selection;onClose:()=>void
       if (representation.media === 'print' && !/\.pdf$/i.test(representation.file)) throw new Error('This reader supports PDF files. Open the source page for this format.');
       // Continuous recordings have a separate derivative receipt and resolver.
       if (representation.media === 'audio' && representation.extension.audio?.recording) {
-        const full = await fetch(`${path}/audio/resolve?${params}`,{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(10000)]),cache:'no-store'});
-        if (full.ok) { const value = await full.json() as AudioAsset; if(!controller.signal.aborted)setAudio(value); return; }
-        if (full.status !== 404) throw new Error('The recording is temporarily unavailable.');
-        throw new Error('The continuous recording is unavailable. Open the source page to check its original files.');
+        const value = await catalogRequest<AudioAsset>(`${path}/audio/resolve?${params}`,controller.signal,60000);
+        if(!controller.signal.aborted)setAudio(value);
+        return;
       }
       if (representation.legacy_episode_id) {
         const response = await catalogRequest<Playback>(`/api/playback/${encodeURIComponent(representation.legacy_episode_id)}?${params}`,controller.signal);
@@ -51,12 +51,12 @@ function SelectedItem({selection,onClose}: {selection:Selection;onClose:()=>void
       if(!controller.signal.aborted)setAsset(resolved);
     })().catch(reason=> {if(!controller.signal.aborted)setError(reason instanceof Error ? reason.message : 'This item is unavailable.');});
     return ()=>controller.abort();
-  },[path,collection,representation]);
+  },[path,collection,representation,attempt]);
   const source = `https://archive.org/details/${encodeURIComponent(representation.source_item_id)}`;
   return <section ref={section} tabIndex={-1} className="catalog-selection" aria-label="Selected archive item">
     <button onClick={onClose}>Close item</button><p className="eyebrow">{representation.media} · {collection}</p><h2>{item.title}</h2>
     <p>{[item.creator,item.date].filter(Boolean).join(' · ')}</p><p>{item.description}</p>
-    {!error && !asset && !audio && <p role="status">Checking access…</p>}{error && <p role="alert">{error}</p>}
+    {!error && !asset && !audio && <p role="status">Checking access…</p>}{error && <p role="alert">{error} <button onClick={()=>{setError('');setAsset(undefined);setAudio(undefined);setLegacy(undefined);setAttempt(value=>value+1);}}>Try again</button></p>}
     {audio && <><label>Recording section<select value={setIndex} onChange={event=>setSetIndex(Number(event.target.value))}><option value={-1}>Full recording</option>{audio.recording.sets.map((set,index)=>set.reviewed && <option key={index} value={index}>{set.title}</option>)}</select></label><AudioPlayer asset={audio} set={setIndex>=0 ? audio.recording.sets[setIndex] : undefined}/></>}
     {asset?.media === 'print' && <Suspense fallback={<p role="status">Opening PDF reader…</p>}><DocumentView url={asset.url} title={item.title} path={path} collection={collection}/></Suspense>}
     {legacy && <Player key={legacy.url} session={{mode:'ondemand',collection,episode:{id:representation.legacy_episode_id!,title:item.title,date:item.date,description:item.description,synthetic:false},playback:legacy,offset:0,receivedAt:performance.now(),latency:0,generation:1}} paused={paused} onPaused={setPaused}/>}

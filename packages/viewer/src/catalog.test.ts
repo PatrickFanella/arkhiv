@@ -1,5 +1,5 @@
-import { expect, test } from 'vitest';
-import { catalogURL, representationURL, type RepresentationTransport } from './catalog.js';
+import { afterEach, expect, test, vi } from 'vitest';
+import { catalogRequest, catalogURL, representationURL, type RepresentationTransport } from './catalog.js';
 
 test('metadata queries preserve collection scope and escape user text',()=> {
   const url = new URL(catalogURL({collection:'mixed',media:'print',query:'&collection=other',page:2}),'https://test.invalid');
@@ -28,4 +28,17 @@ test('download URLs require the explicit action returned by the policy resolver'
   expect(()=>representationURL(download)).toThrow();
   expect(()=>representationURL(asset,'download')).toThrow();
   expect(()=>representationURL({...download,url:download.url+'&action=read'},'download')).toThrow();
+});
+
+
+afterEach(()=>vi.restoreAllMocks());
+test('a deadline reports a retryable error but caller cancellation stays cancellation',async()=> {
+  const deadline = new AbortController();
+  vi.spyOn(AbortSignal,'timeout').mockReturnValue(deadline.signal);
+  vi.spyOn(globalThis,'fetch').mockImplementation(async()=>{deadline.abort();throw new DOMException('signal timed out','TimeoutError');});
+  await expect(catalogRequest('/resolve',new AbortController().signal,60000)).rejects.toThrow('Please try again');
+  expect(AbortSignal.timeout).toHaveBeenCalledWith(60000);
+  const caller = new AbortController();caller.abort();
+  await expect(catalogRequest('/resolve',caller.signal)).rejects.toThrow('signal timed out');
+  await expect(catalogRequest('/resolve',caller.signal,60001)).rejects.toThrow('Invalid request timeout');
 });

@@ -24,7 +24,8 @@ class AudioMigrationTests(unittest.TestCase):
         recording = {'id': 'recording', 'concert_id': 'concert', 'title': 'Title', 'artist': 'Artist', 'date': '2000-01-01',
                      'sets': [], 'duration': 2, 'tracks': [{'title': 'Song', 'file': {'name': 'song.mp3', 'bytes': len(original)}}]}
         row = {'id': 'recording', 'source_hash': source_hash, 'source': recording,
-               'review': {'published': approved, 'playback': approved, 'notes': 'Private review'},
+               'review': {'published': approved, 'playback': approved, 'notes': 'Private review',
+                          'title': 'Reviewed title', 'sets': [{'title': 'Reviewed set', 'first': 0, 'last': 0, 'reviewed': True}]},
                'playback': recording if approved else None, 'media': 'continuous.m4a',
                'media_sha256': hashlib.sha256(b'continuous').hexdigest()}
         acquisition = {'ffmpeg_version': 'retained version', 'files': [{'source_name': 'song.mp3', 'bytes': len(original),
@@ -45,6 +46,12 @@ class AudioMigrationTests(unittest.TestCase):
             review = json.loads((args[3] / 'review-recording.json').read_text())['review']
             self.assertEqual(plan['private_playback_recordings'], 1)
             self.assertTrue(review['playback'])
+            item = json.loads((args[3] / 'item-recording.json').read_text())
+            audio = item['representations'][0]['extension']['audio']
+            self.assertEqual(item['title'], 'Reviewed title')
+            self.assertEqual(audio['recording']['sets'][0]['title'], 'Reviewed set')
+            self.assertEqual(audio['tracks'][0]['set'], 'Reviewed set')
+            self.assertEqual(item['editorial']['legacy_record']['playback']['sets'], [])
             for action in ['acquisition', 'download', 'schedule', 'public', 'relay']:
                 self.assertFalse(review[action])
 
