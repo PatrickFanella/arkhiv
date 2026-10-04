@@ -6,11 +6,34 @@ const fs = require('node:fs');
 async function main() {
   const origin = process.env.PROBE_ORIGIN || 'http://web';
   const expected = JSON.parse(fs.readFileSync('/proof/expected.json', 'utf8'));
-  const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const browserBatchSize = Number(process.env.PROBE_BROWSER_BATCH_SIZE || 25);
+  if (!Number.isInteger(browserBatchSize) || browserBatchSize < 1 || browserBatchSize > 25) throw new Error('invalid browser batch size');
+  let browser = await chromium.launch({ headless: true });
+  let context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   let sourceRequests = 0;
   await context.route(/https?:\/\/(?:[^/]+\.)?archive\.org\//, route => { sourceRequests++; return route.abort(); });
-  const page = await context.newPage();
+  let page = await context.newPage();
+  const messages = [];
+  const pending = new Map();
+  function observePage() {
+    page.on('console', m => { if (messages.length < 100) messages.push({type:m.type(),text:m.text()}); });
+    page.on('pageerror', error => { if (messages.length < 100) messages.push({type:'pageerror',text:String(error)}); });
+    page.on('request', request => pending.set(request, {url:request.url(),started:Date.now()}));
+    page.on('requestfinished', request => pending.delete(request));
+    page.on('requestfailed', request => pending.delete(request));
+  }
+  observePage();
+  let browserRestarts = 0;
+  async function restartBrowser() {
+    await browser.close();
+    pending.clear();
+    browser = await chromium.launch({headless:true});
+    context = await browser.newContext({viewport:{width:1280,height:800}});
+    await context.route(/https?:\/\/(?:[^/]+\.)?archive\.org\//, route => {sourceRequests++;return route.abort();});
+    page = await context.newPage();
+    observePage();
+    browserRestarts++;
+  }
   const get = async path => {
     const response = await context.request.get(origin + path);
     if (!response.ok()) throw new Error('restored request failed: ' + response.status());
@@ -42,19 +65,28 @@ async function main() {
     const renderedCollections = new Set();
     for (const document of documents) {
       for (const variant of document.variants) {
+        // Release accumulated PDF workers, fonts and decoded image state.
+        if (renders > 0 && renders % browserBatchSize === 0) await restartBrowser();
+        messages.length = 0;
         const response = await get('/api/assets/' + variant.id + '?download=1');
         const data = await response.body();
         if (data.length !== variant.size || createHash('sha256').update(data).digest('hex') !== variant.sha256) throw new Error('download integrity mismatch');
         await response.dispose();
         downloads++;
+        fs.writeFileSync('/proof/current-variant.json', JSON.stringify({document:document.id,variant:variant.id,filename:variant.filename,downloads,renders},null,2));
         await page.goto(origin + '/documents/' + document.id + '?read=1&variant=' + variant.id + '&page=1');
         await page.waitForFunction(() => {
           const c = document.querySelector('canvas');
           return c && c.width > 0 && c.height > 0 && !document.querySelector('.reader [role="status"]') && !document.querySelector('.reader [role="alert"]');
-        }, null, { timeout: 30000 });
+        }, null, { timeout: 30000 }).catch(async error => {
+          fs.writeFileSync('/proof/render-failure.json',JSON.stringify({url:page.url(),document:document.id,variant:variant.id,filename:variant.filename,downloads,renders,state:await page.locator('.reader').innerText({timeout:1000}).catch(()=>'reader unavailable'),messages,pending:[...pending.values()]},null,2));
+          await page.screenshot({path:'/proof/render-failure.png',fullPage:true}).catch(()=>{});
+          throw error;
+        });
         const painted = await page.locator('canvas').evaluate(c => c.getContext('2d').getImageData(0, 0, c.width, c.height).data.some((v, i) => i % 4 !== 3 && v < 230));
         if (!painted) throw new Error('PDF canvas has no visible content');
         renders++;
+        if (renders % 25 === 0) console.log(JSON.stringify({progress: renders, downloads, documents: documents.length}));
         if (!renderedCollections.has(document.collection)) {
           await page.screenshot({ path: '/proof/' + document.collection + '-reader.png', fullPage: true });
           renderedCollections.add(document.collection);
@@ -90,12 +122,17 @@ async function main() {
       await page.getByLabel('Search titles and available text').fill(expected.queries?.[0]?.query || document.metadata.title);
       await page.getByRole('button',{name:'Search',exact:true}).click();
       await page.getByRole('status').filter({hasText:'documents'}).waitFor();
-      if (!(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth))) throw new Error('narrow search overflows');
+      if (!(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth))) {
+        const overflow = await page.evaluate(() => ({width:innerWidth,scroll:document.documentElement.scrollWidth,elements:[...document.querySelectorAll('body *')].map(el=>({tag:el.tagName,classes:el.className,text:el.textContent?.slice(0,100),right:el.getBoundingClientRect().right,width:el.getBoundingClientRect().width})).filter(el=>el.right>innerWidth+1).slice(0,30)}));
+        fs.writeFileSync('/proof/narrow-overflow.json',JSON.stringify(overflow,null,2));
+        await page.screenshot({path:'/proof/narrow-overflow.png',fullPage:true});
+        throw new Error('narrow search overflows');
+      }
       await page.screenshot({path:'/proof/narrow-search.png',fullPage:true});
     }
     const blocked = await page.evaluate(async () => { try { await fetch('https://archive.org/metadata/ZineArchive'); return false; } catch { return true; } });
     if (!blocked) throw new Error('source access was not blocked');
-    const result = { documents: documents.length, downloads, renders, sourceBlocked: blocked, sourceRequests, collections: [...renderedCollections], deniedRoutes:(expected.denied||[]).length, narrow:!!expected.narrow };
+    const result = { documents: documents.length, downloads, renders, browserBatchSize, browserRestarts, sourceBlocked: blocked, sourceRequests, collections: [...renderedCollections], deniedRoutes:(expected.denied||[]).length, narrow:!!expected.narrow };
     fs.writeFileSync('/proof/reader.json', JSON.stringify(result, null, 2));
     console.log(JSON.stringify(result));
   } finally { await browser.close(); }
