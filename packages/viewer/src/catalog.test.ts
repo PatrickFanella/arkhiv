@@ -20,3 +20,12 @@ test('representation URLs bind source identity, exact file and viewer action',()
     {...asset,source_url:'https://evil.invalid/details/paper'}
   ]) expect(()=>representationURL(value)).toThrow();
 });
+
+
+test('download URLs require the explicit action returned by the policy resolver',()=> {
+  const download = {...asset,url:asset.url.replace('action=read','action=download')};
+  expect(representationURL(download,'download')).toBe(download.url);
+  expect(()=>representationURL(download)).toThrow();
+  expect(()=>representationURL(asset,'download')).toThrow();
+  expect(()=>representationURL({...download,url:download.url+'&action=read'},'download')).toThrow();
+});

@@ -1,6 +1,13 @@
 # Shared viewer changes
 
-## 0.2.0 (unreleased)
+## 0.2.1 (unreleased)
+
+- Export shared audio controls for distinctive consumer interfaces; the neutral
+  player uses the same seek bounds, transport state and completion behavior.
+- Validate download transport URLs against an explicitly requested action;
+  a read URL cannot become a download URL through client-side substitution.
+
+## 0.2.0 (superseded before publication)
 
 - Add the catalog entry for scoped mixed-media metadata browsing and validated
   representation transport URLs.
@@ -33,7 +40,3 @@ package pin, lockfile, engine digest and release receipt together.
 Initial package extraction: compiled ESM and declarations, native video player,
 source-policy validation, headless viewing/schedule logic and composed screen,
 library, compatibility and replay components. React remains a peer dependency.
-# 0.2.1
-
-- Export shared audio controls for distinctive consumer interfaces; the neutral
-  player uses the same seek bounds, transport state and completion behavior.
