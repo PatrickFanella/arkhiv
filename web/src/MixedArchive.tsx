@@ -12,12 +12,21 @@ function SelectedItem({selection,onClose}: {selection:Selection;onClose:()=>void
   const {item,representation,collection} = selection;
   const path = representationPath(item,representation);
   const [asset,setAsset] = useState<Transport>();
+  const [download,setDownload] = useState<string>();
   const [audio,setAudio] = useState<AudioAsset>();
   const [legacy,setLegacy] = useState<Playback>();
   const [paused,setPaused] = useState(true);
   const [setIndex,setSetIndex] = useState(-1);
   const [error,setError] = useState('');
   const section = useRef<HTMLElement>(null);
+  useEffect(()=> {
+    if (representation.media !== 'print') return;
+    const controller = new AbortController();
+    void catalogRequest<Transport>(`${path}/resolve?${new URLSearchParams({collection,action:'download'})}`,controller.signal)
+      .then(value=>{ if(!controller.signal.aborted)setDownload(representationURL(value,'download')); })
+      .catch(()=>undefined);
+    return ()=>controller.abort();
+  },[path,collection,representation.media]);
   useEffect(()=>{section.current?.scrollIntoView({block:'start'});section.current?.focus();},[]);
   useEffect(()=> {
     const controller = new AbortController();
@@ -54,6 +63,7 @@ function SelectedItem({selection,onClose}: {selection:Selection;onClose:()=>void
     {asset?.media === 'video' && !legacy && <video key={asset.url} controls playsInline preload="metadata" src={asset.url} aria-label={item.title} onError={()=>setError('The video source is unavailable. Try another format or open the source page.')} />}
     {asset?.media === 'audio' && <audio key={asset.url} controls preload="metadata" src={asset.url} aria-label={item.title} onError={()=>setError('The audio source is unavailable. Try another format or open the source page.')} />}
     {!audio && representation.extension.audio && <dl>{Object.entries(representation.extension.audio.credits || {}).map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>}
+    {download && <p><a href={download} download={representation.file}>Download original PDF</a></p>}
     <p><a href={source} target="_blank" rel="noreferrer">Source item at Internet Archive</a> · {representation.file}</p>
   </section>;
 }
@@ -87,7 +97,7 @@ export default function MixedArchive({brand}: {brand:Brand}) {
       {catalog.pending && <p role="status">Loading catalog…</p>}{catalog.error && <p role="alert">{catalog.error} <button onClick={catalog.retry}>Try again</button></p>}
       {catalog.page && <><p role="status">{catalog.page.total} items · Metadata search</p>{catalog.page.items.length === 0 && <p>No items match these filters.</p>}
         <div className="catalog-items">{catalog.page.items.map(item=><article key={item.id}><p className="eyebrow">{item.representations.map(rep=>rep.media).filter((value,index,array)=>array.indexOf(value)===index).join(' / ')}</p><h2>{item.title}</h2><p>{[item.creator,item.date].filter(Boolean).join(' · ')}</p><p className="catalog-description">{item.description}</p>
-          {item.representations.flatMap(rep=>rep.collections.map(member=><button key={`${rep.id}:${member}`} onClick={()=>setSelection({item,representation:rep,collection:member})}>{rep.media === 'print' ? 'Read' : rep.media === 'audio' ? 'Listen' : 'Watch'}{rep.collections.length>1 ? ` · ${member}` : ''}</button>))}</article>)}</div>
+          {item.representations.flatMap(rep=>rep.collections.map(member=><button key={`${rep.id}:${member}`} onClick={()=>setSelection({item,representation:rep,collection:member})}>{rep.media === 'print' ? 'Read' : rep.media === 'audio' ? 'Listen' : 'Watch'}{item.representations.filter(other=>other.media===rep.media).length>1 ? ` · ${rep.file}` : ''}{rep.collections.length>1 ? ` · ${member}` : ''}</button>))}</article>)}</div>
         <nav className="catalog-pages" aria-label="Catalog pages"><button disabled={page<=1} onClick={()=>{setPage(value=>value-1);setSelection(undefined);}}>Previous</button><span>Page {page}</span><button disabled={page*24>=catalog.page.total} onClick={()=>{setPage(value=>value+1);setSelection(undefined);}}>Next</button></nav></>}
     </section>
     {collection && <details><summary>Scheduled programs for this collection</summary><Suspense fallback={<p role="status">Opening channel controls…</p>}><CollectionChannels collection={collection} media={collections.find(c=>c.id===collection)?.media || []}/></Suspense></details>}
