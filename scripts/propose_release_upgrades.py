@@ -5,11 +5,30 @@ import os
 from pathlib import Path
 import re
 import shlex
+import socket
 import subprocess
 import tempfile
 
 from download_release_package import download
 from propose_consumer_upgrade import proposal
+
+
+
+def consumer_test_database(inspected, run, repository, resolve=socket.gethostbyname):
+    if inspected['Config']['Labels'].get('arkhiv.upgrade-database') != run:
+        raise ValueError('Database belongs to another job')
+    environment = dict(value.split('=', 1) for value in inspected['Config'].get('Env', []))
+    if environment.get('POSTGRES_USER') != 'dev' or environment.get('POSTGRES_PASSWORD') != 'disposable-dev-only':
+        raise ValueError('Expected the disposable launcher database identity')
+    addresses = [network['IPAddress'] for network in inspected['NetworkSettings']['Networks'].values()]
+    if len(addresses) != 1 or not re.fullmatch(r'(\d{1,3}\.){3}\d{1,3}', addresses[0]):
+        raise ValueError('Expected one job-owned database address')
+    if resolve('db') != addresses[0]:
+        raise ValueError('Launcher database alias resolves outside this job')
+    database = 'upgrade_' + repository.split('/')[-1].replace('-', '_')
+    if not re.fullmatch(r'[a-z][a-z0-9_]{0,62}', database):
+        raise ValueError('Invalid consumer test database name')
+    return database, 'postgres://dev:disposable-dev-only@db:5432/' + database + '?sslmode=disable'
 
 
 def main():
@@ -56,16 +75,9 @@ def main():
                 if not re.fullmatch(r'[0-9a-f]{64}', database_container):
                     raise ValueError('Expected one full job-owned database container identity')
                 inspected = json.loads(subprocess.check_output(['docker', 'inspect', database_container]))[0]
-                if inspected['Config']['Labels'].get('arkhiv.upgrade-database') != os.environ['ARCHIVE_UPGRADE_DATABASE_RUN']:
-                    raise ValueError('Database belongs to another job')
-                addresses = [network['IPAddress'] for network in inspected['NetworkSettings']['Networks'].values()]
-                if len(addresses) != 1 or not re.fullmatch(r'(\d{1,3}\.){3}\d{1,3}', addresses[0]):
-                    raise ValueError('Expected one job-owned database address')
-                database = 'upgrade_' + consumer['repository'].split('/')[-1].replace('-', '_')
-                if not re.fullmatch(r'[a-z][a-z0-9_]{0,62}', database):
-                    raise ValueError('Invalid consumer test database name')
-                subprocess.run(['docker', 'exec', database_container, 'createdb', '-U', 'proof', database], check=True)
-                os.environ['TEST_DATABASE_URL'] = 'postgres://proof:disposable-upgrade-only@' + addresses[0] + ':5432/' + database + '?sslmode=disable'
+                database, test_url = consumer_test_database(inspected, os.environ['ARCHIVE_UPGRADE_DATABASE_RUN'], consumer['repository'])
+                subprocess.run(['docker', 'exec', database_container, 'createdb', '-U', 'dev', database], check=True)
+                os.environ['TEST_DATABASE_URL'] = test_url
             result = proposal(release, consumer, clone, artifact, base_ref=base_ref)
             print(consumer['repository'], result or 'Release already applied; no PR', flush=True)
 

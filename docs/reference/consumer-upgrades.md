@@ -89,7 +89,9 @@ adoptions, so subsequent proposals use their default branches.
 The hosted proposal job installs the Go toolchain and the media tools needed by
 registered backend checks. Its PostgreSQL service carries the exact job identity.
 Each consumer gets a fresh database named for that consumer; the tool verifies
-the container label and address before creating it and supplying
-`TEST_DATABASE_URL`. A missing or conflicting container identity fails the job.
+the container label, disposable launcher identity and address before creating it
+and supplying `TEST_DATABASE_URL`. The `db` alias must resolve to that verified
+job-owned address. The service uses the launcher's `dev` user and disposable
+password so consumer integration guards remain intact. A missing or conflicting container identity fails the job.
 This keeps migration and database tests separate across brands. Local proposal
 work must use the shared isolated launcher for the same required gates.
