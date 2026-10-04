@@ -1,0 +1,82 @@
+# Headless Arkhiv core
+
+Arkhiv is an HTTP archive core. End users choose the entire frontend, its framework,
+navigation, layout, controls, styling and hosting. Neither React nor
+`@subcult/archive-viewer` is required to use the core. The neutral reference app
+and shared components/hooks are optional clients of the same APIs.
+
+## Build and run independently
+
+`docker build --target core -t arkhiv-core:SOURCE .` builds only the Go engine and
+its media/tool runtime. The core target contains no `/app/web` and does not build
+the Node/frontend stages. It exposes the same `vhness` operator and `serve`
+commands, migrations and media adapters. `VHNESS_WEB` is unset; `/` and arbitrary
+frontend paths return 404. Existing default image builds select the final
+`reference` stage, preserving compatibility for bundled apps.
+
+`make verify-core` runs formatting, vet, race-enabled backend/database tests and
+compilation without Node or a frontend package. `make verify` additionally checks
+all optional clients and the reference app. Database tests always require the
+explicit task-owned disposable `TEST_DATABASE_URL`; core independence does not
+relax that guard.
+
+Runtime still needs its own database, reviewed collection scope, credentials and
+appropriate read-only media mounts. Follow the existing deployment and recovery
+runbooks. Building this target does not publish a new release or deploy it.
+Issue #86 tracks independent immutable core publication and qualification;
+already published 0.2.2 artifacts remain unchanged.
+
+## Plain HTTP integration
+
+Any HTTP client can begin with `GET /api/version` for API version, enabled module
+versions and the configured collection scope. Liveness is `/api/health`;
+`/api/ready` checks database readiness. Neither requires a frontend.
+
+| Capability | HTTP contract |
+| --- | --- |
+| Browse collections and mixed items | `GET /api/catalog/v1/collections`, `GET /api/catalog/v1/items`, `GET /api/catalog/v1/items/{id}` |
+| Resolve a reviewed representation | `GET /api/catalog/v1/items/{id}/representations/{representation}/resolve` |
+| Read a local original or permitted download | The resolver's access-checked media URL, including Range requests |
+| Print status, search and cover | Representation `/print`, `/search` and `/cover` endpoints |
+| Continuous audio | Representation `/audio/resolve` and its reviewed `/audio/media` URL |
+| Shared audio station | `GET /api/audio/channel?collection=COLLECTION` |
+| Existing video integrations | `/api/episodes`, `/api/episodes/{id}`, `/api/playback/{id}` and `/api/channel` |
+
+For example, a frontend or command-line client requests
+`/api/catalog/v1/items?collection=COLLECTION&media=audio&page=1`, displays the
+returned item and representation identities, then resolves its selected reviewed
+representation. The consumer chooses how to render tracks, pages or controls.
+[Mixed catalog](mixed-catalog.md), [access reviews](representation-access.md),
+[print](print-module.md) and [audio](audio-module.md) document the payloads,
+query parameters and specialized behavior. Existing video endpoints remain
+compatible; clients can use them without adopting the mixed reference UI.
+
+The API enforces collection scope and independent read/play/download/scheduling
+reviews for every client. A listed item grants no transport permission. Denied or
+withdrawn representations return 404; operational failures remain explicit.
+Source-stream media resolves directly to its source, and the core refuses to
+proxy it. Local media must match its approved preservation manifest. Clients
+must preserve source identity and display server uncertainty rather than infer
+rights, set boundaries or source replacements.
+
+A frontend can live on a separate server while a reverse proxy exposes `/api`
+under its origin. This is the currently supported browser topology. Direct
+cross-origin browser deployment needs an explicitly reviewed origin policy;
+the core currently does not enable wildcard CORS. Server HTTP clients do not
+require CORS. Administrative ingestion, review, migration and scheduling remain
+operator commands with database authorization, rather than public web mutations.
+
+## Updates and ownership
+
+Core policy, metadata, resolution and scheduling fixes reach compatible clients
+through a reviewed backend upgrade. Backend upgrades do not replace end-user
+markup or styles. Optional React package fixes reach only package consumers after
+their own upgrade. API compatibility and schema migration/recovery determine
+upgrade order; frontend design is outside that contract.
+
+The existing six-consumer registry demonstrates supported integrations. Component
+consumers retaining their own backends share optional frontend code only; adopting
+those components does not mean they run the Arkhiv core. Future API-only consumers
+must record core image and API compatibility separately, without fabricated React
+package pins. That rollout mode and independently published artifacts remain
+part of issue #86 qualification.

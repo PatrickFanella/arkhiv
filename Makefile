@@ -1,6 +1,7 @@
-.PHONY: verify test test-integration
-verify:
+.PHONY: verify verify-core test test-integration
+verify-core:
 	cd backend && test -z "$$(gofmt -l cmd internal)" && go vet ./... && go test -race ./... && go build ./cmd/vhness
+verify: verify-core
 	pnpm install --frozen-lockfile
 	pnpm build:packages
 	pnpm check:packages

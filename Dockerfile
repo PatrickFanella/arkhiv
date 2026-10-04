@@ -16,7 +16,7 @@ RUN go mod download
 COPY backend/ ./
 RUN CGO_ENABLED=0 go build -trimpath -o /out/vhness ./cmd/vhness
 
-FROM debian:bookworm-slim
+FROM debian:bookworm-slim AS core
 # Keep tool dependencies in separate layers for registries with bounded uploads.
 # Debian still resolves and tracks every runtime dependency through apt.
 RUN apt-get update && apt-get install --yes --no-install-recommends ca-certificates poppler-utils util-linux && rm -rf /var/lib/apt/lists/*
@@ -26,11 +26,15 @@ RUN apt-get update && apt-get install --yes --no-install-recommends libavcodec59
 RUN apt-get update && apt-get install --yes --no-install-recommends libavfilter8 libavdevice59 && rm -rf /var/lib/apt/lists/*
 RUN apt-get update && apt-get install --yes --no-install-recommends ffmpeg && rm -rf /var/lib/apt/lists/*
 COPY --from=backend /out/vhness /usr/local/bin/vhness
-COPY --from=frontend /src/web/dist /app/web
 COPY migrations/ /app/migrations/
-ENV API_ADDR=0.0.0.0:8080 VHNESS_WEB=/app/web VHNESS_MIGRATIONS=/app/migrations VHNESS_MEDIA=/media
+ENV API_ADDR=0.0.0.0:8080 VHNESS_MIGRATIONS=/app/migrations VHNESS_MEDIA=/media
 USER 1000:1000
 EXPOSE 8080
 HEALTHCHECK --interval=20s --timeout=5s --start-period=20s --retries=3 CMD ["vhness", "healthcheck"]
 ENTRYPOINT ["vhness"]
 CMD ["serve"]
+
+# Optional bundled reference interface. Core builds stop before this stage.
+FROM core AS reference
+COPY --from=frontend /src/web/dist /app/web
+ENV VHNESS_WEB=/app/web
