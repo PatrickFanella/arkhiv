@@ -64,10 +64,11 @@
           "verify"
         ]
       ],
-      "adoption_status": "reviewed-pr",
-      "adoption_ref": "feat/shared-print-adoption",
+      "adoption_status": "merged",
+      "adoption_ref": "main",
       "adoption_pull_request": "https://git.subcult.tv/subculture-collective/arkhiv-alpha/pulls/59",
-      "adoption_revision": "112014d71a56eab485d2099c931c6253c5168679"
+      "adoption_revision": "86680b30a75a7fbe24932b624cf6d9ad013daba8",
+      "merge_revision": "6c8053bc5f3ad398320ce01b88fe4862b4b96597"
     },
     {
       "repository": "subculture-collective/arkhiv-riot-grrrl",
@@ -86,10 +87,11 @@
           "verify"
         ]
       ],
-      "adoption_status": "reviewed-pr",
-      "adoption_ref": "feat/shared-print-adoption",
+      "adoption_status": "merged",
+      "adoption_ref": "main",
       "adoption_pull_request": "https://git.subcult.tv/subculture-collective/arkhiv-riot-grrrl/pulls/10",
-      "adoption_revision": "189ee591ea1cb167b19b01dbd9c93420b6ac0b8a"
+      "adoption_revision": "99db53d1f7ae84704a18418d6384c143dbb08ec0",
+      "merge_revision": "845be664f359dc4c94d3101e1b062c32c24a3838"
     },
     {
       "repository": "subculture-collective/bill-nye-tv",
@@ -108,11 +110,12 @@
           "verify"
         ]
       ],
-      "adoption_status": "reviewed-pr",
-      "adoption_ref": "feat/shared-platform-adoption",
+      "adoption_status": "merged",
+      "adoption_ref": "main",
       "adoption_pull_request": "https://git.subcult.tv/subculture-collective/bill-nye-tv/pulls/2",
       "adoption_revision": "d77639cdbff9a09766b51cfbf4dba668232c77e7",
-      "engine_file": "deploy/archive-engine.env"
+      "engine_file": "deploy/archive-engine.env",
+      "merge_revision": "471d22be1d3a35103727e7af35abfc27f2e44598"
     },
     {
       "repository": "subculture-collective/dedhed",
@@ -131,10 +134,11 @@
           "verify"
         ]
       ],
-      "adoption_status": "reviewed-pr",
-      "adoption_ref": "feat/shared-audio-adoption",
+      "adoption_status": "merged",
+      "adoption_ref": "main",
       "adoption_pull_request": "https://git.subcult.tv/subculture-collective/dedhed/pulls/27",
-      "adoption_revision": "1105d5ab67f5e4f08c90fc0c336de1efb7fb0ad0"
+      "adoption_revision": "1105d5ab67f5e4f08c90fc0c336de1efb7fb0ad0",
+      "merge_revision": "2419bf811784c7aa9c41ee20928ed6205e4f0415"
     }
   ]
 }

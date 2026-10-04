@@ -51,6 +51,21 @@ def main():
                 revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=clone, text=True).strip()
                 if revision != consumer['adoption_revision']:
                     raise ValueError('Reviewed adoption branch moved; refresh its qualification before proposing')
+            database_container = os.environ.get('ARCHIVE_UPGRADE_DATABASE_CONTAINER')
+            if database_container:
+                if not re.fullmatch(r'[0-9a-f]{64}', database_container):
+                    raise ValueError('Expected one full job-owned database container identity')
+                inspected = json.loads(subprocess.check_output(['docker', 'inspect', database_container]))[0]
+                if inspected['Config']['Labels'].get('arkhiv.upgrade-database') != os.environ['ARCHIVE_UPGRADE_DATABASE_RUN']:
+                    raise ValueError('Database belongs to another job')
+                addresses = [network['IPAddress'] for network in inspected['NetworkSettings']['Networks'].values()]
+                if len(addresses) != 1 or not re.fullmatch(r'(\d{1,3}\.){3}\d{1,3}', addresses[0]):
+                    raise ValueError('Expected one job-owned database address')
+                database = 'upgrade_' + consumer['repository'].split('/')[-1].replace('-', '_')
+                if not re.fullmatch(r'[a-z][a-z0-9_]{0,62}', database):
+                    raise ValueError('Invalid consumer test database name')
+                subprocess.run(['docker', 'exec', database_container, 'createdb', '-U', 'proof', database], check=True)
+                os.environ['TEST_DATABASE_URL'] = 'postgres://proof:disposable-upgrade-only@' + addresses[0] + ':5432/' + database + '?sslmode=disable'
             result = proposal(release, consumer, clone, artifact, base_ref=base_ref)
             print(consumer['repository'], result or 'Release already applied; no PR', flush=True)
 

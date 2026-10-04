@@ -83,3 +83,13 @@ The first hosted proposal attempt (run 12522) failed safely because both
 adoption branches were merged and removed while the job was starting. No
 upgrade branch or PR was created. The registry now records both merged
 adoptions, so subsequent proposals use their default branches.
+
+## Verification isolation for print and audio consumers
+
+The hosted proposal job installs the Go toolchain and the media tools needed by
+registered backend checks. Its PostgreSQL service carries the exact job identity.
+Each consumer gets a fresh database named for that consumer; the tool verifies
+the container label and address before creating it and supplying
+`TEST_DATABASE_URL`. A missing or conflicting container identity fails the job.
+This keeps migration and database tests separate across brands. Local proposal
+work must use the shared isolated launcher for the same required gates.
