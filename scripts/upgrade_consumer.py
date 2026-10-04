@@ -11,6 +11,11 @@ import subprocess
 def validate(release, consumer, current, artifact):
     if consumer['adoption'] != 'package':
         raise ValueError('Consumer has not completed package adoption')
+    mode = consumer.get('mode', 'platform')
+    if mode not in ('platform', 'components'):
+        raise ValueError('Unsupported consumer mode')
+    if mode == 'components' and consumer.get('engine_file'):
+        raise ValueError('Component consumers cannot register a shared engine pin')
     if consumer['rollout'] != 'reviewed-pr':
         raise ValueError('Unsupported rollout policy')
     for key in ('contract_version', 'configuration_version', 'package'):
@@ -44,17 +49,21 @@ def validate(release, consumer, current, artifact):
 def prepare(root, consumer, release, artifact, run=subprocess.run):
     if subprocess.check_output(['git', 'status', '--porcelain'], cwd=root):
         raise ValueError('Use a clean isolated consumer checkout')
-    paths = [root / consumer[k] for k in ('release_file', 'package_file', 'lock_file', 'engine_file')]
+    keys = ['release_file', 'package_file', 'lock_file']
+    if consumer.get('mode', 'platform') == 'platform':
+        keys.append('engine_file')
+    paths = [root / consumer[k] for k in keys]
     for path in paths:
         if not path.resolve().is_relative_to(root.resolve()) or not path.is_file():
             raise ValueError('Registered dependency file is missing or outside the checkout')
-    receipt, package_file, lock_file, engine_file = paths
+    receipt, package_file, lock_file = paths[:3]
+    engine_file = paths[3] if len(paths) == 4 else None
     current = json.loads(receipt.read_text())
     validate(release, consumer, current, artifact)
     package = json.loads(package_file.read_text())
     if package.get('dependencies', {}).get(release['package']) != current['version']:
         raise ValueError('Package dependency differs from the current release receipt')
-    if engine_file.read_text() != 'ARCHIVE_ENGINE_IMAGE=' + current['engine_digest'] + '\n':
+    if engine_file is not None and engine_file.read_text() != 'ARCHIVE_ENGINE_IMAGE=' + current['engine_digest'] + '\n':
         raise ValueError('Engine pin differs from the current release receipt')
     if current == release:
         return False
@@ -63,7 +72,8 @@ def prepare(root, consumer, release, artifact, run=subprocess.run):
         package['dependencies'][release['package']] = release['version']
         package_file.write_text(json.dumps(package, indent=2) + '\n')
         receipt.write_text(json.dumps(release, indent=2) + '\n')
-        engine_file.write_text('ARCHIVE_ENGINE_IMAGE=' + release['engine_digest'] + '\n')
+        if engine_file is not None:
+            engine_file.write_text('ARCHIVE_ENGINE_IMAGE=' + release['engine_digest'] + '\n')
         # Caller supplies ephemeral registry authentication through npm config.
         run(['pnpm', 'install', '--lockfile-only', '--ignore-scripts', '--no-frozen-lockfile'], cwd=package_file.parent, check=True)
         for command in consumer['checks']:

@@ -85,6 +85,29 @@ class UpgradeTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'adoption'):
             validate(self.release, {**self.consumer, 'adoption': 'pending'}, self.current, self.artifact)
 
+    def test_component_upgrade_preserves_owned_backend_and_rolls_back_failure(self):
+        self.consumer['mode'] = 'components'
+        del self.consumer['engine_file']
+        backend = self.root / 'engine.env'
+        before = backend.read_bytes()
+        self.assertTrue(prepare(self.root, self.consumer, self.release, self.artifact, lambda *args, **kwargs: None))
+        self.assertEqual(backend.read_bytes(), before)
+        subprocess.run(['git', 'add', '.'], cwd=self.root, check=True)
+        subprocess.run(['git', '-c', 'user.name=Test', '-c', 'user.email=test@example.com', '-c', 'commit.gpgsign=false', 'commit', '-qm', 'component upgrade'], cwd=self.root, check=True)
+        originals = {p.name: p.read_bytes() for p in self.root.iterdir() if p.is_file()}
+        def failing(cmd, **kwargs):
+            (self.root / 'pnpm-lock.yaml').write_text('partial update')
+            raise subprocess.CalledProcessError(1, cmd)
+        with self.assertRaises(subprocess.CalledProcessError):
+            prepare(self.root, self.consumer, {**self.release, 'version': '0.1.2'}, self.artifact, failing)
+        self.assertEqual(originals, {p.name: p.read_bytes() for p in self.root.iterdir() if p.is_file()})
+
+    def test_component_mode_cannot_change_engine_ownership(self):
+        with self.assertRaisesRegex(ValueError, 'engine pin'):
+            validate(self.release, {**self.consumer, 'mode': 'components'}, self.current, self.artifact)
+        with self.assertRaisesRegex(ValueError, 'mode'):
+            validate(self.release, {**self.consumer, 'mode': 'unknown'}, self.current, self.artifact)
+
     def test_existing_proposal_reused_without_mutation(self):
         self.consumer['repository'] = 'subculture-collective/example'
         branch = 'archive-upgrade/v0.1.1-' + 'b' * 40

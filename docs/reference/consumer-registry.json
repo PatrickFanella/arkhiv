@@ -46,6 +46,95 @@
       "adoption_pull_request": "https://git.subcult.tv/subculture-collective/democracy-now-tv/pulls/2",
       "adoption_revision": "7096142dee52bcde9fd3cb2cbca20d4214d1946e",
       "merge_revision": "e46902e6c2593f042a36e13df11006adbcfc9f7c"
+    },
+    {
+      "repository": "subculture-collective/arkhiv-alpha",
+      "media": [
+        "print"
+      ],
+      "adoption": "package",
+      "mode": "components",
+      "rollout": "reviewed-pr",
+      "package_file": "web/package.json",
+      "lock_file": "web/pnpm-lock.yaml",
+      "release_file": "docs/releases/archive-viewer-0.2.1.json",
+      "checks": [
+        [
+          "make",
+          "verify"
+        ]
+      ],
+      "adoption_status": "reviewed-pr",
+      "adoption_ref": "feat/shared-print-adoption",
+      "adoption_pull_request": "https://git.subcult.tv/subculture-collective/arkhiv-alpha/pulls/59",
+      "adoption_revision": "112014d71a56eab485d2099c931c6253c5168679"
+    },
+    {
+      "repository": "subculture-collective/arkhiv-riot-grrrl",
+      "media": [
+        "print"
+      ],
+      "adoption": "package",
+      "mode": "components",
+      "rollout": "reviewed-pr",
+      "package_file": "web/package.json",
+      "lock_file": "web/pnpm-lock.yaml",
+      "release_file": "docs/releases/archive-viewer-0.2.1.json",
+      "checks": [
+        [
+          "make",
+          "verify"
+        ]
+      ],
+      "adoption_status": "reviewed-pr",
+      "adoption_ref": "feat/shared-print-adoption",
+      "adoption_pull_request": "https://git.subcult.tv/subculture-collective/arkhiv-riot-grrrl/pulls/10",
+      "adoption_revision": "189ee591ea1cb167b19b01dbd9c93420b6ac0b8a"
+    },
+    {
+      "repository": "subculture-collective/bill-nye-tv",
+      "media": [
+        "video"
+      ],
+      "adoption": "package",
+      "mode": "platform",
+      "rollout": "reviewed-pr",
+      "package_file": "web/package.json",
+      "lock_file": "web/pnpm-lock.yaml",
+      "release_file": "deploy/platform-release.json",
+      "checks": [
+        [
+          "make",
+          "verify"
+        ]
+      ],
+      "adoption_status": "reviewed-pr",
+      "adoption_ref": "feat/shared-platform-adoption",
+      "adoption_pull_request": "https://git.subcult.tv/subculture-collective/bill-nye-tv/pulls/2",
+      "adoption_revision": "d77639cdbff9a09766b51cfbf4dba668232c77e7",
+      "engine_file": "deploy/archive-engine.env"
+    },
+    {
+      "repository": "subculture-collective/dedhed",
+      "media": [
+        "audio"
+      ],
+      "adoption": "package",
+      "mode": "components",
+      "rollout": "reviewed-pr",
+      "package_file": "web/package.json",
+      "lock_file": "web/pnpm-lock.yaml",
+      "release_file": "docs/releases/archive-viewer-0.2.1.json",
+      "checks": [
+        [
+          "make",
+          "verify"
+        ]
+      ],
+      "adoption_status": "reviewed-pr",
+      "adoption_ref": "feat/shared-audio-adoption",
+      "adoption_pull_request": "https://git.subcult.tv/subculture-collective/dedhed/pulls/27",
+      "adoption_revision": "1105d5ab67f5e4f08c90fc0c336de1efb7fb0ad0"
     }
   ]
 }
