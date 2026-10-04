@@ -3,12 +3,13 @@
 ## Shared print, audio and video platform
 
 Arkhiv is the canonical shared product, built from repository ID 242, formerly
-VHNESS. Brands own distinct interfaces composed from published shared components
-and hooks. The original print repository is now `arkhiv-alpha` (ID 235); Riot
+VHNESS. Arkhiv is a headless core with a versioned HTTP API. End users own the
+entire frontend and may use any framework. The reference app, published React
+components and hooks are optional consumers. The original print repository is now `arkhiv-alpha` (ID 235); Riot
 Grrrl and Dedhed remain independent consumers. Historical VHNESS links and
 receipts retain their original identities.
 
-The shared viewer 0.2.1 and matching engine are published, with verified registry
+The shared viewer 0.2.2 and matching engine are published, with verified registry
 and hosted artifacts. Print and audio modules, the neutral mixed catalog,
 representation access reviews and migration converters are implemented. Branded
 adoption and private qualification remain in progress. Gitea issues retain their
@@ -17,6 +18,9 @@ and repeatable upgrades.
 
 The [multimedia design](docs/plans/0003-multimedia-platform.md) and
 [platform roadmap](docs/plans/0003-multimedia-roadmap.md) define milestones P1–P6.
+[Headless integration](docs/reference/headless-core.md) records the independent
+core boundary; [issue #86](https://git.subcult.tv/subculture-collective/arkhiv/issues/86)
+tracks core artifact and HTTP qualification.
 [Consumer upgrades](docs/reference/consumer-upgrades.md) distinguish full platform
 consumers from frontend component consumers with independently owned backends.
 [Audio migration evidence](docs/reports/audio-migration-2026-10-04.md) records the

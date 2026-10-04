@@ -2,12 +2,13 @@
 
 Decision recorded 2026-10-03. Status: implementation underway. The owner selected distinct branded
 interfaces built from shared components and requested a repository base, issues
-and roadmap. This document owns the architecture; dated reports and Gitea issues record qualification.
+and roadmap. On 2026-10-04 UTC the owner clarified that Arkhiv must be a headless
+core: end users control the entire frontend, and shared React components are optional. This document owns the architecture; dated reports and Gitea issues record qualification.
 
 ## Base and rationale
 
-Use the existing **VHNESS** repository as the canonical platform base. Retain its
-repository slug and history. The owner selected Arkhiv as the product name. Start implementation
+The existing **VHNESS** repository is the canonical platform base, now named
+**Arkhiv** at `subculture-collective/arkhiv` (repository ID 242). Retain its history. Start implementation
 from current reviewed `main`, rather than the stale primary local checkout.
 Planning baseline: `5df4fc6a038b2066fec7df061c53d39642d7a52e`.
 
@@ -37,9 +38,10 @@ this planning change does not close them.
 
 | Owner | Responsibility |
 | --- | --- |
-| VHNESS platform repository | Common engine, migrations, source/provenance utilities, policy enforcement, media modules, typed API/client, shared frontend hooks/components, releases and consumer registry |
+| Arkhiv headless core | Common engine, migrations, source/provenance utilities, policy enforcement, media modules, versioned HTTP contracts, releases and consumer registry |
+| Optional client packages | React hooks/components and client conveniences; consumers may use HTTP directly in any framework |
 | Neutral reference frontend in the platform | A complete white-label interface for print, audio, video and mixed collections; neutral identity and validated configuration |
-| Branded frontend repositories | Page layouts, navigation, typography, assets, copy, editorial pages, custom interactions and dependency/deployment pins |
+| End-user frontend repositories | Entire interface, framework, page layouts, navigation, typography, assets, copy, interactions, accessibility and independent deployment |
 | Each deployment | Its own database, media, credentials, worker state, access decisions, schedules, logs, quotas and backups |
 
 Keep Go under `backend/` and SQL under `migrations/`. Introduce a pnpm workspace
@@ -48,14 +50,21 @@ through extraction. Final package paths and names belong to the contracts issue;
 do not change import boundaries across every consumer before that contract is
 reviewable. Retain the existing Go/React/PostgreSQL stack and pinned toolchain.
 
-Share API calls, cancellation/errors, search state, reader/player behavior and
-schedule synchronization. Provide reusable components with documented styling
+The versioned HTTP API is the supported integration boundary. No frontend
+framework, component package, markup or reference layout is required. End users
+may build web, server-rendered or other HTTP clients and host them independently.
+The core enforces permissions and resolves media; clients choose presentation,
+controls and navigation. Operator ingestion/review commands remain private.
+
+Optional packages share API calls, cancellation/errors, search state, reader/player
+behavior and schedule synchronization. Provide reusable components with documented styling
 hooks and composition points, plus headless hooks for bespoke controls. A branded
 site can have a substantially different interface without copying this behavior.
 Custom markup owns its keyboard, focus, labeling and accessibility checks.
 
-An upstream playback fix applies to every consumer of the changed playback
-package after upgrade. A default-player accessibility fix applies to consumers
+A core policy, metadata or resolution fix reaches every compatible HTTP client
+after its reviewed core upgrade. A playback-hook fix reaches consumers of that
+optional package after their package upgrade. A default-player accessibility fix applies to consumers
 of that component. A reference-homepage redesign does not replace branded page
 layouts. New API capabilities may require brand-specific interface adoption.
 Record these distinctions in release notes and consumer verification.
@@ -114,8 +123,9 @@ databases, credentials or schedules to achieve shared code reuse.
 
 ## Releases and downstream updates
 
-Publish versioned frontend packages and immutable engine image digests from
-reviewed commits. Use a registry selected during release implementation and the
+Publish separately identified immutable headless core images and optional
+reference/client artifacts from reviewed commits. Existing bundled engine images
+remain supported during migration; no published version is overwritten. Use a registry selected during release implementation and the
 existing secret provider for scoped CI credentials. Consumer builds must work
 without sibling private source checkouts. Record source SHA, license, checksums,
 API/schema/config compatibility, changelog and reproducible dependency locks.
@@ -141,7 +151,8 @@ repositories own their independent release timing and layout changes.
    package and branding contracts.
 2. Extract video components/hooks, publish releases and automate consumer upgrade
    PRs. Prove one observable shared fix reaches the neutral video app and a
-   distinctive branded frontend before expanding media scope.
+   distinctive branded frontend before expanding media scope. The headless clarification additionally requires
+   the independent core build and HTTP-client proof in issue #86.
 3. Add common catalog and policy enforcement; integrate reviewed print/audio
    modules and build the neutral mixed-media reference frontend.
 4. Adopt the packages in each video, print and audio consumer through separate
@@ -167,8 +178,8 @@ restores metadata/decisions; it cannot recover video that disappeared upstream.
 ## Scope limits and unresolved inventory
 
 Accounts, uploads, a shared tenant control plane, arbitrary plugins, universal
-theme editing, mobile apps and new continuous encoded broadcasts are outside
-this plan. Repository renaming remains deferred. No donor repository is retired
+theme editing, dedicated mobile applications and new continuous encoded broadcasts are outside
+this plan. The canonical repository rename preserves the original ID and history. No donor repository is retired
 before consumer adoption, recoverable originals and remaining owners are known.
 
 The separate generic audio/print frontend repository names and deployed revisions
