@@ -4,6 +4,7 @@ ARG SOURCE_IMAGE
 FROM ${SOURCE_IMAGE} AS consumer
 FROM nginx:1.28-alpine
 ARG CORE_UPSTREAM
+RUN rm /usr/share/nginx/html/50x.html
 COPY --from=consumer /app/web /usr/share/nginx/html
 COPY deploy/reference-nginx.conf /etc/nginx/nginx.conf
 RUN case "$CORE_UPSTREAM" in bill-core:8080|democracy-core:8080) ;; *) exit 1 ;; esac \
