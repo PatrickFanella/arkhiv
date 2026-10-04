@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 import Catalog from "./Catalog";
-const publicURL = import.meta.env.VITE_PUBLIC_URL || "https://arkhiv.subcult.tv";
+const publicURL = import.meta.env.VITE_PUBLIC_URL || "https://anarchist-archive.subcult.tv";
 const contact = import.meta.env.VITE_CORRECTION_CONTACT || "info@subcult.tv";
 const Reader = lazy(() => import("./Reader"));
 export interface Variant {
@@ -126,7 +126,7 @@ export default function App() {
     doc?.variants.find((v) => v.id === params.get("variant")) ||
     doc?.variants[0];
   useEffect(() => {
-    document.title = `${doc?.metadata.title || collection?.name || "Independent document archives"} · Arkhiv`;
+    document.title = `${doc?.metadata.title || collection?.name || "Independent document archives"} · Anarchist Archive`;
     let canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
     if (!canonical) { canonical = document.createElement("link"); canonical.rel = "canonical"; document.head.append(canonical); }
     canonical.href = new URL(id ? `/documents/${id}` : collectionID ? `/?collection=${encodeURIComponent(collectionID)}` : "/", publicURL).href;
@@ -144,7 +144,7 @@ export default function App() {
       }
     >
       <header className="masthead">
-        <a href="/" aria-label="Arkhiv home">
+        <a href="/" aria-label="Anarchist Archive home">
           A/
         </a>
         <span>Independent print. Preserved.</span>
@@ -200,7 +200,7 @@ export default function App() {
               <p>Language: {doc.metadata.language || "Unknown"}</p>
               <aside className="access-policy" aria-label="Access and rights">
                 <p><strong>Rights: {doc.rights === "unknown" ? "Unknown" : doc.rights}.</strong> {doc.variants.some((v) => v.public_approved) ? "Public reading and downloads are approved for archival access." : "This record is available in the private archive; public access has not been approved."} No reuse license is asserted.</p>
-                <p>Source: <a href={`https://archive.org/details/${encodeURIComponent(doc.source_item)}`} rel="noreferrer" target="_blank">Internet Archive · {doc.source_item}</a>. <a href={`mailto:${contact}?subject=${encodeURIComponent(`Arkhiv correction or removal: ${doc.metadata.title}`)}&body=${encodeURIComponent(`Document: ${new URL(`/documents/${doc.id}`, publicURL).href}\n\nRequest and supporting information:\n`)}`}>Request a correction or removal</a>.</p>
+                <p>Source: <a href={`https://archive.org/details/${encodeURIComponent(doc.source_item)}`} rel="noreferrer" target="_blank">Internet Archive · {doc.source_item}</a>. <a href={`mailto:${contact}?subject=${encodeURIComponent(`Anarchist Archive correction or removal: ${doc.metadata.title}`)}&body=${encodeURIComponent(`Document: ${new URL(`/documents/${doc.id}`, publicURL).href}\n\nRequest and supporting information:\n`)}`}>Request a correction or removal</a>.</p>
               </aside>
               <div className="variants">
                 {doc.variants.map((v) => (
@@ -263,12 +263,12 @@ export default function App() {
       )}
       <section className="about" id="about" aria-labelledby="about-title">
         <h2 id="about-title">About this archive</h2>
-        <p>Arkhiv preserves independent print collections and serves original PDFs in a local reader. Catalog metadata and available document text are searchable. Source links identify the Internet Archive item each file came from.</p>
-        <p>Public access follows a recorded collection policy or individual review. Availability here does not grant permission to reuse a document. Rights remain unknown unless stated, and Arkhiv asserts no reuse license. Newly acquired editions remain private until the required verification and approval checks pass.</p>
+        <p>Anarchist Archive preserves independent print collections and serves original PDFs in a local reader. Catalog metadata and available document text are searchable. Source links identify the Internet Archive item each file came from.</p>
+        <p>Public access follows a recorded collection policy or individual review. Availability here does not grant permission to reuse a document. Rights remain unknown unless stated, and Anarchist Archive asserts no reuse license. Newly acquired editions remain private until the required verification and approval checks pass.</p>
         <p>For corrections or removal requests, contact <a href={`mailto:${contact}`}>{contact}</a> with the document link and details of your request. Access can be withdrawn while preservation and decision records remain in the private archive.</p>
       </section>
       <footer>
-        <span>Arkhiv · A home for independent archives</span>
+        <span>Anarchist Archive · A home for independent archives</span>
         <a href="#about">About, rights and contact</a>
       </footer>
     </main>

@@ -1,6 +1,6 @@
-# Arkhiv
+# Anarchist Archive
 
-Arkhiv acquires explicitly selected document files, preserves their original bytes,
+Anarchist Archive acquires explicitly selected document files, preserves their original bytes,
 and serves branded catalogs with local PDF reading and downloads. The first
 collection is the Anarchist Zine Archive.
 
@@ -12,7 +12,7 @@ The [private pilot qualification](docs/reports/pilot-qualification-20261002.md) 
 all originals were verified, the independent NUC backup was restored, and on-site
 reading/search/downloads worked with Archive.org blocked. The initial implementation merged in PR #19; hardening and the qualification
 report merged in [PR #20](https://git.subcult.tv/subculture-collective/arkhiv-alpha/pulls/20).
-The owner-approved first collection is live at [arkhiv.subcult.tv](https://arkhiv.subcult.tv). Its full selected source now has 699 documents and 700 PDF variants available for public reading/downloads with unknown rights, source attribution, correction/removal contact and no asserted reuse license.
+The owner-approved first collection moves from arkhiv.subcult.tv to [anarchist-archive.subcult.tv](https://anarchist-archive.subcult.tv) during the reviewed rollout. Its full selected source now has 699 documents and 700 PDF variants available for public reading/downloads with unknown rights, source attribution, correction/removal contact and no asserted reuse license.
 
 The [next delivery plan](docs/plans/0002-managed-archive-and-public-release.md)
 covers merged-revision rollout, scheduled preservation and active-source updates,
@@ -66,7 +66,7 @@ metadata remains independent of editorial overrides.
 
 Source code is GPL-3.0-only; that license does not apply to acquired documents.
 
-The public site uses `https://arkhiv.subcult.tv`, with correction and removal requests directed to `info@subcult.tv`. The full selected Anarchist source is public approved under its verified automatic policy; A-Info remains private. The [roadmap](docs/plans/0002-managed-archive-and-public-release.md) records access review, activation and qualification separately.
+The public site uses `https://anarchist-archive.subcult.tv`, with correction and removal requests directed to `info@subcult.tv`. The full selected Anarchist source is public approved under its verified automatic policy; A-Info remains private. The [roadmap](docs/plans/0002-managed-archive-and-public-release.md) records access review, activation and qualification separately.
 Managed job runners are documented in [the operations runbook](docs/runbooks/managed-operations.md).
 
 ## Reviewed public access
@@ -79,7 +79,7 @@ archive mount. The private pilot API remains available for internal qualificatio
 
 The owner approved public archival access to the exact 25-document, 26-variant
 manifest in `collections/anarchist-zines-public-review.json`. Rights remain unknown;
-Arkhiv asserts no reuse license. The public URL is `https://arkhiv.subcult.tv` and
+Anarchist Archive asserts no reuse license. The public URL is `https://anarchist-archive.subcult.tv` and
 correction/removal contact is `info@subcult.tv`. Build-time `VITE_PUBLIC_URL` and
 `VITE_CORRECTION_CONTACT` customize those values for another installation.
 
