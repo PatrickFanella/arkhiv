@@ -51,6 +51,9 @@ export default function Reader({
       cMapPacked: true,
       standardFontDataUrl: "/pdfjs/standard_fonts/",
       wasmUrl: "/pdfjs/wasm/",
+      // Bound decoded scan layers; JPEG 2000 can otherwise allocate far more
+      // memory than the fit-width canvas for large, compressed source pages.
+      canvasMaxAreaInBytes: 32 * 1024 * 1024,
       isEvalSupported: false,
       enableXfa: false,
     });
