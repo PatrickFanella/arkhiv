@@ -63,8 +63,17 @@ def main():
     if args.action == "monitor":
         observations = []
         for site in cfg["sites"]:
-            body = run(["curl", "--fail", "--silent", "--show-error", "--max-time", "30",
-                        site["url"]], text=True)
+            request = subprocess.run(
+                ["curl", "--silent", "--show-error", "--max-time", "30", "--retry", "2",
+                 "--retry-delay", "2", "--retry-max-time", "90", "--write-out", "\n%{http_code}",
+                 site["url"]], capture_output=True, text=True)
+            body, _, status = request.stdout.rpartition("\n")
+            if request.returncode or status != "200":
+                failure = {**result, "url": site["url"], "http_status": status,
+                           "transport_exit": request.returncode}
+                (state / "monitor-failure.json").write_text(json.dumps(failure, indent=2) + "\n")
+                raise RuntimeError(f"Public check failed at {site['url']}: HTTP {status}; "
+                                   f"transport exit {request.returncode}")
             data = json.loads(body)
             if site.get("total") is not None and data.get("total") != site["total"]:
                 raise RuntimeError(f"Catalog count changed at {site['url']}")

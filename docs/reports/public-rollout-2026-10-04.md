@@ -115,3 +115,10 @@ must reverse only the owned Arkhiv/brand blocks after checking current hashes;
 never restore an old whole configuration over unrelated later edits. Image
 rollback retains previous immutable frontends and core artifacts. Catalog and
 access-history rollback use independent checkpoints without deleting originals.
+
+A subsequent natural monitor failed on an unidentified HTTP response; the original
+error retained only curl exit 22. A fresh check returned HTTP 200 for all nine
+endpoints. Maintenance now records the failing URL/status and retries transient
+transport/server failures twice. A real local HTTP test verifies recovery from
+503 and that persistent 403 fails with a retained diagnostic instead of success.
+The failure remains in the systemd journal; later success does not prove soak.
