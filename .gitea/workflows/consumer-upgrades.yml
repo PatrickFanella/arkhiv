@@ -58,6 +58,7 @@ jobs:
           set -euo pipefail
           export ARCHIVE_UPGRADE_DATABASE_CONTAINER=$(docker ps --no-trunc --quiet --filter "label=arkhiv.upgrade-database=$ARCHIVE_UPGRADE_DATABASE_RUN")
           test -n "$ARCHIVE_UPGRADE_DATABASE_CONTAINER"
+          python3 scripts/bind_upgrade_database.py
           test -n "$ARCHIVE_PACKAGE_READ_TOKEN"
           test -n "$ARCHIVE_UPGRADE_TOKEN"
           tool_dir=$(mktemp -d)
