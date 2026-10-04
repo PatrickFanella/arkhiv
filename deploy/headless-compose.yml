@@ -32,10 +32,7 @@ services:
     tmpfs: [/tmp:size=128m]
     mem_limit: 1g
     cpus: 2
-    networks:
-      archive: {}
-      projects:
-        aliases: [arkhiv-platform-core]
+    networks: [archive]
   reference:
     image: ${ARKHIV_REFERENCE_IMAGE:?Select the independently built frontend image}
     restart: unless-stopped
@@ -54,5 +51,8 @@ services:
 networks:
   archive:
     internal: true
+    ipam:
+      config:
+        - subnet: ${ARKHIV_ARCHIVE_SUBNET:?Select an unused reviewed subnet for this instance}
   projects:
     external: true

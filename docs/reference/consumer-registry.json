@@ -139,6 +139,35 @@
       "adoption_pull_request": "https://git.subcult.tv/subculture-collective/dedhed/pulls/27",
       "adoption_revision": "1105d5ab67f5e4f08c90fc0c336de1efb7fb0ad0",
       "merge_revision": "2419bf811784c7aa9c41ee20928ed6205e4f0415"
+    },
+    {
+      "repository": "subculture-collective/arkhiv",
+      "media": [
+        "audio",
+        "video",
+        "print"
+      ],
+      "adoption": "core",
+      "mode": "api",
+      "rollout": "reviewed-pr",
+      "release_file": "deploy/core-release.json",
+      "engine_file": "deploy/archive-core.env",
+      "modules": {
+        "catalog": "1",
+        "audio": "1",
+        "video": "1",
+        "print": "1"
+      },
+      "checks": [
+        [
+          "python3",
+          "scripts/check_core_pin.py"
+        ]
+      ],
+      "adoption_status": "reviewed-pr",
+      "adoption_ref": "feat/reference-client-deployment",
+      "adoption_pull_request": "https://git.subcult.tv/subculture-collective/arkhiv/pulls/93",
+      "adoption_revision": "fffe235c296458e9a7fa20c2a2fad66cab2558a9"
     }
   ]
 }

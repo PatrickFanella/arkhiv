@@ -122,3 +122,12 @@ access, recovery, or browser playback. Record those checks for the deployed
 revision before declaring rollout complete.
 
 [Reviewed public deployment](public-core.md) describes the separate public audience and operator approvals in core 0.1.1.
+
+For public instances, keep the database and core on the instance's internal
+archive network. Attach only the frontend/API proxy to the ingress network;
+route the API hostname through that proxy's `/api/` path. Select an unused
+`ARKHIV_ARCHIVE_SUBNET` after inspecting host routes and Docker IPAM. This avoids
+exhausted default pools and keeps the generic `archive-core` DNS alias confined
+to its own instance. Use `ARKHIV_PUBLIC=1`, a nonempty collection scope and a
+read-only database role in `runtime/core.env` after migrating and recording
+explicit publication reviews with the separate operator identity.
