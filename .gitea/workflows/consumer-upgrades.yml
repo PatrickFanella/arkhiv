@@ -22,13 +22,13 @@ jobs:
   propose:
     runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     services:
-      postgres:
+      db:
         image: postgres:17
         env:
-          POSTGRES_USER: proof
-          POSTGRES_PASSWORD: disposable-upgrade-only
+          POSTGRES_USER: dev
+          POSTGRES_PASSWORD: disposable-dev-only
           POSTGRES_DB: postgres
-        options: --label arkhiv.upgrade-database=${{ github.run_id }}-${{ github.run_attempt }} --health-cmd "pg_isready -U proof -d postgres" --health-interval 5s --health-retries 10
+        options: --label arkhiv.upgrade-database=${{ github.run_id }}-${{ github.run_attempt }} --health-cmd "pg_isready -U dev -d postgres" --health-interval 5s --health-retries 10
     steps:
       - uses: actions/checkout@v4
         with:
