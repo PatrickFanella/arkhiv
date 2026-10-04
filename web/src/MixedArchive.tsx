@@ -23,11 +23,13 @@ function SelectedItem({selection,onClose}: {selection:Selection;onClose:()=>void
     const controller = new AbortController();
     const params = new URLSearchParams({collection});
     void (async()=> {
+      if (representation.media === 'print' && !/\.pdf$/i.test(representation.file)) throw new Error('This reader supports PDF files. Open the source page for this format.');
       // Continuous recordings have a separate derivative receipt and resolver.
-      if (representation.media === 'audio') {
-        const full = await fetch(`${path}/audio/resolve?${params}`,{signal:controller.signal,cache:'no-store'});
+      if (representation.media === 'audio' && representation.extension.audio?.recording) {
+        const full = await fetch(`${path}/audio/resolve?${params}`,{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(10000)]),cache:'no-store'});
         if (full.ok) { const value = await full.json() as AudioAsset; if(!controller.signal.aborted)setAudio(value); return; }
         if (full.status !== 404) throw new Error('The recording is temporarily unavailable.');
+        throw new Error('The continuous recording is unavailable. Open the source page to check its original files.');
       }
       if (representation.legacy_episode_id) {
         const response = await catalogRequest<Playback>(`/api/playback/${encodeURIComponent(representation.legacy_episode_id)}?${params}`,controller.signal);
@@ -51,6 +53,7 @@ function SelectedItem({selection,onClose}: {selection:Selection;onClose:()=>void
     {legacy && <Player key={legacy.url} session={{mode:'ondemand',collection,episode:{id:representation.legacy_episode_id!,title:item.title,date:item.date,description:item.description,synthetic:false},playback:legacy,offset:0,receivedAt:performance.now(),latency:0,generation:1}} paused={paused} onPaused={setPaused}/>}
     {asset?.media === 'video' && !legacy && <video key={asset.url} controls playsInline preload="metadata" src={asset.url} aria-label={item.title} onError={()=>setError('The video source is unavailable. Try another format or open the source page.')} />}
     {asset?.media === 'audio' && <audio key={asset.url} controls preload="metadata" src={asset.url} aria-label={item.title} onError={()=>setError('The audio source is unavailable. Try another format or open the source page.')} />}
+    {!audio && representation.extension.audio && <dl>{Object.entries(representation.extension.audio.credits || {}).map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>}
     <p><a href={source} target="_blank" rel="noreferrer">Source item at Internet Archive</a> · {representation.file}</p>
   </section>;
 }

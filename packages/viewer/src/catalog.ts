@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
+import type { Recording } from './audioModel.js';
 
 export type CatalogMedia = 'print' | 'audio' | 'video';
 export type CatalogRepresentation = {
   id: string; media: CatalogMedia; source_item_id: string; snapshot_sha256: string;
   file: string; collections: string[]; legacy_episode_id?: string;
-  extension: { print?: { document_id: string; variant: string; pages: number }; audio?: { recording_id: string; concert_id?: string; credits: Record<string,string> }; video?: { episode_id: string } };
+  extension: { print?: { document_id: string; variant: string; pages: number }; audio?: { recording_id: string; concert_id?: string; credits: Record<string,string>; recording?:Recording }; video?: { episode_id: string } };
 };
 export type CatalogItem = { id: string; title: string; description: string; date: string; creator: string; collections: string[]; representations: CatalogRepresentation[] };
 export type CatalogPage = { items: CatalogItem[]; total: number; page: number; search_coverage: string[] };

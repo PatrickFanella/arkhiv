@@ -55,8 +55,8 @@ function AudioSession({asset,set,initialOffset,autoPlay,station,onRejoin,onEnded
  }
  function timeUpdate() {
   const a = audio.current; if (!a) return;
-  setPosition(a.currentTime);
-  if (a.currentTime >= end) { a.pause(); finish(); }
+  if (a.currentTime >= end) { a.pause(); if (a.currentTime !== end) a.currentTime = end; setPosition(end); finish(); }
+  else setPosition(a.currentTime);
  }
  function finish() { if (!ended.current) { ended.current=true;onEnded?.(); } }
  if (!url) return <p role="alert">This recording is unavailable.</p>;
