@@ -17,7 +17,12 @@ COPY backend/ ./
 RUN CGO_ENABLED=0 go build -trimpath -o /out/vhness ./cmd/vhness
 
 FROM debian:bookworm-slim
-RUN apt-get update && apt-get install --yes --no-install-recommends ca-certificates poppler-utils util-linux ffmpeg && rm -rf /var/lib/apt/lists/*
+# Keep tool dependencies in separate layers for registries with bounded uploads.
+# Debian still resolves and tracks every runtime dependency through apt.
+RUN apt-get update && apt-get install --yes --no-install-recommends ca-certificates poppler-utils util-linux && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install --yes --no-install-recommends libgl1 libavcodec59 && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install --yes --no-install-recommends libavfilter8 libavdevice59 && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install --yes --no-install-recommends ffmpeg && rm -rf /var/lib/apt/lists/*
 COPY --from=backend /out/vhness /usr/local/bin/vhness
 COPY --from=frontend /src/web/dist /app/web
 COPY migrations/ /app/migrations/
