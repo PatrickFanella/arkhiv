@@ -1,0 +1,82 @@
+# Activate only after the reviewed public release is authorized under issue #33.
+http://arkhiv.subcult.tv {
+  @legacy_documents path /documents /documents/*
+  redir @legacy_documents https://anarchist-archive.subcult.tv{uri} 308
+  @legacy_api path /api/documents /api/documents/* /api/assets/* /api/collections
+  handle @legacy_api {
+    reverse_proxy arkhiv-public-web:80
+  }
+  handle {
+    reverse_proxy arkhiv-platform-reference:8080
+  }
+  header {
+    >Cache-Control "no-store"
+    X-Content-Type-Options nosniff
+    Referrer-Policy no-referrer
+    X-Frame-Options DENY
+    -Server
+  }
+}
+
+http://anarchist-archive.subcult.tv {
+  reverse_proxy arkhiv-public-web:80
+  header {
+    >Cache-Control "no-store"
+    X-Content-Type-Options nosniff
+    Referrer-Policy no-referrer
+    X-Frame-Options DENY
+    -Server
+  }
+}
+
+http://arkhiv-api.subcult.tv {
+  header {
+    Access-Control-Allow-Origin "*"
+    Access-Control-Allow-Methods "GET, HEAD, OPTIONS"
+    Access-Control-Allow-Headers "Range, If-Range, If-None-Match, Content-Type"
+    Access-Control-Expose-Headers "Accept-Ranges, Content-Length, Content-Range, ETag"
+  }
+  @preflight {
+    method OPTIONS
+    path /api/*
+  }
+  handle @preflight {
+    respond "" 204
+  }
+  @api path /api/*
+  handle @api {
+    reverse_proxy arkhiv-platform-reference:8080
+  }
+  handle {
+    respond "Arkhiv API: /api/version and /api/catalog/v1/items" 404
+  }
+  header {
+    >Cache-Control "no-store"
+    X-Content-Type-Options nosniff
+    Referrer-Policy no-referrer
+    X-Frame-Options DENY
+    -Server
+  }
+}
+
+http://bill-nye.subcult.tv {
+  reverse_proxy arkhiv-bill-nye-reference:8080
+  header {
+    >Cache-Control "no-store"
+    X-Content-Type-Options nosniff
+    Referrer-Policy no-referrer
+    X-Frame-Options DENY
+    -Server
+  }
+}
+
+http://democracy-now.subcult.tv {
+  reverse_proxy arkhiv-democracy-now-reference:8080
+  header {
+    >Cache-Control "no-store"
+    X-Content-Type-Options nosniff
+    Referrer-Policy no-referrer
+    X-Frame-Options DENY
+    -Server
+  }
+}

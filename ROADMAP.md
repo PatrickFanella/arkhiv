@@ -16,6 +16,13 @@ adoption and private qualification remain in progress. Gitea issues retain their
 open acceptance gates for real browser behavior, recovery, rollback, listening
 and repeatable upgrades.
 
+On October 4 the owner authorized public rollout. Arkhiv, its headless API,
+Anarchist Archive, Bill Nye and Democracy Now! now have verified public routes.
+The [public rollout report](docs/reports/public-rollout-2026-10-04.md) records
+actual artifacts, corpus scope and browser behavior. Riot Grrrl activation,
+fresh public-runtime recovery and operations, and the owner’s private music
+listening/public access decisions remain open. P6 is not yet complete.
+
 The [multimedia design](docs/plans/0003-multimedia-platform.md) and
 [platform roadmap](docs/plans/0003-multimedia-roadmap.md) define milestones P1–P6.
 [Headless integration](docs/reference/headless-core.md) records the independent
