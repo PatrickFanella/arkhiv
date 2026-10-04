@@ -40,7 +40,8 @@ the pinned Dedhed recording/track/credit contracts, validates continuous assets
 separately from originals, and adds independent station revisions and shared
 controls/hooks. Full isolated checks passed with generated tones, including
 withdrawn future eligibility and corrupt-input/derivative guards. Real music and
-browser qualification remain open. Next are the neutral mixed frontend,
+browser qualification remain open.
+
 An explicit multi-collection allowlist now covers both legacy and typed routes,
 operator actions and complete future video schedules; mixed collection summaries
 include print/audio membership without changing the legacy video summary shape.
