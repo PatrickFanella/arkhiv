@@ -57,3 +57,10 @@ own collection filters, item detail, navigation and media composition. The hook
 hides superseded results immediately and cancels their requests. The neutral
 reference frontend composes all four entries; a single-media brand can import
 only the entries it uses.
+# Distinct audio interfaces
+
+`useAudioControls` from `@subcult/archive-viewer/audio` supplies bounded seeking,
+play/pause state, volume, teardown and completion callbacks for consumer-owned
+markup. Supply the audio element ref and reviewed start/end positions. Source
+resolution, access decisions, schedule lookup, metadata and visual layout remain
+the consumer's responsibility. `AudioPlayer` uses the same hook.

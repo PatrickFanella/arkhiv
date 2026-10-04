@@ -33,3 +33,7 @@ package pin, lockfile, engine digest and release receipt together.
 Initial package extraction: compiled ESM and declarations, native video player,
 source-policy validation, headless viewing/schedule logic and composed screen,
 library, compatibility and replay components. React remains a peer dependency.
+# 0.2.1
+
+- Export shared audio controls for distinctive consumer interfaces; the neutral
+  player uses the same seek bounds, transport state and completion behavior.
