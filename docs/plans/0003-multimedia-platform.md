@@ -1,13 +1,13 @@
 # Shared multi-media archive platform
 
-Decision recorded 2026-10-03. Status: planned. The owner selected distinct branded
+Decision recorded 2026-10-03. Status: implementation underway. The owner selected distinct branded
 interfaces built from shared components and requested a repository base, issues
-and roadmap. This document defines that plan; it does not claim implementation.
+and roadmap. This document owns the architecture; dated reports and Gitea issues record qualification.
 
 ## Base and rationale
 
 Use the existing **VHNESS** repository as the canonical platform base. Retain its
-repository slug and history; product naming remains undecided. Start implementation
+repository slug and history. The owner selected Arkhiv as the product name. Start implementation
 from current reviewed `main`, rather than the stale primary local checkout.
 Planning baseline: `5df4fc6a038b2066fec7df061c53d39642d7a52e`.
 
@@ -15,9 +15,9 @@ VHNESS already has a collection-scoped Go engine, React reference client,
 PostgreSQL migrations, source/local delivery, persisted replay schedules,
 independent recovery tools, API compatibility checks and separate standalone
 frontend consumers. These are the closest existing implementation of the required
-upstream/consumer boundary. Current video adapters are exported source copies
-pinned by hash manifests; automated package releases and downstream upgrade PRs
-remain planned.
+upstream/consumer boundary. The initial video adapters were exported source copies pinned by hash manifests.
+Versioned package releases and hosted downstream upgrade proposals are now
+qualified in the shared video report; consumer deployment remains independent.
 
 Arkhiv contributes document ingestion, variants, local PDF reading, OCR/page
 search, allowlist enforcement and recovery. Dedhed contributes concert/recording
@@ -168,7 +168,7 @@ restores metadata/decisions; it cannot recover video that disappeared upstream.
 
 Accounts, uploads, a shared tenant control plane, arbitrary plugins, universal
 theme editing, mobile apps and new continuous encoded broadcasts are outside
-this plan. Naming or renaming VHNESS is deferred. No donor repository is retired
+this plan. Repository renaming remains deferred. No donor repository is retired
 before consumer adoption, recoverable originals and remaining owners are known.
 
 The separate generic audio/print frontend repository names and deployed revisions
