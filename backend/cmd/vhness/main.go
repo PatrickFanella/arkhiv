@@ -63,7 +63,11 @@ func run() error {
 	id := f.String("id", "", "source item identity")
 	representation := f.String("representation", "", "catalog representation identity")
 	scope := os.Getenv("VHNESS_COLLECTION")
-	collection := f.String("collection", env("VHNESS_COLLECTION", domain.DemocracyNow), "collection identity")
+	allowlist, err := domain.ParseCollectionScope(scope, os.Getenv("VHNESS_COLLECTIONS"))
+	if err != nil {
+		return err
+	}
+	collection := f.String("collection", allowlist.Default(), "collection identity; explicit for a multi-collection operator action")
 	file := f.String("file", "", "JSON input")
 	sourceItem := f.String("source-item", "", "explicit multi-file source movie item")
 	episodeFile := f.String("episode-file", "", "exact file to materialize from a selected source item")
@@ -86,8 +90,15 @@ func run() error {
 	if f.NArg() != 0 {
 		return fmt.Errorf("unexpected positional arguments")
 	}
-	if scope != "" && (!domain.ValidID(scope) || *collection != scope) {
+	if *collection != "" && !allowlist.Allows(*collection) {
 		return fmt.Errorf("collection outside configured instance scope")
+	}
+	switch cmd {
+	case "migrate", "serve", "import-catalog", "schedule", "acquire", "review", "inspect", "seed":
+	default:
+		if !allowlist.Allows(*collection) {
+			return fmt.Errorf("select a collection inside configured scope")
+		}
 	}
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
@@ -104,9 +115,9 @@ func run() error {
 		return err
 	}
 	defer d.Pool.Close()
-	if scope != "" && (cmd == "review" || cmd == "inspect") {
+	if allowlist != nil && (cmd == "review" || cmd == "inspect") {
 		entry, err := d.Entry(ctx, *id)
-		if err != nil || entry.Episode.CollectionID != scope {
+		if err != nil || !allowlist.Allows(entry.Episode.CollectionID) {
 			return fmt.Errorf("episode outside configured instance scope")
 		}
 	}
@@ -133,9 +144,9 @@ func run() error {
 		if err := load(*file, &item); err != nil {
 			return err
 		}
-		if scope != "" {
+		if allowlist != nil {
 			for _, c := range item.Collections {
-				if c != scope {
+				if !allowlist.Allows(c) {
 					return fmt.Errorf("catalog mapping outside configured scope")
 				}
 			}
@@ -423,7 +434,7 @@ func run() error {
 		if err = load(*file, &manifest); err != nil {
 			return err
 		}
-		if scope != "" && manifest.Collection != scope {
+		if !allowlist.Allows(manifest.Collection) {
 			return fmt.Errorf("manifest outside configured instance scope")
 		}
 		c, err := d.GetCollection(ctx, manifest.Collection)
@@ -469,10 +480,10 @@ func run() error {
 		if err := load(*file, &s); err != nil {
 			return err
 		}
-		if scope != "" {
+		if allowlist != nil {
 			for _, program := range s.Programs {
 				entry, err := d.Entry(ctx, program.EpisodeID)
-				if err != nil || entry.Episode.CollectionID != scope {
+				if err != nil || !allowlist.Allows(entry.Episode.CollectionID) {
 					return fmt.Errorf("scheduled episode outside configured instance scope")
 				}
 			}
@@ -527,7 +538,7 @@ func run() error {
 		}
 		return json.NewEncoder(os.Stdout).Encode(e)
 	case "seed":
-		if scope != "" && scope != domain.DemocracyNow {
+		if !allowlist.Allows(domain.DemocracyNow) {
 			return fmt.Errorf("synthetic seed requires Democracy Now! instance scope")
 		}
 		if err = d.Collection(ctx, domain.Collection{ID: domain.DemocracyNow, Policy: domain.Stream}); err != nil {
@@ -551,7 +562,7 @@ func run() error {
 		}
 		return nil
 	case "serve":
-		server := &http.Server{Addr: env("API_ADDR", "127.0.0.1:8080"), Handler: (&app.Server{DB: d, Web: os.Getenv("VHNESS_WEB"), Media: os.Getenv("VHNESS_MEDIA"), Derivatives: os.Getenv("VHNESS_DERIVATIVES"), Collection: scope}).Handler(), ReadHeaderTimeout: 5 * time.Second, IdleTimeout: 60 * time.Second}
+		server := &http.Server{Addr: env("API_ADDR", "127.0.0.1:8080"), Handler: (&app.Server{DB: d, Web: os.Getenv("VHNESS_WEB"), Media: os.Getenv("VHNESS_MEDIA"), Derivatives: os.Getenv("VHNESS_DERIVATIVES"), Collection: scope, Collections: allowlist}).Handler(), ReadHeaderTimeout: 5 * time.Second, IdleTimeout: 60 * time.Second}
 		go func() {
 			<-ctx.Done()
 			shutdown, cancel := context.WithTimeout(context.Background(), 10*time.Second)

@@ -16,9 +16,9 @@ import (
 func (s *Server) authorizedTransport(r *http.Request) (catalog.TransportEntry, domain.Action, string, error) {
 	collection := r.URL.Query().Get("collection")
 	if collection == "" {
-		collection = s.Collection
+		collection = s.configuredCollection()
 	}
-	if !domain.ValidID(collection) || (s.Collection != "" && collection != s.Collection) {
+	if !s.allowsCollection(collection) {
 		return catalog.TransportEntry{}, "", "", fmt.Errorf("collection unavailable")
 	}
 	e, err := s.DB.Transport(r.Context(), r.PathValue("id"), r.PathValue("representation"), collection)

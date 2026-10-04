@@ -109,6 +109,10 @@ func TestPrivatePlaybackAndMediaIntegration(t *testing.T) {
 	if err = d.InsertCatalog(ctx, item, "Synthetic metadata-only catalog mapping"); err != nil {
 		t.Fatal(err)
 	}
+	catalogCollections, err := d.CatalogCollections(ctx, domain.CollectionScope{c.ID, "mixed-fixture"})
+	if err != nil || len(catalogCollections) != 2 || catalogCollections[1].ID != "mixed-fixture" || catalogCollections[1].Items != 1 || len(catalogCollections[1].Media) != 2 {
+		t.Fatal("print/audio collection inventory", err, catalogCollections)
+	}
 	server.Collection = c.ID
 	transportPath := "/api/catalog/v1/items/multi-talk/representations/print"
 	if w := get(transportPath+"/resolve", nil); w.Code != 404 {
@@ -259,6 +263,48 @@ func TestPrivatePlaybackAndMediaIntegration(t *testing.T) {
 		t.Fatal("foreign future slot exposed through current-only poll", err, now)
 	}
 	server.Collection = ""
+	server.Collections = domain.CollectionScope{c.ID, "mixed-fixture"}
+	for _, path := range []string{"/api/episodes/" + other.ID, "/api/playback/" + other.ID, "/api/media/" + other.ID, "/api/status?collection=" + domain.DemocracyNow, "/api/catalog/v1/items?collection=" + domain.DemocracyNow} {
+		if w := get(path, nil); w.Code != 404 {
+			t.Fatal("multi allowlist exposed excluded collection", path, w.Code)
+		}
+	}
+	if err = json.Unmarshal(get("/api/collections", nil).Body.Bytes(), &collections); err != nil || len(collections) != 1 || collections[0].ID != c.ID {
+		t.Fatal("multi collection inventory", err, collections)
+	}
+	if w := get("/api/status", nil); w.Code != 404 {
+		t.Fatal("ambiguous multi collection status", w.Code)
+	}
+	now = domain.Now{}
+	if err = json.Unmarshal(get("/api/channel", nil).Body.Bytes(), &now); err != nil || now.State != "unavailable" {
+		t.Fatal("excluded future program widened channel", err, now)
+	}
+	server.Collections = domain.CollectionScope{c.ID, domain.DemocracyNow}
+	if w := get("/api/playback/"+e.ID+"?collection="+domain.DemocracyNow, nil); w.Code != 404 {
+		t.Fatal("selected playback collection widened", w.Code)
+	}
+	now = domain.Now{}
+	if err = json.Unmarshal(get("/api/channel", nil).Body.Bytes(), &now); err != nil || now.State != "playing" {
+		t.Fatal("allowed mixed video schedule", err, now)
+	}
+	now = domain.Now{}
+	if err = json.Unmarshal(get("/api/channel?collection="+domain.DemocracyNow, nil).Body.Bytes(), &now); err != nil || now.State != "unavailable" || now.Episode != nil {
+		t.Fatal("selected collection channel crossed scope", err, now)
+	}
+	server.Collections = domain.CollectionScope{}
+	if err = json.Unmarshal(get("/api/catalog/v1/items", nil).Body.Bytes(), &mixedPage); err != nil || mixedPage.Total != 0 {
+		t.Fatal("explicit empty scope widened mixed catalog", err, mixedPage)
+	}
+	if w := get("/api/playback/"+e.ID, nil); w.Code != 404 {
+		t.Fatal("empty scope exposed old playback", w.Code)
+	}
+	server.Collections = nil
+	missing := mixed
+	missing.Programs = append([]domain.Program{}, mixed.Programs...)
+	missing.Programs[1].EpisodeID = "absent-future"
+	if within, err := d.ScheduleWithinScope(ctx, missing, nil); err != nil || within {
+		t.Fatal("unknown future program accepted", err, within)
+	}
 	schedule.Revision = "generated-proof-after-scope"
 	if err = d.SaveSchedule(ctx, schedule); err != nil {
 		t.Fatal(err)

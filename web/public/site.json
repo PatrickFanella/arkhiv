@@ -1,9 +1,17 @@
 {
-  "title": "Video archive",
-  "subtitle": "ON DEMAND · ON THE CHANNEL",
+  "title": "Arkhiv",
+  "subtitle": "PRINT \u00b7 AUDIO \u00b7 VIDEO",
   "collection": "democracy_now_vid",
-  "kicker": "FROM THE ARCHIVE",
-  "headline": "A place for the programs you come back to.",
-  "description": "Watch an episode from the beginning, or join the scheduled replay.",
-  "colors": { "background": "#14191e", "surface": "#1e262e", "ink": "#f5f2e9", "muted": "#b9c1c8", "accent": "#ebd59b", "border": "#42505c" }
+  "kicker": "INTERNET ARCHIVE COLLECTIONS",
+  "headline": "An archive across formats.",
+  "description": "Browse collections, read documents, and play recordings. Each item keeps its source context.",
+  "colors": {
+    "background": "#14191e",
+    "surface": "#1e262e",
+    "ink": "#f5f2e9",
+    "muted": "#b9c1c8",
+    "accent": "#ebd59b",
+    "border": "#42505c"
+  },
+  "interface": "catalog"
 }

@@ -255,12 +255,15 @@ func (d *DB) ScheduleWithinCollection(ctx context.Context, s domain.Schedule, co
 	if collection == "" {
 		return true, nil
 	}
+	return d.ScheduleWithinScope(ctx, s, domain.CollectionScope{collection})
+}
+func (d *DB) ScheduleWithinScope(ctx context.Context, s domain.Schedule, scope domain.CollectionScope) (bool, error) {
 	ids := make([]string, 0, len(s.Programs))
 	for _, program := range s.Programs {
 		ids = append(ids, program.EpisodeID)
 	}
 	var foreign bool
-	err := d.Pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM episodes WHERE id=ANY($1) AND collection_id<>$2)`, ids, collection).Scan(&foreign)
+	err := d.Pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM unnest($1::text[]) requested(id) LEFT JOIN episodes e ON e.id=requested.id WHERE e.id IS NULL OR ($2::text[] IS NOT NULL AND NOT(e.collection_id=ANY($2))))`, ids, []string(scope)).Scan(&foreign)
 	return !foreign, err
 }
 func (d *DB) Decide(ctx context.Context, id string, decision domain.Decision) error {

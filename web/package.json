@@ -14,12 +14,14 @@
     "prebuild": "pnpm --dir .. build:packages"
   },
   "dependencies": {
+    "@subcult/archive-viewer": "workspace:*",
+    "pdfjs-dist": "5.4.624",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0",
-    "@subcult/archive-viewer": "workspace:*"
+    "react-dom": "^19.2.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@types/node": "^24.19.1",
     "@types/react": "^19.2.15",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",

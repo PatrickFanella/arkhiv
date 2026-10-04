@@ -26,9 +26,9 @@ func (s *Server) audioEntry(r *http.Request, item, representation, collection st
 func (s *Server) audioCollection(r *http.Request) (string, error) {
 	c := r.URL.Query().Get("collection")
 	if c == "" {
-		c = s.Collection
+		c = s.configuredCollection()
 	}
-	if !domain.ValidID(c) || (s.Collection != "" && c != s.Collection) {
+	if !s.allowsCollection(c) {
 		return "", fmt.Errorf("audio collection unavailable")
 	}
 	return c, nil

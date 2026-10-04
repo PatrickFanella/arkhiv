@@ -21,6 +21,10 @@
     "./audio": {
       "types": "./dist/audio.d.ts",
       "import": "./dist/audio.js"
+    },
+    "./catalog": {
+      "types": "./dist/catalog.d.ts",
+      "import": "./dist/catalog.js"
     }
   },
   "main": "./dist/index.js",

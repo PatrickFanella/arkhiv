@@ -24,10 +24,7 @@ func (s *Server) mixedCatalog(w http.ResponseWriter, r *http.Request) {
 		write(w, 400, map[string]string{"error": "invalid catalog filter"})
 		return
 	}
-	var scope []string
-	if s.Collection != "" {
-		scope = []string{s.Collection}
-	}
+	scope := []string(s.collectionScope())
 	result, err := s.DB.Catalog(r.Context(), catalog.CatalogQuery{Scope: scope, Collection: q.Get("collection"), Media: media, Search: q.Get("q"), ID: r.PathValue("id"), Page: page})
 	if err != nil {
 		write(w, 503, map[string]string{"error": "catalog unavailable"})
@@ -42,4 +39,13 @@ func (s *Server) mixedCatalog(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	write(w, 200, result)
+}
+
+func (s *Server) mixedCollections(w http.ResponseWriter, r *http.Request) {
+	collections, err := s.DB.CatalogCollections(r.Context(), s.channelScope(r))
+	if err != nil {
+		write(w, 503, map[string]string{"error": "catalog collections unavailable"})
+		return
+	}
+	write(w, 200, collections)
 }
