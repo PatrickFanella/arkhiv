@@ -88,6 +88,9 @@ adoptions, so subsequent proposals use their default branches.
 
 The hosted proposal job installs the Go toolchain and the media tools needed by
 registered backend checks. Its PostgreSQL service carries the exact job identity.
+The disposable server and Ubuntu verification client both use PostgreSQL 16;
+print backup/restore tests invoke `pg_dump`, which refuses a newer server major.
+This CI pairing does not change any brand's runtime database version.
 Each consumer gets a fresh database named for that consumer; the tool verifies
 the container label, disposable launcher identity and address before creating it
 and supplying `TEST_DATABASE_URL`. The `db` alias must resolve to that verified

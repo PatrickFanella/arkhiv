@@ -23,7 +23,7 @@ jobs:
     runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     services:
       db:
-        image: postgres:17
+        image: postgres:16
         env:
           POSTGRES_USER: dev
           POSTGRES_PASSWORD: disposable-dev-only
@@ -43,9 +43,9 @@ jobs:
       - name: Install consumer verification tools
         run: |
           if [ "$(id -u)" = 0 ]; then
-            apt-get update && apt-get install --yes --no-install-recommends poppler-utils util-linux ffmpeg postgresql-client
+            apt-get update && apt-get install --yes --no-install-recommends poppler-utils util-linux ffmpeg postgresql-client-16
           else
-            sudo -n apt-get update && sudo -n apt-get install --yes --no-install-recommends poppler-utils util-linux ffmpeg postgresql-client
+            sudo -n apt-get update && sudo -n apt-get install --yes --no-install-recommends poppler-utils util-linux ffmpeg postgresql-client-16
           fi
       - name: Propose compatible consumer upgrades
         env:
@@ -58,6 +58,7 @@ jobs:
           set -euo pipefail
           export ARCHIVE_UPGRADE_DATABASE_CONTAINER=$(docker ps --no-trunc --quiet --filter "label=arkhiv.upgrade-database=$ARCHIVE_UPGRADE_DATABASE_RUN")
           test -n "$ARCHIVE_UPGRADE_DATABASE_CONTAINER"
+          python3 scripts/bind_upgrade_database.py
           test -n "$ARCHIVE_PACKAGE_READ_TOKEN"
           test -n "$ARCHIVE_UPGRADE_TOKEN"
           tool_dir=$(mktemp -d)
