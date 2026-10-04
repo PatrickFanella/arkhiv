@@ -30,6 +30,13 @@ class OperationsTest(unittest.TestCase):
     def config(self):
         return {k: str(self.root) for k in ('project', 'archive', 'staging', 'state', 'backup_root')} | {'backup_host': 'nuc', 'minimum_free_bytes': 1, 'revision': 'test'}
 
+    def test_large_collection_deadline_is_bounded(self):
+        with patch.object(runner.time, 'monotonic', return_value=100):
+            self.assertEqual(runner.Runner(self.config() | {'timeout_seconds': 14400}).deadline, 14500)
+            self.assertEqual(runner.Runner(self.config() | {'timeout_seconds': 999999}).deadline, 14500)
+            self.assertEqual(runner.Runner(self.config() | {'timeout_seconds': 0}).deadline, 101)
+            self.assertEqual(runner.Runner(self.config()).deadline, 1000)
+
     def test_verified_complete_backup_and_corruption(self):
         p = self.root / 'backup'
         fixture(p)
