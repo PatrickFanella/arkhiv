@@ -1,8 +1,9 @@
 # Shared archive viewer
 
 `@subcult/archive-viewer` provides the typed video API, playback/schedule model,
-viewer hook and composed player/library/channel components. React is supplied by
-the consumer. The package includes no brand assets, global CSS or page layout.
+viewer hook and composed player/library/channel components. This is an optional React client package for the headless Arkhiv HTTP core.
+Frontends in any framework can use the API directly without this package. React
+is supplied only by consumers choosing these components. The package includes no brand assets, global CSS or page layout.
 
 ```tsx
 import { useViewer, Screen, ChannelPanel, Library } from '@subcult/archive-viewer';
@@ -40,7 +41,8 @@ and legacy exported copies are not separate editing authorities.
 
 GPL-3.0-only software. Media and identity assets retain their separate owners.
 
-The unreleased `0.2.0` print entry exports `PrintReader` from
+The print entry, introduced in the unreleased `0.2.0` source version and
+published in `0.2.1`, exports `PrintReader` from
 `@subcult/archive-viewer/print`. Consumers supply its PDF backend and worker
 assets; importing the root entry does not load a PDF runtime. See the engine's
 [print module contract](../../docs/reference/print-module.md) for indexing and
