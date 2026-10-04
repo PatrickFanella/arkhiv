@@ -1,6 +1,11 @@
 # Shared viewer changes
 
-## 0.2.1 (unreleased)
+## 0.2.2 (unreleased)
+
+- Request deadlines show a clear retry message while preserving caller cancellation.
+- Catalog requests accept a bounded timeout for integrity-checked continuous audio resolution.
+
+## 0.2.1
 
 - Export shared audio controls for distinctive consumer interfaces; the neutral
   player uses the same seek bounds, transport state and completion behavior.

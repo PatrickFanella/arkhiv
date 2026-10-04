@@ -1,5 +1,6 @@
 """Prepare private audio migration inputs from an independently restored pilot."""
 import argparse
+import copy
 import hashlib
 import json
 from pathlib import Path
@@ -64,7 +65,13 @@ def prepare(backup, export, receipt, output, collection):
                 sources.append({'item_id': identity, 'file': name, 'sha256': sha, 'origin': source})
         mappings.append({'id': identity, 'legacy_snapshot_sha256': row['source_hash'], 'retained_file_sha256': retained_hash,
                          'catalog_snapshot_sha256': source_hash, 'retained_file_matches_database': equal})
-        recording = row['playback'] or row['source']
+        recording = copy.deepcopy(row['playback'] or row['source'])
+        # Match the donor's effective catalog view without rewriting source rows.
+        for key in ['kind', 'title', 'concert_id']:
+            if row['review'].get(key):
+                recording[key] = row['review'][key]
+        if row['review'].get('sets'):
+            recording['sets'] = copy.deepcopy(row['review']['sets'])
         if recording['id'] != identity or not recording['tracks']:
             raise ValueError('Recording identity or tracks missing')
         tracks = []

@@ -31,10 +31,17 @@ export function catalogURL(filter: CatalogFilter): string {
   if (filter.query) params.set('q',filter.query);
   return `/api/catalog/v1/items?${params}`;
 }
-export async function catalogRequest<T>(url: string, signal: AbortSignal): Promise<T> {
-  const response = await fetch(url,{signal:AbortSignal.any([signal,AbortSignal.timeout(10000)]),cache:'no-store'});
-  if (!response.ok) throw new Error(response.status === 404 ? 'This item is unavailable for this collection.' : 'The archive is temporarily unavailable. Please try again.');
-  return await response.json() as T;
+export async function catalogRequest<T>(url: string, signal: AbortSignal, timeoutMs = 10000): Promise<T> {
+  if (!Number.isInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 60000) throw new Error('Invalid request timeout.');
+  const deadline = AbortSignal.timeout(timeoutMs);
+  try {
+    const response = await fetch(url,{signal:AbortSignal.any([signal,deadline]),cache:'no-store'});
+    if (!response.ok) throw new Error(response.status === 404 ? 'This item is unavailable for this collection.' : 'The archive is temporarily unavailable. Please try again.');
+    return await response.json() as T;
+  } catch (reason) {
+    if (deadline.aborted && !signal.aborted) throw new Error('The archive took too long to respond. Please try again.');
+    throw reason;
+  }
 }
 export function representationPath(item: CatalogItem, representation: CatalogRepresentation): string {
   return `/api/catalog/v1/items/${encodeURIComponent(item.id)}/representations/${encodeURIComponent(representation.id)}`;
