@@ -47,11 +47,16 @@ async function main() {
         if (data.length !== variant.size || createHash('sha256').update(data).digest('hex') !== variant.sha256) throw new Error('download integrity mismatch');
         await response.dispose();
         downloads++;
+        fs.writeFileSync('/proof/current-variant.json', JSON.stringify({document:document.id,variant:variant.id,filename:variant.filename,downloads,renders},null,2));
         await page.goto(origin + '/documents/' + document.id + '?read=1&variant=' + variant.id + '&page=1');
         await page.waitForFunction(() => {
           const c = document.querySelector('canvas');
           return c && c.width > 0 && c.height > 0 && !document.querySelector('.reader [role="status"]') && !document.querySelector('.reader [role="alert"]');
-        }, null, { timeout: 30000 });
+        }, null, { timeout: 30000 }).catch(async error => {
+          fs.writeFileSync('/proof/render-failure.json',JSON.stringify({url:page.url(),document:document.id,variant:variant.id,filename:variant.filename,downloads,renders,state:await page.locator('.reader').innerText()},null,2));
+          await page.screenshot({path:'/proof/render-failure.png',fullPage:true});
+          throw error;
+        });
         const painted = await page.locator('canvas').evaluate(c => c.getContext('2d').getImageData(0, 0, c.width, c.height).data.some((v, i) => i % 4 !== 3 && v < 230));
         if (!painted) throw new Error('PDF canvas has no visible content');
         renders++;
