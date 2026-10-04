@@ -41,6 +41,11 @@ separately from originals, and adds independent station revisions and shared
 controls/hooks. Full isolated checks passed with generated tones, including
 withdrawn future eligibility and corrupt-input/derivative guards. Real music and
 browser qualification remain open. Next are the neutral mixed frontend,
+An explicit multi-collection allowlist now covers both legacy and typed routes,
+operator actions and complete future video schedules; mixed collection summaries
+include print/audio membership without changing the legacy video summary shape.
+Full isolated verification passed, including empty-scope and excluded/unknown
+future-program regressions. The neutral mixed frontend remains next, followed by
 all-brand adoption, migration/recovery and private cross-brand qualification.
 Milestone 6 records a concrete public rollout decision after those gates; it does
 not implicitly authorize deployment or additional media acquisition.

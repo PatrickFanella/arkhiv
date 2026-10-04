@@ -109,6 +109,31 @@ type CatalogPage struct {
 	SearchCoverage []string             `json:"search_coverage"`
 }
 
+type CatalogCollectionSummary struct {
+	ID     string        `json:"id"`
+	Title  string        `json:"title"`
+	Policy domain.Policy `json:"policy"`
+	Items  int64         `json:"items"`
+	Media  []string      `json:"media"`
+}
+
+func (d *DB) CatalogCollections(ctx context.Context, scope domain.CollectionScope) ([]CatalogCollectionSummary, error) {
+	rows, err := d.Pool.Query(ctx, `SELECT c.id,c.id,c.policy,count(DISTINCT v.item_id),array_agg(DISTINCT v.media ORDER BY v.media) FROM collections c JOIN visible_catalog_representations v ON v.collection_id=c.id WHERE ($1::text[] IS NULL OR c.id=ANY($1)) GROUP BY c.id ORDER BY c.id`, []string(scope))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []CatalogCollectionSummary{}
+	for rows.Next() {
+		var c CatalogCollectionSummary
+		if err = rows.Scan(&c.ID, &c.Title, &c.Policy, &c.Items, &c.Media); err != nil {
+			return nil, err
+		}
+		out = append(out, c)
+	}
+	return out, rows.Err()
+}
+
 func (d *DB) Catalog(ctx context.Context, q CatalogQuery) (CatalogPage, error) {
 	p := CatalogPage{Items: []domain.CatalogItem{}, Page: q.Page, SearchCoverage: []string{"metadata"}}
 	if q.Page < 1 || q.Page > 100000 || (q.Media != "" && !q.Media.Valid()) || len(q.Search) > 1000 {

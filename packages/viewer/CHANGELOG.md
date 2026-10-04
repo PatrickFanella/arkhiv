@@ -8,6 +8,8 @@
   consumers continue to import the existing root entry.
 - Add the audio entry for full recordings, reviewed sets, track navigation,
   source credits and shared station clock calculations.
+- Scope video channel/playback requests to the selected collection and hide
+  stale sessions, errors and loading state during collection changes.
 
 Print reading requires the engine's reviewed representation access. Search must
 report actual indexed coverage; OCR without page mapping remains document text.

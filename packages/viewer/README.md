@@ -26,10 +26,11 @@ state and commands independently of page layout. Set
 or supply a custom selector. The default retains the existing `#screen` scroll
 behavior and honors reduced motion.
 
-This release supports video API version `1`. `Compatibility` verifies the exact
-collection for standalone consumers. Mixed-collection support is not implemented
-by this package extraction. Existing acquisition/publication policies stay on
-the server.
+The root entry supports video API version `1`. `Compatibility` verifies the exact
+collection for standalone consumers. Video channel/playback requests name the
+selected collection; typed print/audio entries have their own contracts. Consumers
+own mixed media page composition. Acquisition/publication policies stay on the
+server.
 
 Build with the pinned root pnpm version using `pnpm build:packages`. Packages
 ship compiled ESM and declarations; consumers need no sibling source checkout.

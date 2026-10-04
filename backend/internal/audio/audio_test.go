@@ -152,6 +152,19 @@ func TestContinuousAudioRightsAndStationIntegration(t *testing.T) {
 	if w = get(base+"/resolve?collection=foreign", nil); w.Code != 404 {
 		t.Fatal("foreign audio exposed", w.Code)
 	}
+	server.Collection = ""
+	server.Collections = domain.CollectionScope{c.ID, "another-allowed"}
+	if w = get(base+"/resolve?collection="+c.ID, nil); w.Code != 200 {
+		t.Fatal("allowed multi scope audio unavailable", w.Code)
+	}
+	if w = get(base+"/resolve", nil); w.Code != 404 {
+		t.Fatal("ambiguous audio collection accepted", w.Code)
+	}
+	if w = get(base+"/media?collection=foreign", nil); w.Code != 404 {
+		t.Fatal("audio bytes crossed multi allowlist", w.Code)
+	}
+	server.Collection = c.ID
+	server.Collections = nil
 	review.Schedule = false
 	review.Notes = "Withdraw future station eligibility"
 	if err = db.ReviewTransport(ctx, "future", rep.ID, c.ID, review, approval); err != nil {

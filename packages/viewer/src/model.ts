@@ -4,7 +4,7 @@ export type Caption = { file: string; label: string; language: string; url: stri
 export type Playback = { id: string; policy: 'source_stream' | 'local_preserve'; url: string; source_url: string; file: SourceFile; snapshot_sha256: string; captions?: Caption[] };
 export type Program = { episode_id: string; file: string; policy: Playback['policy']; start: string; duration: number };
 export type Channel = { server_time: string; revision: string; state: string; reason?: string; offset: number; program?: Program; next?: Program; episode?: Episode; playback?: Playback };
-export type Session = { mode: 'ondemand' | 'channel'; episode: Episode; playback: Playback; offset: number; receivedAt: number; latency: number; generation: number; programKey?: string };
+export type Session = { mode: 'ondemand' | 'channel'; episode: Episode; playback: Playback; offset: number; receivedAt: number; latency: number; generation: number; programKey?: string; collection?: string };
 export function targetOffset(session: Session, now: number): number {
   const elapsed = session.mode === 'channel' ? Math.max(0, (now - session.receivedAt + session.latency) / 1000) : 0;
   return Math.max(0, Math.min(session.playback.file.duration - 0.25, session.offset + elapsed));
