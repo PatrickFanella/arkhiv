@@ -48,6 +48,47 @@ containers run as that owner with read-only mounts; Nginx runs as its own UID
 with owned temporary directories and no extra capabilities. Failed startup
 attempts remain alongside the corrected previews and receipts.
 
+## Print rollback with retained images
+
+The actual running original print and Riot Grrrl API/frontend images were exported
+read-only from Almaz and loaded on Kuznya. Their image IDs matched exactly. The
+retained image archive is 96,316,416 bytes, SHA-256
+`d8015d28a7883f9391987789c60f4298f459a9373d2cd4fc0e01666b1a3b9bca`.
+Existing Almaz containers were neither stopped nor restarted.
+
+Each current private qualification database was checkpointed before a further
+upgrade. Separate new PostgreSQL instances restored these checkpoints with
+`pg_restore --exit-on-error`; every row count across all 17 public tables matched.
+Original print checkpoint: 19,064,025 bytes, SHA-256
+`ac5edc88f2002d250493b10cfb35b2e1029fb08ba735ac9c19b2670e54381d00`.
+Riot Grrrl checkpoint: 855,413 bytes, SHA-256
+`d81d6131883d0fcfcd59df9001dd96828af2822cac83b531d27e81f5b68292d2`.
+These copies preserve snapshots, discoveries, inventories, reviews, source changes,
+public-access history and original asset identities, alongside all retained files.
+
+Previous original-print API image
+`sha256:03e2ad6e8e78c6459f49ce9e017166722a35480693dcd9959240e82b9be8dfea`
+and frontend image
+`sha256:cc570cf164b190b2c579e8343f56a6f262601d56432e0caba428f0d4c2048693`
+started against the original-print rollback copy. The old reader opened Little
+Green Songbook SCREEN and advanced to page 2, with a 918 by 594 rendered canvas
+and no reader alert. Its original download returned HTTP 200, 9,337,316 bytes and
+the same `ae58f7cd…edef02` checksum recorded above.
+
+Previous Riot Grrrl API image
+`sha256:672ad7d16af1debf70664d6118c84d43e1ddf983785c208e399d2069fc320567`
+and frontend image
+`sha256:11d60ecb840ea9014355787667cad27ed469835ae997400ab2e0aa9024eae53e`
+started against the Riot Grrrl rollback copy. Violet Volume 4 opened and advanced
+to page 2, with an 864 by 1,152 canvas and no reader alert. Its original download
+returned HTTP 200, 3,327,470 bytes and the same `2d2e7a83…929bb5` checksum above.
+Public approval remains false. All rollback apps are private and mount the
+independently restored archives read-only.
+
+These rehearsals prove the previous print artifacts can read the preserved
+checkpoint and files. They do not activate a production rollback or qualify an
+unimplemented destructive schema migration. Video and audio rollback remain open.
+
 ## Music consumer
 
 Dedhed PR #27 merged the shared transport hook into the existing Tape Shelf.
@@ -107,7 +148,8 @@ Release 0.2.2 passed hosted run 12680 and registry-byte verification. The first
 automated consumer run verified and pushed the video-template upgrade, then
 lost the HTTP response while creating its PR. Readback confirmed PR #4 exists.
 The remaining five proposals and all six actual 0.2.2 consumer adoptions still
-need qualification. Old deployed-artifact rollback against fresh pre-migration
-checkpoints, reviewed music listening and sustained natural runs remain open.
+need qualification. Video and audio deployed-artifact rollback, reviewed music listening and sustained
+natural runs remain open. The print rollback checks above cover the retained
+artifacts and fresh checkpoints separately from 0.2.2 adoption.
 Source-stream-only Democracy Now! remains outside local preservation. Public
 activation requires the concrete per-product decision recorded in the P6 review.
