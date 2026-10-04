@@ -6,6 +6,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -43,7 +44,7 @@ func load(p string, v any) error {
 }
 func run() error {
 	if len(os.Args) < 2 {
-		return fmt.Errorf("usage: vhness migrate|collection|review-budget|review-library|plan-replay|import|import-item|import-catalog|review-transport|index-print|register-audio|schedule-audio|fetch|inspect|acquire|audit|review|schedule|discover|refresh|report|seed|serve|healthcheck")
+		return fmt.Errorf("usage: vhness migrate|collection|review-budget|review-library|plan-replay|import|import-item|import-source|import-catalog|review-transport|index-print|register-audio|schedule-audio|fetch|inspect|acquire|audit|review|schedule|discover|refresh|report|seed|serve|healthcheck")
 	}
 	cmd := os.Args[1]
 	if cmd == "healthcheck" {
@@ -122,6 +123,23 @@ func run() error {
 		}
 	}
 	switch cmd {
+	case "import-source":
+		if _, err := d.GetCollection(ctx, *collection); err != nil {
+			return err
+		}
+		input, err := os.Open(*file)
+		if err != nil {
+			return err
+		}
+		defer input.Close()
+		raw, err := io.ReadAll(io.LimitReader(input, (32<<20)+1))
+		if err != nil {
+			return err
+		}
+		if err = source.CatalogSnapshot(*id, raw); err != nil {
+			return err
+		}
+		return d.Snapshot(ctx, *id, raw, 200, "", "", nil)
 	case "register-audio":
 		var asset domain.AudioAsset
 		if err := load(*file, &asset); err != nil {

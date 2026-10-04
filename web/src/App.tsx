@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { parseBrand, type Brand } from './brand';
+import { checkEngine, parseBrand, type Brand, type EngineCapabilities } from './brand';
 import { request } from './model';
 import { useViewer } from './useViewer';
 import { ChannelPanel, Library, Screen } from './Viewer';
@@ -26,9 +26,9 @@ export default function App() {
   const [error, setError] = useState('');
   useEffect(() => {
     const controller = new AbortController();
-    void Promise.all([request<unknown>('/site.json', controller.signal), request<{ api_version: string; collection: string }>('/api/version', controller.signal)]).then(([config, engine]) => {
+    void Promise.all([request<unknown>('/site.json', controller.signal), request<EngineCapabilities>('/api/version', controller.signal)]).then(([config, engine]) => {
       const parsed = parseBrand(config);
-      if (engine.api_version !== '1' || (parsed.interface !== 'catalog' && engine.collection && engine.collection !== parsed.collection)) throw new Error('This archive is not configured for this collection.');
+      checkEngine(parsed,engine);
       setBrand(parsed);
     }).catch(reason => { if (!controller.signal.aborted) setError(reason instanceof Error ? reason.message : 'The archive is temporarily unavailable.'); });
     return () => controller.abort();

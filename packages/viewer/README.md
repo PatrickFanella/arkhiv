@@ -50,3 +50,10 @@ The audio entry exports `AudioPlayer`, reviewed set bounds and station clock
 helpers from `@subcult/archive-viewer/audio`. The engine supplies a verified
 continuous recording URL; the consumer owns station polling and navigation.
 Source credits, warnings and track order remain in the recording contract.
+
+The catalog entry exports `useCatalog`, scoped metadata query types and reviewed
+representation URL validation from `@subcult/archive-viewer/catalog`. Consumers
+own collection filters, item detail, navigation and media composition. The hook
+hides superseded results immediately and cancels their requests. The neutral
+reference frontend composes all four entries; a single-media brand can import
+only the entries it uses.

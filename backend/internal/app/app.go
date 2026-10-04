@@ -68,7 +68,7 @@ func (s *Server) Handler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/health", func(w http.ResponseWriter, r *http.Request) { write(w, 200, map[string]string{"status": "ok"}) })
 	mux.HandleFunc("GET /api/version", func(w http.ResponseWriter, r *http.Request) {
-		write(w, 200, map[string]any{"api_version": "1", "collection": s.Collection, "collections": s.collectionScope()})
+		write(w, 200, map[string]any{"api_version": "1", "collection": s.Collection, "collections": s.collectionScope(), "modules": map[string]string{"catalog": "1", "print": "1", "audio": "1", "video": "1"}})
 	})
 	mux.HandleFunc("GET /api/ready", func(w http.ResponseWriter, r *http.Request) {
 		if err := s.DB.Pool.Ping(r.Context()); err != nil {
