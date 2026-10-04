@@ -21,21 +21,43 @@ on:
 jobs:
   propose:
     runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: proof
+          POSTGRES_PASSWORD: disposable-upgrade-only
+          POSTGRES_DB: postgres
+        options: --label arkhiv.upgrade-database=${{ github.run_id }}-${{ github.run_attempt }} --health-cmd "pg_isready -U proof -d postgres" --health-interval 5s --health-retries 10
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+          cache: false
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+      - name: Install consumer verification tools
+        run: |
+          if [ "$(id -u)" = 0 ]; then
+            apt-get update && apt-get install --yes --no-install-recommends poppler-utils util-linux ffmpeg postgresql-client
+          else
+            sudo -n apt-get update && sudo -n apt-get install --yes --no-install-recommends poppler-utils util-linux ffmpeg postgresql-client
+          fi
       - name: Propose compatible consumer upgrades
         env:
+          ARCHIVE_UPGRADE_DATABASE_RUN: ${{ github.run_id }}-${{ github.run_attempt }}
           ARCHIVE_RELEASE_VERSION: ${{ inputs.version }}
           ARCHIVE_ADOPTION_REFS: ${{ inputs.adoption_refs || 'false' }}
           ARCHIVE_PACKAGE_READ_TOKEN: ${{ secrets.ARCHIVE_PACKAGE_READ_TOKEN }}
           ARCHIVE_UPGRADE_TOKEN: ${{ secrets.ARCHIVE_UPGRADE_TOKEN }}
         run: |
           set -euo pipefail
+          export ARCHIVE_UPGRADE_DATABASE_CONTAINER=$(docker ps --no-trunc --quiet --filter "label=arkhiv.upgrade-database=$ARCHIVE_UPGRADE_DATABASE_RUN")
+          test -n "$ARCHIVE_UPGRADE_DATABASE_CONTAINER"
           test -n "$ARCHIVE_PACKAGE_READ_TOKEN"
           test -n "$ARCHIVE_UPGRADE_TOKEN"
           tool_dir=$(mktemp -d)

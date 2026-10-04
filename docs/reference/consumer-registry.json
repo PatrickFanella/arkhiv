@@ -64,10 +64,10 @@
           "verify"
         ]
       ],
-      "adoption_status": "reviewed-pr",
+      "adoption_status": "pull-request",
       "adoption_ref": "feat/shared-print-adoption",
       "adoption_pull_request": "https://git.subcult.tv/subculture-collective/arkhiv-alpha/pulls/59",
-      "adoption_revision": "112014d71a56eab485d2099c931c6253c5168679"
+      "adoption_revision": "86680b30a75a7fbe24932b624cf6d9ad013daba8"
     },
     {
       "repository": "subculture-collective/arkhiv-riot-grrrl",
@@ -86,10 +86,10 @@
           "verify"
         ]
       ],
-      "adoption_status": "reviewed-pr",
+      "adoption_status": "pull-request",
       "adoption_ref": "feat/shared-print-adoption",
       "adoption_pull_request": "https://git.subcult.tv/subculture-collective/arkhiv-riot-grrrl/pulls/10",
-      "adoption_revision": "189ee591ea1cb167b19b01dbd9c93420b6ac0b8a"
+      "adoption_revision": "99db53d1f7ae84704a18418d6384c143dbb08ec0"
     },
     {
       "repository": "subculture-collective/bill-nye-tv",
@@ -108,7 +108,7 @@
           "verify"
         ]
       ],
-      "adoption_status": "reviewed-pr",
+      "adoption_status": "pull-request",
       "adoption_ref": "feat/shared-platform-adoption",
       "adoption_pull_request": "https://git.subcult.tv/subculture-collective/bill-nye-tv/pulls/2",
       "adoption_revision": "d77639cdbff9a09766b51cfbf4dba668232c77e7",
@@ -131,7 +131,7 @@
           "verify"
         ]
       ],
-      "adoption_status": "reviewed-pr",
+      "adoption_status": "pull-request",
       "adoption_ref": "feat/shared-audio-adoption",
       "adoption_pull_request": "https://git.subcult.tv/subculture-collective/dedhed/pulls/27",
       "adoption_revision": "1105d5ab67f5e4f08c90fc0c336de1efb7fb0ad0"
