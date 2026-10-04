@@ -2,6 +2,8 @@
 
 ## 0.2.0 (unreleased)
 
+- Add the catalog entry for scoped mixed-media metadata browsing and validated
+  representation transport URLs.
 - Add the `@subcult/archive-viewer/print` entry with PDF page controls, zoom,
   readable text and optional search through a consumer-supplied PDF backend.
 - Keep PDF runtime dependencies and worker assets in the consumer. Video

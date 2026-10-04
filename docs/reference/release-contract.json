@@ -1,12 +1,30 @@
 {
   "contract_version": 1,
   "package": "@subcult/archive-viewer",
-  "api_versions": ["1"],
+  "api_versions": [
+    "1"
+  ],
   "configuration_version": 1,
   "schema_strategy": "checksum-locked-additive-migrations",
   "compatibility_window": "current and previous reviewed release",
   "registry": "https://git.subcult.tv/api/packages/subculture-collective/npm/",
   "engine_repository": "git.subcult.tv/subculture-collective/archive-engine",
   "rollout": "reviewed-per-consumer",
-  "media": ["video"]
+  "media": [
+    "print",
+    "audio",
+    "video"
+  ],
+  "modules": {
+    "catalog": "1",
+    "print": "1",
+    "audio": "1",
+    "video": "1"
+  },
+  "package_entries": [
+    ".",
+    "./catalog",
+    "./print",
+    "./audio"
+  ]
 }
