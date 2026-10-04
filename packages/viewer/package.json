@@ -17,6 +17,10 @@
     "./print": {
       "types": "./dist/print.d.ts",
       "import": "./dist/print.js"
+    },
+    "./audio": {
+      "types": "./dist/audio.d.ts",
+      "import": "./dist/audio.js"
     }
   },
   "main": "./dist/index.js",

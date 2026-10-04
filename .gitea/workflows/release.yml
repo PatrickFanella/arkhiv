@@ -33,9 +33,9 @@ jobs:
       - name: Install bounded print extraction tools
         run: |
           if [ "$(id -u)" = 0 ]; then
-            apt-get update && apt-get install --yes --no-install-recommends poppler-utils util-linux
+            apt-get update && apt-get install --yes --no-install-recommends poppler-utils util-linux ffmpeg
           else
-            sudo -n apt-get update && sudo -n apt-get install --yes --no-install-recommends poppler-utils util-linux
+            sudo -n apt-get update && sudo -n apt-get install --yes --no-install-recommends poppler-utils util-linux ffmpeg
           fi
       - name: Require scoped package publishing credentials
         env:

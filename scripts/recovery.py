@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 
 from pilot import ROOT, PROJECT, REPO
 
-TABLES = ['collections', 'snapshots', 'observations', 'episodes', 'decision_history', 'schedules', 'current_schedule', 'worker_state', 'metadata_queue', 'schema_versions', 'preservation_history', 'collection_budget_reviews', 'catalog_items', 'catalog_memberships', 'catalog_representations', 'catalog_representation_memberships', 'catalog_review_history', 'representation_transport_reviews', 'representation_transport_history', 'print_indexes', 'print_page_text']
+TABLES = ['collections', 'snapshots', 'observations', 'episodes', 'decision_history', 'schedules', 'current_schedule', 'worker_state', 'metadata_queue', 'schema_versions', 'preservation_history', 'collection_budget_reviews', 'catalog_items', 'catalog_memberships', 'catalog_representations', 'catalog_representation_memberships', 'catalog_review_history', 'representation_transport_reviews', 'representation_transport_history', 'print_indexes', 'print_page_text', 'audio_assets', 'audio_asset_history', 'audio_schedules']
 
 def shell_arguments(args):
     if args[0] == 'ssh' and len(args) > 3:

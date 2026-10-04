@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+
+	"git.subcult.tv/subculture-collective/vhness/internal/music"
 )
 
 type Media string
@@ -38,6 +40,7 @@ type AudioExtension struct {
 	ConcertID   string            `json:"concert_id,omitempty"`
 	Tracks      []AudioTrack      `json:"tracks"`
 	Credits     map[string]string `json:"credits"`
+	Recording   *music.Recording  `json:"recording,omitempty"`
 }
 type VideoExtension struct {
 	EpisodeID string          `json:"episode_id"`
@@ -122,6 +125,24 @@ func (r Representation) Validate() error {
 				return fmt.Errorf("invalid track identity or unreviewed set")
 			}
 			seen[track.ID] = true
+		}
+		if a.Recording != nil {
+			if err := a.Recording.Validate(); err != nil {
+				return err
+			}
+			if a.Recording.ID != a.RecordingID || a.Recording.ConcertID != a.ConcertID || len(a.Recording.Tracks) != len(a.Tracks) {
+				return fmt.Errorf("recording identity or track mapping differs")
+			}
+			for i, track := range a.Recording.Tracks {
+				if track.File.Name != a.Tracks[i].File || !SafeFile(track.File.Name) || track.File.Bytes <= 0 {
+					return fmt.Errorf("invalid recording source file mapping")
+				}
+				for _, variant := range track.Variants {
+					if !SafeFile(variant.Name) || variant.Bytes <= 0 {
+						return fmt.Errorf("invalid audio source variant")
+					}
+				}
+			}
 		}
 	case VideoMedia:
 		if r.Extension.Video == nil || !ValidID(r.Extension.Video.EpisodeID) {
