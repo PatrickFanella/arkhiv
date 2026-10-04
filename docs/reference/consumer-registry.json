@@ -164,10 +164,60 @@
           "scripts/check_core_pin.py"
         ]
       ],
-      "adoption_status": "reviewed-pr",
-      "adoption_ref": "feat/reference-client-deployment",
-      "adoption_pull_request": "https://git.subcult.tv/subculture-collective/arkhiv/pulls/93",
-      "adoption_revision": "fffe235c296458e9a7fa20c2a2fad66cab2558a9"
+      "adoption_status": "pull-request",
+      "adoption_ref": "archive-core-upgrade/v0.1.1-30454dd566f7d390a2644725b765073a447f4827",
+      "adoption_pull_request": "https://git.subcult.tv/subculture-collective/arkhiv/pulls/96",
+      "adoption_revision": "44c0b9c120a3bde709145dd2190bef6560a87040"
+    },
+    {
+      "repository": "subculture-collective/bill-nye-tv",
+      "media": [
+        "video"
+      ],
+      "adoption": "core",
+      "mode": "api",
+      "rollout": "reviewed-pr",
+      "release_file": "deploy/core-release.json",
+      "engine_file": "deploy/archive-core.env",
+      "modules": {
+        "catalog": "1",
+        "video": "1"
+      },
+      "checks": [
+        [
+          "python3",
+          "scripts/check_core_pin.py"
+        ]
+      ],
+      "adoption_status": "pull-request",
+      "adoption_ref": "feat/public-core-adoption",
+      "adoption_pull_request": "https://git.subcult.tv/subculture-collective/bill-nye-tv/pulls/4",
+      "adoption_revision": "979d82bfbfe6bba2963c75bab00e37890078fd7c"
+    },
+    {
+      "repository": "subculture-collective/democracy-now-tv",
+      "media": [
+        "video"
+      ],
+      "adoption": "core",
+      "mode": "api",
+      "rollout": "reviewed-pr",
+      "release_file": "deploy/core-release.json",
+      "engine_file": "deploy/archive-core.env",
+      "modules": {
+        "catalog": "1",
+        "video": "1"
+      },
+      "checks": [
+        [
+          "python3",
+          "scripts/check_core_pin.py"
+        ]
+      ],
+      "adoption_status": "pull-request",
+      "adoption_ref": "feat/public-core-adoption",
+      "adoption_pull_request": "https://git.subcult.tv/subculture-collective/democracy-now-tv/pulls/5",
+      "adoption_revision": "1d838dfc4a94181feb91d1d0eced466ce376b4c2"
     }
   ]
 }

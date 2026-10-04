@@ -6,11 +6,21 @@ import tempfile
 import unittest
 from unittest import mock
 
-from upgrade_consumer import prepare, validate
+from upgrade_consumer import prepare, validate, select_consumer
 from propose_consumer_upgrade import proposal
 
 
 class UpgradeTests(unittest.TestCase):
+    def test_independent_release_lanes_for_one_repository(self):
+        components = {'repository': 'org/brand', 'mode': 'platform'}
+        core = {'repository': 'org/brand', 'mode': 'api'}
+        registry = {'consumers': [components, core]}
+        self.assertIs(select_consumer(registry, 'org/brand', {'artifact_kind': 'core'}), core)
+        self.assertIs(select_consumer(registry, 'org/brand', {}), components)
+        for invalid in [{'consumers': [core, core]}, {'consumers': [components]}]:
+            with self.assertRaises(ValueError):
+                select_consumer(invalid, 'org/brand', {'artifact_kind': 'core'})
+
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)

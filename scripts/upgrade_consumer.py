@@ -9,6 +9,16 @@ import subprocess
 from core_release import validate_core
 
 
+def select_consumer(registry, repository, release):
+    """Select the independent API or component lane for this artifact."""
+    api_only = release.get('artifact_kind') == 'core'
+    matches = [c for c in registry['consumers'] if c['repository'] == repository
+               and (c.get('mode') == 'api') == api_only]
+    if len(matches) != 1:
+        raise ValueError('Expected one registered consumer for this release lane')
+    return matches[0]
+
+
 def validate(release, consumer, current, artifact):
     if consumer.get('mode') == 'api':
         validate_core(release, consumer, current)
@@ -122,8 +132,9 @@ def main():
     parser.add_argument('--package-artifact', type=Path)
     args = parser.parse_args()
     registry = json.loads(args.registry.read_text())
-    consumer = next(c for c in registry['consumers'] if c['repository'] == args.consumer)
-    changed = prepare(args.checkout, consumer, json.loads(args.release.read_text()), args.package_artifact)
+    release = json.loads(args.release.read_text())
+    consumer = select_consumer(registry, args.consumer, release)
+    changed = prepare(args.checkout, consumer, release, args.package_artifact)
     print('Prepared reviewed upgrade' if changed else 'Release already applied; no changes')
 
 

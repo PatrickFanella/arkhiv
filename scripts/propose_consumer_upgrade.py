@@ -11,7 +11,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from upgrade_consumer import prepare, validate
+from upgrade_consumer import prepare, validate, select_consumer
 
 
 def api(path, method='GET', payload=None):
@@ -107,8 +107,8 @@ def main():
     parser.add_argument('--base-ref', help='Explicit reviewed adoption branch for a stacked proposal; defaults to the repository default branch')
     args = parser.parse_args()
     registry = json.loads(args.registry.read_text())
-    consumer = next(c for c in registry['consumers'] if c['repository'] == args.consumer)
     release = json.loads(args.release.read_text())
+    consumer = select_consumer(registry, args.consumer, release)
     if consumer['adoption'] != ('core' if consumer.get('mode') == 'api' else 'package'):
         raise SystemExit('Consumer package adoption is pending')
     if args.base_ref:
