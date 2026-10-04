@@ -6,18 +6,32 @@ const fs = require('node:fs');
 async function main() {
   const origin = process.env.PROBE_ORIGIN || 'http://web';
   const expected = JSON.parse(fs.readFileSync('/proof/expected.json', 'utf8'));
-  const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  let browser = await chromium.launch({ headless: true });
+  let context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   let sourceRequests = 0;
   await context.route(/https?:\/\/(?:[^/]+\.)?archive\.org\//, route => { sourceRequests++; return route.abort(); });
-  const page = await context.newPage();
+  let page = await context.newPage();
   const messages = [];
   const pending = new Map();
-  page.on('console', m => { if (messages.length < 100) messages.push({type:m.type(),text:m.text()}); });
-  page.on('pageerror', error => { if (messages.length < 100) messages.push({type:'pageerror',text:String(error)}); });
-  page.on('request', request => pending.set(request, {url:request.url(),started:Date.now()}));
-  page.on('requestfinished', request => pending.delete(request));
-  page.on('requestfailed', request => pending.delete(request));
+  function observePage() {
+    page.on('console', m => { if (messages.length < 100) messages.push({type:m.type(),text:m.text()}); });
+    page.on('pageerror', error => { if (messages.length < 100) messages.push({type:'pageerror',text:String(error)}); });
+    page.on('request', request => pending.set(request, {url:request.url(),started:Date.now()}));
+    page.on('requestfinished', request => pending.delete(request));
+    page.on('requestfailed', request => pending.delete(request));
+  }
+  observePage();
+  let browserRestarts = 0;
+  async function restartBrowser() {
+    await browser.close();
+    pending.clear();
+    browser = await chromium.launch({headless:true});
+    context = await browser.newContext({viewport:{width:1280,height:800}});
+    await context.route(/https?:\/\/(?:[^/]+\.)?archive\.org\//, route => {sourceRequests++;return route.abort();});
+    page = await context.newPage();
+    observePage();
+    browserRestarts++;
+  }
   const get = async path => {
     const response = await context.request.get(origin + path);
     if (!response.ok()) throw new Error('restored request failed: ' + response.status());
@@ -49,6 +63,8 @@ async function main() {
     const renderedCollections = new Set();
     for (const document of documents) {
       for (const variant of document.variants) {
+        // Release accumulated PDF workers, fonts and decoded image state.
+        if (renders > 0 && renders % 25 === 0) await restartBrowser();
         messages.length = 0;
         const response = await get('/api/assets/' + variant.id + '?download=1');
         const data = await response.body();
@@ -61,8 +77,8 @@ async function main() {
           const c = document.querySelector('canvas');
           return c && c.width > 0 && c.height > 0 && !document.querySelector('.reader [role="status"]') && !document.querySelector('.reader [role="alert"]');
         }, null, { timeout: 30000 }).catch(async error => {
-          fs.writeFileSync('/proof/render-failure.json',JSON.stringify({url:page.url(),document:document.id,variant:variant.id,filename:variant.filename,downloads,renders,state:await page.locator('.reader').innerText(),messages,pending:[...pending.values()]},null,2));
-          await page.screenshot({path:'/proof/render-failure.png',fullPage:true});
+          fs.writeFileSync('/proof/render-failure.json',JSON.stringify({url:page.url(),document:document.id,variant:variant.id,filename:variant.filename,downloads,renders,state:await page.locator('.reader').innerText({timeout:1000}).catch(()=>'reader unavailable'),messages,pending:[...pending.values()]},null,2));
+          await page.screenshot({path:'/proof/render-failure.png',fullPage:true}).catch(()=>{});
           throw error;
         });
         const painted = await page.locator('canvas').evaluate(c => c.getContext('2d').getImageData(0, 0, c.width, c.height).data.some((v, i) => i % 4 !== 3 && v < 230));
@@ -114,7 +130,7 @@ async function main() {
     }
     const blocked = await page.evaluate(async () => { try { await fetch('https://archive.org/metadata/ZineArchive'); return false; } catch { return true; } });
     if (!blocked) throw new Error('source access was not blocked');
-    const result = { documents: documents.length, downloads, renders, sourceBlocked: blocked, sourceRequests, collections: [...renderedCollections], deniedRoutes:(expected.denied||[]).length, narrow:!!expected.narrow };
+    const result = { documents: documents.length, downloads, renders, browserRestarts, sourceBlocked: blocked, sourceRequests, collections: [...renderedCollections], deniedRoutes:(expected.denied||[]).length, narrow:!!expected.narrow };
     fs.writeFileSync('/proof/reader.json', JSON.stringify(result, null, 2));
     console.log(JSON.stringify(result));
   } finally { await browser.close(); }
