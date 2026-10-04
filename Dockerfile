@@ -9,6 +9,15 @@ COPY web/ ./web/
 COPY packages/ ./packages/
 RUN pnpm --dir web build
 
+FROM nginx:1.28-alpine AS reference-frontend
+COPY --from=frontend /src/web/dist /usr/share/nginx/html
+COPY deploy/reference-nginx.conf /etc/nginx/nginx.conf
+USER 101:101
+EXPOSE 8080
+HEALTHCHECK --interval=20s --timeout=5s --start-period=10s --retries=3 CMD ["wget", "-qO-", "http://127.0.0.1:8080/healthz"]
+ENTRYPOINT ["nginx"]
+CMD ["-g", "daemon off;"]
+
 FROM golang:1.26-bookworm AS backend
 WORKDIR /src/backend
 COPY backend/go.mod backend/go.sum ./

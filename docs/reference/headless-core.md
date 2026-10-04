@@ -91,3 +91,32 @@ restore both pin files. The separate `core-release.yml` workflow verifies and
 publishes the `core` target to `subculture-collective/archive-core`; the reference
 image and component package keep their own release stream. Issue #86 requires
 actual hosted publication and consumer/runtime evidence before qualification.
+
+## Separate reference deployment
+
+`deploy/headless-compose.yml` runs three services: PostgreSQL, the independently
+released core, and a static frontend built with Docker target
+`reference-frontend`. The frontend proxies `/api/` to the core on its private
+network. The API can also have its own public hostname through the core's
+`arkhiv-platform-core` network alias; the frontend uses
+`arkhiv-platform-reference`.
+
+`deploy/core-release.json` records core 0.1.0 and its published immutable image
+digest. `deploy/archive-core.env` selects that image. Run
+`python3 scripts/check_core_pin.py` to check the pair. A core upgrade changes
+these two files and runs backend checks; it does not rebuild or replace the
+frontend image. Build and pin the frontend separately with
+`docker build --target reference-frontend`.
+
+Before starting this Compose project, create its own `deploy/runtime` directory
+with a database password file, a database URL file, `core.env`, and a media
+directory. Set `DATABASE_URL_FILE=/run/secrets/database-url` in `core.env`, along
+with the reviewed collection scope. Secret files stay outside Git; make the URL
+file readable by core UID 1000. The frontend image pin is supplied separately as
+`ARKHIV_REFERENCE_IMAGE`. Supply both environment files explicitly to Compose.
+Apply migrations to this project's database before starting the core.
+
+This configuration is prepared for public rollout. Image publication and
+configuration checks alone do not establish public routing, reviewed catalog
+access, recovery, or browser playback. Record those checks for the deployed
+revision before declaring rollout complete.
