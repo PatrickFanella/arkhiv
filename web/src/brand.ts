@@ -1,4 +1,5 @@
 export type Brand = {
+  interface?: 'video' | 'catalog';
   title: string; subtitle: string; collection: string; kicker: string;
   headline: string; description: string; logo?: string;
   colors: { background: string; surface: string; ink: string; muted: string; accent: string; border: string };
@@ -6,6 +7,7 @@ export type Brand = {
 export function parseBrand(input: unknown): Brand {
   if (!input || typeof input !== 'object') throw new Error('Site configuration is missing.');
   const value = input as Brand;
+  if (value.interface !== undefined && value.interface !== 'video' && value.interface !== 'catalog') throw new Error('Invalid site interface.');
   for (const key of ['title', 'subtitle', 'collection', 'kicker', 'headline', 'description'] as const) {
     if (typeof value[key] !== 'string' || !value[key].trim() || value[key].length > 1000) throw new Error(`Invalid site ${key}.`);
   }
