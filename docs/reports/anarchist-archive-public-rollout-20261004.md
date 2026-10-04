@@ -36,7 +36,7 @@ The protected qualification directory is
 `/mnt/spektr/server/data/arkhiv/qualification/anarchist-public-98071f3`.
 It contains the original Compose configuration, catalog dump, previous Caddy
 site and activation/ingress receipts. Existing independent archive/restore
-evidence remains retained; this new dump has not yet had its own restore drill.
+evidence remains retained; the fresh checkpoint restore drill is recorded below.
 No schema migration occurred during this frontend/API cutover.
 
 Rollback selects the retained public API/web images from `compose-before.json`
@@ -47,3 +47,17 @@ has added other Caddy routes; validate and reload the resulting configuration.
 A whole-file Caddy rollback is appropriate only while its current hash still
 matches this activation's ingress receipt. Keep the newer catalog checkpoint
 and archive files; rollback does not delete or replace the database.
+
+Fresh checkpoint recovery subsequently passed on Kuznya. All 17 restored table
+counts match the source counts observed after cutover. The exact retained
+public API image `sha256:09c261dd3f3d9ced6891bf9a6cd95fd203d6404af9d1f0aa20704d2c3e1a3203`
+serves 699 documents, denies the private `a-info` collection and returns the
+original 9,337,316-byte LittleGreenSongbook PDF with the recorded SHA-256.
+The checkpoint was transferred independently of Almaz and its checksum matched.
+
+An initial test used the older private API image and returned all 714 stored
+records. That failure is retained in `failed-private-image-check.json`; it proves
+why rollback must select the exact public artifact. No production service or
+original was replaced during the recovery check. The successful receipt is
+`/home/ci/.local/state/arkhiv-private-qualification/anarchist-public-recovery-20261004/receipt.json`
+on Kuznya, with a protected copy on Kvant.
