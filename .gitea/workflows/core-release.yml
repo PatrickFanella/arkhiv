@@ -6,6 +6,12 @@ on:
         description: Repository-scoped isolated qualification runner
         required: false
         default: ubuntu-latest
+      source_revision:
+        description: Exact already-published source for receipt recovery; otherwise leave empty
+        required: false
+      published_digest:
+        description: Immutable already-published core digest for receipt recovery; skips build and push
+        required: false
   push:
     tags: ['core-v*']
 jobs:
@@ -23,6 +29,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+          ref: ${{ inputs.source_revision || github.sha }}
       - uses: actions/setup-go@v5
         with:
           go-version-file: backend/go.mod
@@ -52,11 +59,15 @@ jobs:
         env:
           ARCHIVE_PACKAGE_TOKEN: ${{ secrets.ARCHIVE_PACKAGE_TOKEN }}
           ARCHIVE_REGISTRY_USER: ${{ vars.ARCHIVE_REGISTRY_USER }}
+          CORE_RECOVERY_SOURCE: ${{ inputs.source_revision }}
+          CORE_RECOVERY_DIGEST: ${{ inputs.published_digest }}
         run: |
           set -euo pipefail
           test -n "$ARCHIVE_PACKAGE_TOKEN"
           test -n "$ARCHIVE_REGISTRY_USER"
           core_version=$(python3 -c 'import json; print(json.load(open("docs/reference/core-version.json"))["version"])')
+          core_source=$(git rev-parse HEAD)
+          [[ "$core_source" =~ ^[0-9a-f]{40}$ ]]
           if [[ "$GITHUB_REF" == refs/tags/* ]]; then
             test "$GITHUB_REF" = "refs/tags/core-v$core_version"
           fi
@@ -65,11 +76,23 @@ jobs:
           chmod 700 "$release_auth_dir"
           export DOCKER_CONFIG="$release_auth_dir/docker"
           printf '%s' "$ARCHIVE_PACKAGE_TOKEN" | docker login git.subcult.tv --username "$ARCHIVE_REGISTRY_USER" --password-stdin
-          core_image="git.subcult.tv/subculture-collective/archive-core:$GITHUB_SHA"
-          docker build --target core --label "org.opencontainers.image.revision=$GITHUB_SHA" --label "org.opencontainers.image.version=$core_version" --label org.subcult.archive-artifact=core -t "$core_image" .
+          if [ -n "$CORE_RECOVERY_DIGEST" ]; then
+            [[ "$CORE_RECOVERY_SOURCE" =~ ^[0-9a-f]{40}$ ]]
+            test "$core_source" = "$CORE_RECOVERY_SOURCE"
+            [[ "$CORE_RECOVERY_DIGEST" =~ ^git.subcult.tv/subculture-collective/archive-core@sha256:[0-9a-f]{64}$ ]]
+            core_image="$CORE_RECOVERY_DIGEST"
+            docker pull "$core_image"
+          else
+            test -z "$CORE_RECOVERY_SOURCE"
+            core_image="git.subcult.tv/subculture-collective/archive-core:$core_source"
+            docker build --target core --label "org.opencontainers.image.revision=$core_source" --label "org.opencontainers.image.version=$core_version" --label org.subcult.archive-artifact=core -t "$core_image" .
+          fi
+          test "$(docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' "$core_image")" = "$core_source"
+          test "$(docker inspect --format '{{index .Config.Labels "org.opencontainers.image.version"}}' "$core_image")" = "$core_version"
+          test "$(docker inspect --format '{{index .Config.Labels "org.subcult.archive-artifact"}}' "$core_image")" = core
           docker run --rm --entrypoint sh "$core_image" -c 'test ! -e /app/web && ! command -v node && ! command -v npm'
           test -z "$(docker inspect --format '{{range .Config.Env}}{{println .}}{{end}}' "$core_image" | sed -n '/^VHNESS_WEB=/p')"
-          docker push "$core_image"
+          if [ -z "$CORE_RECOVERY_DIGEST" ]; then docker push "$core_image"; fi
           core_digest=$(docker inspect --format '{{index .RepoDigests 0}}' "$core_image")
           python3 scripts/core_release.py --engine-digest "$core_digest" --output ".artifacts/core-release-$core_version.json"
       - uses: actions/upload-artifact@v3
@@ -77,3 +100,4 @@ jobs:
           name: headless-core-release
           path: .artifacts/core-release-*.json
           if-no-files-found: error
+          include-hidden-files: true
