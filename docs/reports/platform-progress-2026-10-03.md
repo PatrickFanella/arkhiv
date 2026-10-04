@@ -46,7 +46,11 @@ An explicit multi-collection allowlist now covers both legacy and typed routes,
 operator actions and complete future video schedules; mixed collection summaries
 include print/audio membership without changing the legacy video summary shape.
 Full isolated verification passed, including empty-scope and excluded/unknown
-future-program regressions. The neutral mixed frontend remains next, followed by
-all-brand adoption, migration/recovery and private cross-brand qualification.
+future-program regressions. The neutral mixed frontend is implemented and merged
+in PR #68. PRs #69–#70 add lossless source import, explicit module capabilities
+and recording failure guards. The [private mixed interface report](mixed-interface-2026-10-03.md)
+records generated-fixture PDF, audio, station, video, narrow-screen and failure
+checks, plus independent media restore. All-brand adoption, real archive
+migration/recovery and private cross-brand qualification remain open.
 Milestone 6 records a concrete public rollout decision after those gates; it does
 not implicitly authorize deployment or additional media acquisition.
