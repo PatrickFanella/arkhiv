@@ -125,3 +125,24 @@ test("selected identity fits the configured catalog", async ({ page }) => {
   await expect(page.getByRole("link", { name: "Read on site", exact: true })).toBeVisible();
   await expect(page.getByText("No reuse license is asserted.", { exact: false })).toBeVisible();
 });
+
+test("search snippets wrap long source tokens on narrow screens", async ({ page }) => {
+  await page.route(/\/api\/documents\?/, async route => {
+    if (new URL(route.request().url()).searchParams.get("q") !== "knownword") {
+      await route.continue();
+      return;
+    }
+    const response = await route.fetch();
+    const result = await response.json();
+    for (const document of result.documents) {
+      for (const hit of document.hits) {
+        hit.snippet = "https://archive.example/" + "unbrokensourcetoken".repeat(12);
+      }
+    }
+    await route.fulfill({ response, json: result });
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/?collection=fixture-zines&q=knownword");
+  await expect(page.locator(".search-hit").first()).toContainText("unbrokensourcetoken");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
+});

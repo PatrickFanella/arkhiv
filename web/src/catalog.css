@@ -237,6 +237,7 @@ main {
 }
 .search-hit {
   margin-top: 12px;
+  overflow-wrap: anywhere;
 }
 .document {
   padding-top: 28px;

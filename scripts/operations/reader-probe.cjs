@@ -91,7 +91,12 @@ async function main() {
       await page.getByLabel('Search titles and available text').fill(expected.queries?.[0]?.query || document.metadata.title);
       await page.getByRole('button',{name:'Search',exact:true}).click();
       await page.getByRole('status').filter({hasText:'documents'}).waitFor();
-      if (!(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth))) throw new Error('narrow search overflows');
+      if (!(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth))) {
+        const overflow = await page.evaluate(() => ({width:innerWidth,scroll:document.documentElement.scrollWidth,elements:[...document.querySelectorAll('body *')].map(el=>({tag:el.tagName,classes:el.className,text:el.textContent?.slice(0,100),right:el.getBoundingClientRect().right,width:el.getBoundingClientRect().width})).filter(el=>el.right>innerWidth+1).slice(0,30)}));
+        fs.writeFileSync('/proof/narrow-overflow.json',JSON.stringify(overflow,null,2));
+        await page.screenshot({path:'/proof/narrow-overflow.png',fullPage:true});
+        throw new Error('narrow search overflows');
+      }
       await page.screenshot({path:'/proof/narrow-search.png',fullPage:true});
     }
     const blocked = await page.evaluate(async () => { try { await fetch('https://archive.org/metadata/ZineArchive'); return false; } catch { return true; } });
