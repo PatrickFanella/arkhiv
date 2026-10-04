@@ -25,11 +25,11 @@ function SelectedItem({selection,onClose}: {selection:Selection;onClose:()=>void
     void (async()=> {
       if (representation.media === 'print' && !/\.pdf$/i.test(representation.file)) throw new Error('This reader supports PDF files. Open the source page for this format.');
       // Continuous recordings have a separate derivative receipt and resolver.
-      if (representation.media === 'audio') {
-        const full = await fetch(`${path}/audio/resolve?${params}`,{signal:controller.signal,cache:'no-store'});
+      if (representation.media === 'audio' && representation.extension.audio?.recording) {
+        const full = await fetch(`${path}/audio/resolve?${params}`,{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(10000)]),cache:'no-store'});
         if (full.ok) { const value = await full.json() as AudioAsset; if(!controller.signal.aborted)setAudio(value); return; }
         if (full.status !== 404) throw new Error('The recording is temporarily unavailable.');
-        if (representation.extension.audio?.recording) throw new Error('The continuous recording is unavailable. Open the source page to check its original files.');
+        throw new Error('The continuous recording is unavailable. Open the source page to check its original files.');
       }
       if (representation.legacy_episode_id) {
         const response = await catalogRequest<Playback>(`/api/playback/${encodeURIComponent(representation.legacy_episode_id)}?${params}`,controller.signal);
