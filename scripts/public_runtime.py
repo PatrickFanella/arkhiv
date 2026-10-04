@@ -41,7 +41,9 @@ def main():
     state = Path(cfg["state"]).resolve()
     state.mkdir(mode=0o700, parents=True, exist_ok=True)
     lock = (state / "maintenance.lock").open("a")
-    fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    # Queue this deployment's jobs; a timed monitor can overlap a checkpoint.
+    # Keep the shared lock intact until the active owner completes.
+    fcntl.flock(lock, fcntl.LOCK_EX)
     docker = cfg.get("docker", ["docker"])
     project = cfg["project"]
     database = cfg["database_container"]
