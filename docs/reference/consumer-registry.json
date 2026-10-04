@@ -3,25 +3,49 @@
   "consumers": [
     {
       "repository": "subculture-collective/video-archive-template",
-      "media": ["video"],
-      "adoption": "pending",
+      "media": [
+        "video"
+      ],
+      "adoption": "package",
       "rollout": "reviewed-pr",
       "package_file": "web/package.json",
       "lock_file": "web/pnpm-lock.yaml",
       "release_file": "deploy/platform-release.json",
       "engine_file": "deploy/archive-engine.env",
-      "checks": [["make", "verify"]]
+      "checks": [
+        [
+          "make",
+          "verify"
+        ]
+      ],
+      "adoption_status": "merged",
+      "adoption_ref": "main",
+      "adoption_pull_request": "https://git.subcult.tv/subculture-collective/video-archive-template/pulls/2",
+      "adoption_revision": "77c17ebd7c1da55443936541ef2363092d9f9f07",
+      "merge_revision": "62c5f6794096f7ee29e3bf18bb810ebb4c317b1b"
     },
     {
       "repository": "subculture-collective/democracy-now-tv",
-      "media": ["video"],
-      "adoption": "pending",
+      "media": [
+        "video"
+      ],
+      "adoption": "package",
       "rollout": "reviewed-pr",
       "package_file": "web/package.json",
       "lock_file": "web/pnpm-lock.yaml",
       "release_file": "deploy/platform-release.json",
       "engine_file": "deploy/archive-engine.env",
-      "checks": [["make", "verify"]]
+      "checks": [
+        [
+          "make",
+          "verify"
+        ]
+      ],
+      "adoption_status": "merged",
+      "adoption_ref": "main",
+      "adoption_pull_request": "https://git.subcult.tv/subculture-collective/democracy-now-tv/pulls/2",
+      "adoption_revision": "7096142dee52bcde9fd3cb2cbca20d4214d1946e",
+      "merge_revision": "e46902e6c2593f042a36e13df11006adbcfc9f7c"
     }
   ]
 }

@@ -23,12 +23,13 @@ def api(path, method='GET', payload=None):
         return json.loads(raw) if raw else None
 
 
-def proposal(release, consumer, clone, artifact, request=api):
+def proposal(release, consumer, clone, artifact, request=api, base_ref=None):
     if request('/user')['login'] != 'subcult-agent':
         raise ValueError('Upgrade proposals require the subcult-agent identity')
     repository = consumer['repository']
     base = '/repos/' + repository
     metadata = request(base)
+    target = base_ref or metadata['default_branch']
     branch = 'archive-upgrade/v' + release['version'] + '-' + release['source_revision']
     # Validate the base consumer before consulting or creating a proposal.
     current = json.loads((clone / consumer['release_file']).read_text())
@@ -45,7 +46,7 @@ def proposal(release, consumer, clone, artifact, request=api):
         page += 1
     for pull in pulls:
         if pull['head']['ref'] == branch:
-            if pull['base']['ref'] != metadata['default_branch']:
+            if pull['base']['ref'] != target:
                 raise ValueError('Existing proposal targets a different base')
             if pull['state'] == 'closed' and not pull.get('merged'):
                 raise ValueError('Upgrade was declined; do not reopen automatically')
@@ -62,7 +63,7 @@ def proposal(release, consumer, clone, artifact, request=api):
                     'commit', '-m', 'Upgrade shared archive platform to ' + release['version']], cwd=clone, check=True)
     subprocess.run(['git', 'push', 'origin', branch], cwd=clone, check=True)
     result = request(base + '/pulls', 'POST', {
-        'base': metadata['default_branch'], 'head': branch,
+        'base': target, 'head': branch,
         'title': 'Upgrade shared archive platform to ' + release['version'],
         'body': 'Updates the frontend lock, immutable engine digest and compatibility receipt together.\n\n'
                 'Consumer checks passed in the isolated proposal checkout. Hosted checks and private qualification remain required. '
@@ -77,16 +78,21 @@ def main():
     parser.add_argument('--consumer', required=True)
     parser.add_argument('--release', type=Path, required=True)
     parser.add_argument('--package-artifact', type=Path, required=True)
+    parser.add_argument('--base-ref', help='Explicit reviewed adoption branch for a stacked proposal; defaults to the repository default branch')
     args = parser.parse_args()
     registry = json.loads(args.registry.read_text())
     consumer = next(c for c in registry['consumers'] if c['repository'] == args.consumer)
     release = json.loads(args.release.read_text())
     if consumer['adoption'] != 'package':
         raise SystemExit('Consumer package adoption is pending')
+    if args.base_ref:
+        subprocess.run(['git', 'check-ref-format', '--branch', args.base_ref], check=True, stdout=subprocess.DEVNULL)
     with tempfile.TemporaryDirectory(prefix='archive-upgrade-') as work:
         clone = Path(work) / 'consumer'
         subprocess.run(['git', 'clone', '--quiet', 'https://git.subcult.tv/' + consumer['repository'] + '.git', str(clone)], check=True)
-        print(proposal(release, consumer, clone, args.package_artifact.resolve()) or 'Release already applied; no PR')
+        if args.base_ref:
+            subprocess.run(['git', 'switch', '--detach', 'origin/' + args.base_ref], cwd=clone, check=True)
+        print(proposal(release, consumer, clone, args.package_artifact.resolve(), base_ref=args.base_ref) or 'Release already applied; no PR')
 
 
 if __name__ == '__main__':
