@@ -27,9 +27,11 @@ separate reviewed change with complete donor history retained.
 
 Release 0.2.1 passed hosted run 12652. Its verified receipt is
 `docs/releases/release-0.2.1.json`; it binds the exact source, registry tarball and
-engine digest. Shared 0.2.2 is a new candidate with bounded slow audio resolution
-and readable request errors. Its hosted release, automated consumer proposals
-and actual private adoption must be qualified before selection.
+engine digest. Release 0.2.2 passed hosted run 12680 from source
+`17565d01903c019ba6610943ce5f1ac90910e93b`. Its registry package matches the
+verified manifest in `docs/releases/release-0.2.2.json`; the new release adds
+bounded slow audio resolution and readable request errors. Automated consumer
+proposals and actual private adoption must be qualified before selection.
 
 For each selected product, record the final package version, source revision,
 effective frontend image and backend image/digest, database identity, storage
