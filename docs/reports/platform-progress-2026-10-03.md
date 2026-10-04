@@ -27,7 +27,9 @@ owners remain active. The temporary video proof apps are isolated on Kuznya with
 separate metadata databases and no acquisition workers or media mounts.
 
 Continue in dependency order from the [platform roadmap](../plans/0003-multimedia-roadmap.md).
-The bounded shared video propagation gate is qualified. Next are catalog/policy, print/audio,
+The bounded shared video propagation gate is qualified. PR #63 adds the scoped
+metadata catalog and live video projection; full isolated verification and final
+source-file checks passed. Next are representation policy, print/audio,
 all-brand adoption, migration/recovery and private cross-brand qualification.
 Milestone 6 records a concrete public rollout decision after those gates; it does
 not implicitly authorize deployment or additional media acquisition.

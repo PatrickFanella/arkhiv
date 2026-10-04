@@ -41,7 +41,7 @@ func load(p string, v any) error {
 }
 func run() error {
 	if len(os.Args) < 2 {
-		return fmt.Errorf("usage: vhness migrate|collection|review-budget|review-library|plan-replay|import|import-item|fetch|inspect|acquire|audit|review|schedule|discover|refresh|report|seed|serve|healthcheck")
+		return fmt.Errorf("usage: vhness migrate|collection|review-budget|review-library|plan-replay|import|import-item|import-catalog|review-transport|fetch|inspect|acquire|audit|review|schedule|discover|refresh|report|seed|serve|healthcheck")
 	}
 	cmd := os.Args[1]
 	if cmd == "healthcheck" {
@@ -59,6 +59,7 @@ func run() error {
 	}
 	f := flag.NewFlagSet(cmd, flag.ContinueOnError)
 	id := f.String("id", "", "source item identity")
+	representation := f.String("representation", "", "catalog representation identity")
 	scope := os.Getenv("VHNESS_COLLECTION")
 	collection := f.String("collection", env("VHNESS_COLLECTION", domain.DemocracyNow), "collection identity")
 	file := f.String("file", "", "JSON input")
@@ -108,6 +109,28 @@ func run() error {
 		}
 	}
 	switch cmd {
+	case "import-catalog":
+		var item domain.CatalogItem
+		if err := load(*file, &item); err != nil {
+			return err
+		}
+		if scope != "" {
+			for _, c := range item.Collections {
+				if c != scope {
+					return fmt.Errorf("catalog mapping outside configured scope")
+				}
+			}
+		}
+		return d.InsertCatalog(ctx, item, *notes)
+	case "review-transport":
+		var input struct {
+			Review       domain.TransportReview      `json:"review"`
+			Preservation domain.PreservationApproval `json:"preservation"`
+		}
+		if err := load(*file, &input); err != nil {
+			return err
+		}
+		return d.ReviewTransport(ctx, *id, *representation, *collection, input.Review, input.Preservation)
 	case "migrate":
 		return d.Migrate(ctx, env("VHNESS_MIGRATIONS", "../migrations"))
 	case "collection":

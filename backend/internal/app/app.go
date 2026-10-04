@@ -76,6 +76,10 @@ func (s *Server) Handler() http.Handler {
 		write(w, 200, map[string]string{"status": "ready"})
 	})
 	mux.HandleFunc("GET /api/episodes", s.list)
+	mux.HandleFunc("GET /api/catalog/v1/items", s.mixedCatalog)
+	mux.HandleFunc("GET /api/catalog/v1/items/{id}", s.mixedCatalog)
+	mux.HandleFunc("GET /api/catalog/v1/items/{id}/representations/{representation}/resolve", s.resolveRepresentation)
+	mux.HandleFunc("GET /api/catalog/v1/items/{id}/representations/{representation}/media", s.representationMedia)
 	mux.HandleFunc("GET /api/collections", func(w http.ResponseWriter, r *http.Request) {
 		collections, err := s.DB.Collections(r.Context())
 		if err != nil {
