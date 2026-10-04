@@ -57,7 +57,9 @@ def proposal(release, consumer, clone, artifact, request=api, base_ref=None):
             return pull['html_url']
     subprocess.run(['git', 'switch', '-c', branch], cwd=clone, check=True)
     prepare(clone, consumer, release, artifact)
-    files = [consumer[key] for key in ('package_file', 'lock_file', 'release_file', 'engine_file')]
+    files = [consumer[key] for key in ('package_file', 'lock_file', 'release_file')]
+    if consumer.get('mode', 'platform') == 'platform':
+        files.append(consumer['engine_file'])
     subprocess.run(['git', 'add', '--', *files], cwd=clone, check=True)
     subprocess.run(['git', '-c', 'user.name=SUBCULT Agent', '-c', 'user.email=info@subcult.tv', '-c', 'commit.gpgsign=false',
                     'commit', '-m', 'Upgrade shared archive platform to ' + release['version']], cwd=clone, check=True)
@@ -65,7 +67,9 @@ def proposal(release, consumer, clone, artifact, request=api, base_ref=None):
     result = request(base + '/pulls', 'POST', {
         'base': target, 'head': branch,
         'title': 'Upgrade shared archive platform to ' + release['version'],
-        'body': 'Updates the frontend lock, immutable engine digest and compatibility receipt together.\n\n'
+        'body': ('Updates the frontend package, lockfile and release provenance receipt; the consumer-owned backend remains unchanged.\n\n'
+                 if consumer.get('mode', 'platform') == 'components' else
+                 'Updates the frontend lock, immutable engine digest and compatibility receipt together.\n\n') +
                 'Consumer checks passed in the isolated proposal checkout. Hosted checks and private qualification remain required. '
                 'This PR does not deploy the consumer.\n\nSource: `' + release['source_revision'] + '`; package SHA-256: `' + release['package_sha256'] + '`.',
     })

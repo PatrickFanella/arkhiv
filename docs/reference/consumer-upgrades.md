@@ -1,11 +1,12 @@
 # Reviewed consumer upgrades
 
-[consumer-registry.json](consumer-registry.json) selects the repositories and
-dependency files managed by the shared platform. The initial video consumers are
-marked `pending`: their current frontends still use exported source and their
-deployment files do not yet consume the shared engine digest. Package adoption
-must create the release receipt, exact package dependency and effective engine
-configuration before an entry becomes `package`.
+[consumer-registry.json](consumer-registry.json) selects repositories and dependency
+files managed by the shared platform. `platform` consumers pin the package,
+release receipt and shared engine together. Explicit `components` consumers pin
+the package and its release provenance while retaining their own backend. Their
+registry entry must omit `engine_file`; an ambiguous mode or engine pin is rejected.
+A release receipt records the upstream artifact, not a claim that its engine is
+running in a component consumer.
 
 `scripts/upgrade_consumer.py` prepares an upgrade in a clean isolated checkout.
 It requires the release manifest and the packed registry artifact. The manifest
@@ -13,9 +14,9 @@ must come from a successful reviewed release; checksum validation binds the
 artifact to that receipt, but does not independently establish its publisher.
 It rejects unsupported APIs/media/configuration, changed registry ownership,
 major upgrades, downgrades, reused versions and changes to existing migrations.
-The package dependency, pnpm lock, engine digest and compatibility receipt change
-together. Consumer checks run before proposal creation. Failure restores those
-four files; use a disposable checkout because checks may create build outputs.
+The package dependency, pnpm lock and release receipt change together. Platform
+consumers also update their exact engine digest. Consumer checks run before
+proposal creation. Failure restores every managed file; use a disposable checkout because checks may create build outputs.
 The checks require a task-owned disposable database when `make verify` does.
 
 `scripts/propose_consumer_upgrade.py` clones only the selected registered consumer
@@ -67,6 +68,10 @@ checks compatibility and consumer builds before committing; repeat runs reuse
 the matching proposal. It never merges or deploys. A dispatch with
 `adoption_refs=true` stacks on the exact qualified adoption revisions. A moved
 adoption branch is rejected until its evidence is refreshed.
+
+Version 0.2.1 passed hosted release run 12652 at source
+`04eb1f80a0e5d5bc92f83c0030204cafee131d96`. Its registry tarball matched the
+hosted receipt; the engine digest is recorded in `docs/releases/release-0.2.1.json`.
 
 Qualified release runs: 0.1.0 is VHNESS run 12470, source `d2a005f0ecd2a81614f1009abf2473832cc1afaf`;
 0.1.1 is run 12509, source `8827514b215162e5536f2b83a65681ba70e38f30`.
