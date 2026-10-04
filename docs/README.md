@@ -9,6 +9,7 @@ This directory is the current project knowledge base.
 - [Private pilot qualification, October 2](reports/pilot-qualification-20261002.md)
 - [Second real archive qualification, October 3](reports/second-archive-qualification-20261003.md)
 - [Public release qualification, October 3](reports/public-release-qualification-20261003.md)
+- [Full Anarchist source qualification, October 3](reports/full-anarchist-qualification-20261003.md)
 - [Managed preservation runbook](runbooks/managed-operations.md)
 - [Source updates and review](runbooks/source-updates.md)
 - [Pilot operations and recovery](runbooks/pilot-operations.md)
