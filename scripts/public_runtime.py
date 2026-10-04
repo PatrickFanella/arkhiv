@@ -14,6 +14,7 @@ from pathlib import Path
 import re
 import shlex
 import subprocess
+import tempfile
 
 
 def run(args, **kwargs):
@@ -63,11 +64,16 @@ def main():
     if args.action == "monitor":
         observations = []
         for site in cfg["sites"]:
-            request = subprocess.run(
-                ["curl", "--silent", "--show-error", "--max-time", "30", "--retry", "2",
-                 "--retry-delay", "2", "--retry-max-time", "90", "--write-out", "\n%{http_code}",
-                 site["url"]], capture_output=True, text=True)
-            body, _, status = request.stdout.rpartition("\n")
+            # A seekable output file lets curl discard a failed response before
+            # retrying; stdout would concatenate failed and successful JSON.
+            with tempfile.TemporaryDirectory(prefix="monitor-response-", dir=state) as temporary:
+                response = Path(temporary) / "body.json"
+                request = subprocess.run(
+                    ["curl", "--silent", "--show-error", "--max-time", "30", "--retry", "2",
+                     "--retry-delay", "2", "--retry-max-time", "90", "--output", str(response),
+                     "--write-out", "%{http_code}", site["url"]], capture_output=True, text=True)
+                body = response.read_text() if response.exists() else ""
+            status = request.stdout.strip()
             if request.returncode or status != "200":
                 failure = {**result, "url": site["url"], "http_status": status,
                            "transport_exit": request.returncode}
