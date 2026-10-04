@@ -11,8 +11,8 @@ and 17 matching OCR companions from Internet Archive's `ZineArchive` item.
 The [private pilot qualification](docs/reports/pilot-qualification-20261002.md) passed:
 all originals were verified, the independent NUC backup was restored, and on-site
 reading/search/downloads worked with Archive.org blocked. The initial implementation merged in PR #19; hardening and the qualification
-report merged in [PR #20](https://git.subcult.tv/subculture-collective/arkhiv/pulls/20).
-The owner-approved first collection is live at [arkhiv.subcult.tv](https://arkhiv.subcult.tv). Its 26 reviewed PDF variants are available for public reading/downloads with unknown rights, source attribution, correction/removal contact and no asserted reuse license.
+report merged in [PR #20](https://git.subcult.tv/subculture-collective/arkhiv-alpha/pulls/20).
+The owner-approved first collection is live at [arkhiv.subcult.tv](https://arkhiv.subcult.tv). Its full selected source now has 699 documents and 700 PDF variants available for public reading/downloads with unknown rights, source attribution, correction/removal contact and no asserted reuse license.
 
 The [next delivery plan](docs/plans/0002-managed-archive-and-public-release.md)
 covers merged-revision rollout, scheduled preservation and active-source updates,
@@ -66,7 +66,7 @@ metadata remains independent of editorial overrides.
 
 Source code is GPL-3.0-only; that license does not apply to acquired documents.
 
-The public site uses `https://arkhiv.subcult.tv`, with correction and removal requests directed to `info@subcult.tv`. Only the exact reviewed first-archive variants are public approved; A-Info remains private. The [roadmap](docs/plans/0002-managed-archive-and-public-release.md) records access review, activation and qualification separately.
+The public site uses `https://arkhiv.subcult.tv`, with correction and removal requests directed to `info@subcult.tv`. The full selected Anarchist source is public approved under its verified automatic policy; A-Info remains private. The [roadmap](docs/plans/0002-managed-archive-and-public-release.md) records access review, activation and qualification separately.
 Managed job runners are documented in [the operations runbook](docs/runbooks/managed-operations.md).
 
 ## Reviewed public access
@@ -102,7 +102,7 @@ The public entry page includes Open Graph and Twitter summary metadata. Document
 
 ## Catalog design
 
-The owner selected **A — Front Cover** from the [inspiration studies](docs/design/catalog-previews.md). The interface now displays real catalog metadata and local cover scans in the selected layout, with existing search, reading, downloads and rights information. The comparison prototypes are removed. This repository change is separate from deployment.
+The owner selected **A — Front Cover** from the [inspiration studies](docs/design/catalog-previews.md). The interface now displays real catalog metadata and local cover scans in the selected layout, with existing search, reading, downloads and rights information. The comparison prototypes are removed. The selected Front Cover frontend is deployed to the existing public service. The complete source qualification and rollback are recorded in the expansion report.
 
 ## Full Anarchist collection and automatic access
 
@@ -112,4 +112,4 @@ The full source PDFs total 3,510,725,119 bytes before OCR companions. Explicit c
 
 `approve-automatic --config PATH` applies the recorded policy to the exact collection/source item after original hashes and successful reader manifests are verified. It writes exact variant/hash decision manifests and events, asserts no reuse license, and respects revocations, document withdrawals and source holds/rejections. Repeat runs add no duplicate approval events. Scheduled source acquisition applies the same policy after extraction. A collection without this explicit policy continues to require individual public approval.
 
-Live expansion, qualification and independent backup are tracked in [issue #52](https://git.subcult.tv/subculture-collective/arkhiv/issues/52) and the [expansion plan](docs/plans/0004-full-anarchist-collection.md). A committed source selection does not establish that all files have been acquired or published.
+All 700 selected PDFs and 468 usable OCR companions are acquired and verified, totaling 3,541,315,927 bytes. All PDFs passed extraction; the catalog contains 12,732 pages. All 700 download hashes and first-page reader checks passed on the public site. The independent NUC snapshot passed file/dump verification and isolated catalog replay. The [full-source qualification report](docs/reports/full-anarchist-qualification-20261003.md) records those proof boundaries, rollback and operating limits. See [issue #52](https://git.subcult.tv/subculture-collective/arkhiv-alpha/issues/52) and the [expansion plan](docs/plans/0004-full-anarchist-collection.md).

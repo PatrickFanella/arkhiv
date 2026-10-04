@@ -46,6 +46,15 @@ keep receipts and incomplete directories for investigation. To revert this autom
 stop only `arkhiv-{audit,backup,retention,monitor,update,restore}.timer` and retain archive, database,
 independent backups and prior application images.
 
+For the full Anarchist corpus, configure `timeout_seconds: 14400`; the runner caps
+the budget at four hours. Install scoped `collection-deadline.conf` service
+drop-ins with `TimeoutStartSec=4h10min` for audit, backup, restore and update, then
+run `systemctl daemon-reload` and verify `TimeoutStartUSec` for each unit. The
+default template's 20-minute limit is suitable only for the smaller pilot. The
+separate Riot Grrrl service uses a 1,800-second runner budget and 35-minute
+drop-ins. Keep monitor and retention limits unchanged. Existing running jobs keep
+the budget loaded at startup; installing a runner does not extend their deadline.
+
 NUC provides another host and disk, but shares the homelab's physical risk. A future
 off-site option is an encrypted copy of complete snapshots to an operator-selected
 remote storage destination, with independent checksum verification and a tested

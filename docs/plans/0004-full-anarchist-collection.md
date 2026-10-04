@@ -1,6 +1,6 @@
 # Full Anarchist source and verified automatic access
 
-Owner decision, October 3, 2026: automatically approve all Anarchist collection documents for archival reading/downloads. Retain unknown rights, source attribution, correction/removal contact and no asserted reuse license. Track [issue #52](https://git.subcult.tv/subculture-collective/arkhiv/issues/52).
+Owner decision, October 3, 2026: automatically approve all Anarchist collection documents for archival reading/downloads. Retain unknown rights, source attribution, correction/removal contact and no asserted reuse license. Track [issue #52](https://git.subcult.tv/subculture-collective/arkhiv-alpha/issues/52).
 
 The measured source item `ZineArchive` has 700 unrestricted PDFs totaling 3,510,725,119 bytes. Select all exact filenames while retaining the 25 existing pilot document keys and their 26 variants. Added filename-derived titles are provisional; do not infer creators, publication dates or grouping. Existing source/editorial separation, immutable originals and backup destinations remain.
 
@@ -15,3 +15,5 @@ The source preflight found two zero-byte OCR companions (`ars-print-pdf-final1_d
 The all-document reader probe disposes each downloaded response after hashing so qualification does not retain the entire multi-gigabyte corpus in memory.
 
 Scheduled acquisition filters PDF filenames before applying its 500-event batch bound. Non-PDF source files remain in the review inventory and cannot permanently fill the acquisition page ahead of eligible PDFs. The regression check places 500 older non-PDF events ahead of a reviewed PDF.
+
+Acquisition, extraction, public reading/download checks and independent backup verification are complete: 699 published documents, 700 approved variants and 12,732 pages. The [qualification report](../reports/full-anarchist-qualification-20261003.md) records the full reader/backup gates, deployed Front Cover layout, reader policy correction, operating deadlines and capacity follow-up.
