@@ -11,6 +11,13 @@ async function main() {
   let sourceRequests = 0;
   await context.route(/https?:\/\/(?:[^/]+\.)?archive\.org\//, route => { sourceRequests++; return route.abort(); });
   const page = await context.newPage();
+  const messages = [];
+  const pending = new Map();
+  page.on('console', m => { if (messages.length < 100) messages.push({type:m.type(),text:m.text()}); });
+  page.on('pageerror', error => { if (messages.length < 100) messages.push({type:'pageerror',text:String(error)}); });
+  page.on('request', request => pending.set(request, {url:request.url(),started:Date.now()}));
+  page.on('requestfinished', request => pending.delete(request));
+  page.on('requestfailed', request => pending.delete(request));
   const get = async path => {
     const response = await context.request.get(origin + path);
     if (!response.ok()) throw new Error('restored request failed: ' + response.status());
@@ -42,6 +49,7 @@ async function main() {
     const renderedCollections = new Set();
     for (const document of documents) {
       for (const variant of document.variants) {
+        messages.length = 0;
         const response = await get('/api/assets/' + variant.id + '?download=1');
         const data = await response.body();
         if (data.length !== variant.size || createHash('sha256').update(data).digest('hex') !== variant.sha256) throw new Error('download integrity mismatch');
@@ -53,7 +61,7 @@ async function main() {
           const c = document.querySelector('canvas');
           return c && c.width > 0 && c.height > 0 && !document.querySelector('.reader [role="status"]') && !document.querySelector('.reader [role="alert"]');
         }, null, { timeout: 30000 }).catch(async error => {
-          fs.writeFileSync('/proof/render-failure.json',JSON.stringify({url:page.url(),document:document.id,variant:variant.id,filename:variant.filename,downloads,renders,state:await page.locator('.reader').innerText()},null,2));
+          fs.writeFileSync('/proof/render-failure.json',JSON.stringify({url:page.url(),document:document.id,variant:variant.id,filename:variant.filename,downloads,renders,state:await page.locator('.reader').innerText(),messages,pending:[...pending.values()]},null,2));
           await page.screenshot({path:'/proof/render-failure.png',fullPage:true});
           throw error;
         });

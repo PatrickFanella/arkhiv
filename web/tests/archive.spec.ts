@@ -146,3 +146,15 @@ test("search snippets wrap long source tokens on narrow screens", async ({ page 
   await expect(page.locator(".search-hit").first()).toContainText("unbrokensourcetoken");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
 });
+
+test("reader policy permits the local WebAssembly image decoder", async ({ page }) => {
+  const response = await page.goto("/");
+  const policy = response?.headers()["content-security-policy"] || "";
+  expect(policy).toContain("script-src 'self' 'wasm-unsafe-eval'");
+  expect(policy).not.toContain("'unsafe-eval'");
+  expect(await page.evaluate(async () => {
+    // An empty valid module exercises the browser's compilation policy.
+    await WebAssembly.compile(new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0]));
+    return true;
+  })).toBeTruthy();
+});
