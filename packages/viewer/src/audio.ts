@@ -4,3 +4,4 @@ export { audioURL, radioOffset, setBounds, currentTrack, clock } from './audioMo
 export type { AudioAsset, Recording, Track, SetList } from './audioModel.js';
 export { useAudioStation } from './useAudioStation.js';
 export type { AudioStation, StationSession } from './useAudioStation.js';
+export { useAudioControls } from './useAudioControls.js';
