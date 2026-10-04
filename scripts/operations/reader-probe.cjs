@@ -8,6 +8,9 @@ async function main() {
   const expected = JSON.parse(fs.readFileSync('/proof/expected.json', 'utf8'));
   const browserBatchSize = Number(process.env.PROBE_BROWSER_BATCH_SIZE || 25);
   if (!Number.isInteger(browserBatchSize) || browserBatchSize < 1 || browserBatchSize > 25) throw new Error('invalid browser batch size');
+  // Large scans and PDFs with repaired cross-reference tables can take longer
+  // than the small fixture. Keep every page check within a two-minute bound.
+  const renderTimeoutMs = 120000;
   let browser = await chromium.launch({ headless: true });
   let context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   let sourceRequests = 0;
@@ -78,7 +81,7 @@ async function main() {
         await page.waitForFunction(() => {
           const c = document.querySelector('canvas');
           return c && c.width > 0 && c.height > 0 && !document.querySelector('.reader [role="status"]') && !document.querySelector('.reader [role="alert"]');
-        }, null, { timeout: 30000 }).catch(async error => {
+        }, null, { timeout: renderTimeoutMs }).catch(async error => {
           fs.writeFileSync('/proof/render-failure.json',JSON.stringify({url:page.url(),document:document.id,variant:variant.id,filename:variant.filename,downloads,renders,state:await page.locator('.reader').innerText({timeout:1000}).catch(()=>'reader unavailable'),messages,pending:[...pending.values()]},null,2));
           await page.screenshot({path:'/proof/render-failure.png',fullPage:true}).catch(()=>{});
           throw error;
@@ -132,7 +135,7 @@ async function main() {
     }
     const blocked = await page.evaluate(async () => { try { await fetch('https://archive.org/metadata/ZineArchive'); return false; } catch { return true; } });
     if (!blocked) throw new Error('source access was not blocked');
-    const result = { documents: documents.length, downloads, renders, browserBatchSize, browserRestarts, sourceBlocked: blocked, sourceRequests, collections: [...renderedCollections], deniedRoutes:(expected.denied||[]).length, narrow:!!expected.narrow };
+    const result = { documents: documents.length, downloads, renders, renderTimeoutMs, browserBatchSize, browserRestarts, sourceBlocked: blocked, sourceRequests, collections: [...renderedCollections], deniedRoutes:(expected.denied||[]).length, narrow:!!expected.narrow };
     fs.writeFileSync('/proof/reader.json', JSON.stringify(result, null, 2));
     console.log(JSON.stringify(result));
   } finally { await browser.close(); }
