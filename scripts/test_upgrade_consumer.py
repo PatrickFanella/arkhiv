@@ -4,6 +4,7 @@ from pathlib import Path
 import subprocess
 import tempfile
 import unittest
+from unittest import mock
 
 from upgrade_consumer import prepare, validate
 from propose_consumer_upgrade import proposal
@@ -125,6 +126,36 @@ class UpgradeTests(unittest.TestCase):
             self.assertEqual(proposal(self.release, self.consumer, self.root, self.artifact, request),
                              'https://git.subcult.tv/example/pulls/1')
         self.assertEqual(subprocess.check_output(['git', 'status', '--porcelain'], cwd=self.root), b'')
+
+    def test_timeout_after_creation_reconciles_exact_proposal_without_second_post(self):
+        self.consumer['repository'] = 'subculture-collective/example'
+        branch = 'archive-upgrade/v0.1.1-' + 'b' * 40
+        for outcome in ['matching', 'missing', 'different-receipt', 'different-base', 'declined']:
+            calls = []
+            def request(path, method='GET', payload=None):
+                calls.append((path, method))
+                if path == '/user':
+                    return {'login': 'subcult-agent'}
+                if method == 'POST':
+                    raise TimeoutError('response lost after request')
+                if '/pulls?' in path:
+                    if not any(method == 'POST' for _, method in calls) or outcome == 'missing':
+                        return []
+                    return [{'head': {'ref': branch}, 'base': {'ref': 'other' if outcome == 'different-base' else 'main'},
+                             'state': 'closed' if outcome == 'declined' else 'open', 'merged': False,
+                             'html_url': 'https://git.subcult.tv/example/pulls/1'}]
+                if '/contents/' in path:
+                    value = self.current if outcome == 'different-receipt' else self.release
+                    return {'content': base64.b64encode(json.dumps(value).encode()).decode()}
+                return {'default_branch': 'main'}
+            with self.subTest(outcome=outcome), mock.patch('propose_consumer_upgrade.prepare'), mock.patch('propose_consumer_upgrade.subprocess.run'):
+                if outcome == 'matching':
+                    self.assertEqual(proposal(self.release, self.consumer, self.root, self.artifact, request),
+                                     'https://git.subcult.tv/example/pulls/1')
+                else:
+                    with self.assertRaises(TimeoutError if outcome == 'missing' else ValueError):
+                        proposal(self.release, self.consumer, self.root, self.artifact, request)
+            self.assertEqual(sum(method == 'POST' for _, method in calls), 1)
 
     def test_incompatible_release_cannot_create_proposal(self):
         self.consumer['repository'] = 'subculture-collective/example'
