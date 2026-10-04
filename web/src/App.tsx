@@ -4,6 +4,7 @@ import { request } from './model';
 import { useViewer } from './useViewer';
 import { ChannelPanel, Library, Screen } from './Viewer';
 import './styles.css';
+import MixedArchive from './MixedArchive';
 
 function Archive({ brand }: { brand: Brand }) {
   const viewer = useViewer(brand.collection);
@@ -27,12 +28,17 @@ export default function App() {
     const controller = new AbortController();
     void Promise.all([request<unknown>('/site.json', controller.signal), request<{ api_version: string; collection: string }>('/api/version', controller.signal)]).then(([config, engine]) => {
       const parsed = parseBrand(config);
-      if (engine.api_version !== '1' || (engine.collection && engine.collection !== parsed.collection)) throw new Error('This archive is not configured for this collection.');
+      if (engine.api_version !== '1' || (parsed.interface !== 'catalog' && engine.collection && engine.collection !== parsed.collection)) throw new Error('This archive is not configured for this collection.');
       setBrand(parsed);
     }).catch(reason => { if (!controller.signal.aborted) setError(reason instanceof Error ? reason.message : 'The archive is temporarily unavailable.'); });
     return () => controller.abort();
   }, []);
   if (error) return <main className="configuration"><h1>Archive unavailable</h1><p role="alert">{error}</p><button onClick={() => location.reload()}>Try again</button></main>;
   if (!brand) return <main><p role="status">Opening the archive…</p></main>;
-  return <Archive brand={brand} />;
+  return parsedArchive(brand);
+}
+
+function parsedArchive(brand: Brand) {
+  if (brand.interface === 'catalog') return <MixedArchive brand={brand}/>;
+  return <Archive brand={brand}/>;
 }
