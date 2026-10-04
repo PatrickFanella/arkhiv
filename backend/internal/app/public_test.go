@@ -1,0 +1,203 @@
+package app
+
+import (
+	"context"
+	"encoding/json"
+	"net/http/httptest"
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+	"time"
+
+	"git.subcult.tv/subculture-collective/vhness/internal/catalog"
+	"git.subcult.tv/subculture-collective/vhness/internal/domain"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+func TestPublicPublicationIntegration(t *testing.T) {
+	url := os.Getenv("TEST_DATABASE_URL")
+	if url == "" {
+		t.Skip("TEST_DATABASE_URL absent; public integration unverified")
+	}
+	ctx := context.Background()
+	admin, err := catalog.Open(ctx, url)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer admin.Pool.Close()
+	schema := "public_http_" + time.Now().UTC().Format("20060102150405")
+	name := pgx.Identifier{schema}.Sanitize()
+	if _, err = admin.Pool.Exec(ctx, "CREATE SCHEMA "+name); err != nil {
+		t.Fatal(err)
+	}
+	defer admin.Pool.Exec(ctx, "DROP SCHEMA "+name+" CASCADE")
+	config, err := pgxpool.ParseConfig(url)
+	if err != nil {
+		t.Fatal(err)
+	}
+	config.ConnConfig.RuntimeParams["search_path"] = schema
+	pool, err := pgxpool.NewWithConfig(ctx, config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer pool.Close()
+	operator := &catalog.DB{Pool: pool}
+	if err = operator.Migrate(ctx, "../../../migrations"); err != nil {
+		t.Fatal(err)
+	}
+	c := domain.Collection{ID: "public-fixture", Policy: domain.Local, Budget: 1 << 20, Reserve: 1}
+	if err = operator.Collection(ctx, c); err != nil {
+		t.Fatal(err)
+	}
+	root := t.TempDir()
+	content := []byte("synthetic public-boundary fixture bytes")
+	hash := domain.Digest(content)
+	if err = os.WriteFile(filepath.Join(root, "original.pdf"), content, 0600); err != nil {
+		t.Fatal(err)
+	}
+	raw := []byte(`{"files":[{"name":"original.pdf"}]}`)
+	if err = operator.Snapshot(ctx, "print-source", raw, 200, "", "", nil); err != nil {
+		t.Fatal(err)
+	}
+	rep := domain.Representation{ID: "pdf", Media: domain.PrintMedia, SourceItemID: "print-source", Snapshot: domain.Digest(raw), File: "original.pdf", Collections: []string{c.ID}, Extension: domain.MediaExtension{Print: &domain.PrintExtension{DocumentID: "print", Variant: "original", Pages: 1}}}
+	item := domain.CatalogItem{ID: "print", Title: "Reviewed fixture print", Collections: []string{c.ID}, Representations: []domain.Representation{rep}}
+	if err = operator.InsertCatalog(ctx, item, "Private mapping"); err != nil {
+		t.Fatal(err)
+	}
+	review := domain.TransportReview{Snapshot: rep.Snapshot, Files: []string{rep.File}, Read: true, Download: true, Notes: "Private original review"}
+	approval := domain.PreservationApproval{Snapshot: rep.Snapshot, IndependentRecoverySHA256: domain.Digest([]byte("fixture restore")), Manifest: []domain.LocalOriginal{{File: rep.File, Bytes: int64(len(content)), SHA256: hash, Path: "original.pdf"}}}
+	if err = operator.ReviewTransport(ctx, item.ID, rep.ID, c.ID, review, approval); err != nil {
+		t.Fatal(err)
+	}
+	videoCollection := domain.Collection{ID: "video-fixture", Policy: domain.Stream}
+	if err = operator.Collection(ctx, videoCollection); err != nil {
+		t.Fatal(err)
+	}
+	video := domain.Episode{ID: "video", CollectionID: videoCollection.ID, Title: "Reviewed fixture video", Files: []domain.File{{Name: "video.mp4", Bytes: 100, Duration: 10}, {Name: "other.mp4", Bytes: 100, Duration: 10}}}
+	videoRaw := []byte(`{"files":[{"name":"video.mp4"},{"name":"other.mp4"}]}`)
+	if err = operator.Snapshot(ctx, video.ID, videoRaw, 200, "", "", &video); err != nil {
+		t.Fatal(err)
+	}
+	decision := domain.Decision{Published: true, Playback: true, Channel: true, File: "video.mp4", Notes: "Private playback"}
+	if err = operator.Decide(ctx, video.ID, decision); err != nil {
+		t.Fatal(err)
+	}
+	public := &catalog.DB{Pool: pool, PublicOnly: true}
+	server := &Server{DB: public, Media: root, Collections: domain.CollectionScope{c.ID, videoCollection.ID}}
+	get := func(path string) *httptest.ResponseRecorder {
+		w := httptest.NewRecorder()
+		server.Handler().ServeHTTP(w, httptest.NewRequest("GET", path, nil))
+		return w
+	}
+	count := func(want int) {
+		t.Helper()
+		w := get("/api/catalog/v1/items")
+		var p catalog.CatalogPage
+		if err := json.Unmarshal(w.Body.Bytes(), &p); err != nil || w.Code != 200 || p.Total != want {
+			t.Fatalf("public catalog: %d %s", w.Code, w.Body.String())
+		}
+	}
+	count(0)
+	printPath := "/api/catalog/v1/items/print/representations/pdf"
+	for _, path := range []string{"/api/episodes/video", "/api/playback/video", "/api/media/video", printPath + "/resolve?collection=" + c.ID, printPath + "/media?collection=" + c.ID, printPath + "/print?collection=" + c.ID, printPath + "/cover?collection=" + c.ID, printPath + "/search?q=fixture&collection=" + c.ID, "/api/status?collection=" + c.ID} {
+		if w := get(path); w.Code != 404 {
+			t.Fatalf("private path exposed: %s: %d %s", path, w.Code, w.Body.String())
+		}
+	}
+	if w := get("/api/catalog/v1/collections"); strings.Contains(w.Body.String(), c.ID) || strings.Contains(w.Body.String(), videoCollection.ID) {
+		t.Fatal("private collections exposed", w.Body.String())
+	}
+	review.Public = true
+	if operator.ReviewTransport(ctx, item.ID, rep.ID, c.ID, review, approval) == nil {
+		t.Fatal("private review path silently approved publication")
+	}
+	if err = operator.ReviewPublicTransport(ctx, item.ID, rep.ID, c.ID, review, approval); err != nil {
+		t.Fatal(err)
+	}
+	count(1)
+	if w := get(printPath + "/resolve?collection=" + c.ID); w.Code != 200 {
+		t.Fatal("approved print resolution", w.Code, w.Body.String())
+	}
+	if w := get(printPath + "/media?collection=" + c.ID); w.Code != 200 || string(content) != w.Body.String() {
+		t.Fatal("approved original bytes", w.Code, w.Body.String())
+	}
+	if err = operator.ReviewPublicVideo(ctx, video.ID, true, "Owner-approved fixture publication"); err != nil {
+		t.Fatal(err)
+	}
+	count(2)
+	if w := get("/api/playback/video"); w.Code != 200 {
+		t.Fatal("approved source video", w.Code, w.Body.String())
+	}
+	privateVideo := video
+	privateVideo.ID = "private-future-video"
+	if err = operator.Snapshot(ctx, privateVideo.ID, []byte(`{"private_fixture":true,"files":[{"name":"video.mp4"}]}`), 200, "", "", &privateVideo); err != nil {
+		t.Fatal(err)
+	}
+	if err = operator.Decide(ctx, privateVideo.ID, decision); err != nil {
+		t.Fatal(err)
+	}
+	start := time.Date(2026, 10, 4, 0, 0, 0, 0, time.UTC)
+	schedule := domain.Schedule{Revision: "public-boundary", Programs: []domain.Program{
+		{EpisodeID: video.ID, File: decision.File, Policy: domain.Stream, Start: start, Duration: 10},
+		{EpisodeID: privateVideo.ID, File: decision.File, Policy: domain.Stream, Start: start.Add(10 * time.Second), Duration: 10},
+	}}
+	if err = operator.SaveSchedule(ctx, schedule); err != nil {
+		t.Fatal(err)
+	}
+	server.Clock = func() time.Time { return start.Add(time.Second) }
+	if w := get("/api/channel?collection=" + videoCollection.ID); w.Code != 200 || strings.Contains(w.Body.String(), privateVideo.ID) || strings.Contains(w.Body.String(), `"playing"`) {
+		t.Fatal("private future program exposed", w.Code, w.Body.String())
+	}
+	if w := get("/api/playback/" + privateVideo.ID); w.Code != 404 {
+		t.Fatal("private playback exposed", w.Code)
+	}
+	if err = operator.ReviewPublicVideo(ctx, video.ID, false, "Withdraw fixture publication"); err != nil {
+		t.Fatal(err)
+	}
+	count(1)
+	if w := get("/api/playback/video"); w.Code != 404 {
+		t.Fatal("revocation ignored", w.Code)
+	}
+	if err = operator.ReviewPublicVideo(ctx, video.ID, true, "Reapprove exact current source"); err != nil {
+		t.Fatal(err)
+	}
+	decision.File = "other.mp4"
+	if err = operator.Decide(ctx, video.ID, decision); err != nil {
+		t.Fatal(err)
+	}
+	count(1)
+	if w := get("/api/playback/video"); w.Code != 404 {
+		t.Fatal("selected file change retained publication", w.Code)
+	}
+	decision.File = "video.mp4"
+	if err = operator.Decide(ctx, video.ID, decision); err != nil {
+		t.Fatal(err)
+	}
+	if err = operator.Snapshot(ctx, video.ID, append(videoRaw, ' '), 200, "", "", &video); err != nil {
+		t.Fatal(err)
+	}
+	count(1)
+	if w := get("/api/episodes/video"); w.Code != 404 {
+		t.Fatal("source refresh retained old publication", w.Code)
+	}
+	newRaw := append(raw, ' ')
+	if err = operator.Snapshot(ctx, "print-source", newRaw, 200, "", "", nil); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = pool.Exec(ctx, "UPDATE catalog_representations SET source_hash=$1 WHERE item_id=$2", domain.Digest(newRaw), item.ID); err != nil {
+		t.Fatal(err)
+	}
+	count(0)
+	if w := get(printPath + "/media?collection=" + c.ID); w.Code != 404 {
+		t.Fatal("stale print approval served bytes", w.Code)
+	}
+	if p, err := operator.Catalog(ctx, catalog.CatalogQuery{Page: 1}); err != nil || p.Total != 3 {
+		t.Fatal("public filtering changed private catalog", err, p.Total)
+	}
+	server.Collections = nil
+	if w := get("/api/playback/video?collection=" + videoCollection.ID); w.Code != 404 {
+		t.Fatal("public server accepted unrestricted scope", w.Code)
+	}
+}

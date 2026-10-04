@@ -15,7 +15,10 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type DB struct{ Pool *pgxpool.Pool }
+type DB struct {
+	Pool       *pgxpool.Pool
+	PublicOnly bool
+}
 
 func Open(ctx context.Context, url string) (*DB, error) {
 	if url == "" {
@@ -29,7 +32,7 @@ func Open(ctx context.Context, url string) (*DB, error) {
 		p.Close()
 		return nil, err
 	}
-	return &DB{p}, nil
+	return &DB{Pool: p}, nil
 }
 func (d *DB) Migrate(ctx context.Context, dir string) error {
 	c, err := d.Pool.Acquire(ctx)
@@ -191,7 +194,7 @@ func (d *DB) entries(ctx context.Context, ids []string, summaries bool) (map[str
 	if summaries {
 		source = "e.source-'files'"
 	}
-	rows, err := d.Pool.Query(ctx, `SELECT `+source+`,e.decision,c.policy,e.source_hash,e.unavailable,e.local_path,e.local_sha256,e.local_file,e.local_snapshot FROM episodes e JOIN collections c ON c.id=e.collection_id WHERE ($1::text[] IS NULL OR e.id=ANY($1)) AND (NOT $2::boolean OR e.decision->>'published'='true')`, ids, summaries)
+	rows, err := d.Pool.Query(ctx, `SELECT `+source+`,e.decision,c.policy,e.source_hash,e.unavailable,e.local_path,e.local_sha256,e.local_file,e.local_snapshot FROM episodes e JOIN collections c ON c.id=e.collection_id WHERE ($1::text[] IS NULL OR e.id=ANY($1)) AND (NOT $2::boolean OR e.decision->>'published'='true') AND (NOT $3 OR EXISTS(SELECT 1 FROM episode_public_reviews p WHERE p.episode_id=e.id AND p.approved AND p.source_hash=e.source_hash AND p.file=e.decision->>'file'))`, ids, summaries, d.PublicOnly)
 	if err != nil {
 		return nil, err
 	}
@@ -263,7 +266,7 @@ func (d *DB) ScheduleWithinScope(ctx context.Context, s domain.Schedule, scope d
 		ids = append(ids, program.EpisodeID)
 	}
 	var foreign bool
-	err := d.Pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM unnest($1::text[]) requested(id) LEFT JOIN episodes e ON e.id=requested.id WHERE e.id IS NULL OR ($2::text[] IS NOT NULL AND NOT(e.collection_id=ANY($2))))`, ids, []string(scope)).Scan(&foreign)
+	err := d.Pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM unnest($1::text[]) requested(id) LEFT JOIN episodes e ON e.id=requested.id WHERE e.id IS NULL OR ($2::text[] IS NOT NULL AND NOT(e.collection_id=ANY($2))) OR ($3 AND NOT EXISTS(SELECT 1 FROM episode_public_reviews p WHERE p.episode_id=e.id AND p.approved AND p.source_hash=e.source_hash AND p.file=e.decision->>'file')))`, ids, []string(scope), d.PublicOnly).Scan(&foreign)
 	return !foreign, err
 }
 func (d *DB) Decide(ctx context.Context, id string, decision domain.Decision) error {
@@ -609,7 +612,7 @@ type CollectionSummary struct {
 }
 
 func (d *DB) Collections(ctx context.Context) ([]CollectionSummary, error) {
-	rows, err := d.Pool.Query(ctx, `SELECT c.id,c.policy,count(e.id),COALESCE((SELECT parsed->'metadata'->>'title' FROM snapshots WHERE item_id=COALESCE(NULLIF(c.source_item,''),c.id) AND parsed->'metadata'->>'title' IS NOT NULL ORDER BY created_at DESC LIMIT 1),c.id),COALESCE(NULLIF(c.source_item,''),c.id) FROM collections c JOIN episodes e ON e.collection_id=c.id AND e.decision->>'published'='true' GROUP BY c.id ORDER BY c.id`)
+	rows, err := d.Pool.Query(ctx, `SELECT c.id,c.policy,count(e.id),COALESCE((SELECT parsed->'metadata'->>'title' FROM snapshots WHERE item_id=COALESCE(NULLIF(c.source_item,''),c.id) AND parsed->'metadata'->>'title' IS NOT NULL ORDER BY created_at DESC LIMIT 1),c.id),COALESCE(NULLIF(c.source_item,''),c.id) FROM collections c JOIN episodes e ON e.collection_id=c.id AND e.decision->>'published'='true' AND (NOT $1 OR EXISTS(SELECT 1 FROM episode_public_reviews p WHERE p.episode_id=e.id AND p.approved AND p.source_hash=e.source_hash AND p.file=e.decision->>'file')) GROUP BY c.id ORDER BY c.id`, d.PublicOnly)
 	if err != nil {
 		return nil, err
 	}

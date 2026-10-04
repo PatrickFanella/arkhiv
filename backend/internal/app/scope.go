@@ -10,6 +10,9 @@ func (s *Server) collectionScope() domain.CollectionScope {
 	if s.Collection != "" {
 		return domain.CollectionScope{s.Collection}
 	}
+	if s.DB != nil && s.DB.PublicOnly && s.Collections == nil {
+		return domain.CollectionScope{}
+	}
 	return s.Collections
 }
 func (s *Server) allowsCollection(id string) bool { return s.collectionScope().Allows(id) }

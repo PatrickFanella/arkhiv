@@ -118,7 +118,7 @@ type CatalogCollectionSummary struct {
 }
 
 func (d *DB) CatalogCollections(ctx context.Context, scope domain.CollectionScope) ([]CatalogCollectionSummary, error) {
-	rows, err := d.Pool.Query(ctx, `SELECT c.id,c.id,c.policy,count(DISTINCT v.item_id),array_agg(DISTINCT v.media ORDER BY v.media) FROM collections c JOIN visible_catalog_representations v ON v.collection_id=c.id WHERE ($1::text[] IS NULL OR c.id=ANY($1)) GROUP BY c.id ORDER BY c.id`, []string(scope))
+	rows, err := d.Pool.Query(ctx, `SELECT c.id,c.id,c.policy,count(DISTINCT v.item_id),array_agg(DISTINCT v.media ORDER BY v.media) FROM collections c JOIN `+d.catalogView()+` v ON v.collection_id=c.id WHERE ($1::text[] IS NULL OR c.id=ANY($1)) GROUP BY c.id ORDER BY c.id`, []string(scope))
 	if err != nil {
 		return nil, err
 	}
@@ -142,7 +142,7 @@ func (d *DB) Catalog(ctx context.Context, q CatalogQuery) (CatalogPage, error) {
 	var raw []byte
 	err := d.Pool.QueryRow(ctx, `
  WITH filtered AS MATERIALIZED (
- SELECT * FROM visible_catalog_representations
+ SELECT * FROM `+d.catalogView()+`
  WHERE ($1::text[] IS NULL OR collection_id=ANY($1))
  AND ($2='' OR collection_id=$2) AND ($3='' OR media=$3)
  AND ($4='' OR position(lower($4) in lower(title||' '||description))>0)
@@ -162,4 +162,11 @@ func (d *DB) Catalog(ctx context.Context, q CatalogQuery) (CatalogPage, error) {
 	}
 	err = json.Unmarshal(raw, &p.Items)
 	return p, err
+}
+
+func (d *DB) catalogView() string {
+	if d.PublicOnly {
+		return "public_catalog_representations"
+	}
+	return "visible_catalog_representations"
 }

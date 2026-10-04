@@ -68,7 +68,11 @@ func (s *Server) Handler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/health", func(w http.ResponseWriter, r *http.Request) { write(w, 200, map[string]string{"status": "ok"}) })
 	mux.HandleFunc("GET /api/version", func(w http.ResponseWriter, r *http.Request) {
-		write(w, 200, map[string]any{"api_version": "1", "collection": s.Collection, "collections": s.collectionScope(), "modules": map[string]string{"catalog": "1", "print": "1", "audio": "1", "video": "1"}})
+		audience := "private"
+		if s.DB != nil && s.DB.PublicOnly {
+			audience = "public"
+		}
+		write(w, 200, map[string]any{"api_version": "1", "audience": audience, "collection": s.Collection, "collections": s.collectionScope(), "modules": map[string]string{"catalog": "1", "print": "1", "audio": "1", "video": "1"}})
 	})
 	mux.HandleFunc("GET /api/ready", func(w http.ResponseWriter, r *http.Request) {
 		if err := s.DB.Pool.Ping(r.Context()); err != nil {
@@ -128,6 +132,10 @@ func (s *Server) Handler() http.Handler {
 		})
 	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if s.DB != nil && s.DB.PublicOnly && r.URL.Path == "/api/status" {
+			write(w, 404, map[string]string{"error": "unknown API route"})
+			return
+		}
 		if selected := r.URL.Query().Get("collection"); selected != "" && !s.allowsCollection(selected) {
 			write(w, 404, map[string]string{"error": "collection unavailable"})
 			return

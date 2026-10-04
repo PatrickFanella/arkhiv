@@ -120,3 +120,5 @@ This configuration is prepared for public rollout. Image publication and
 configuration checks alone do not establish public routing, reviewed catalog
 access, recovery, or browser playback. Record those checks for the deployed
 revision before declaring rollout complete.
+
+[Reviewed public deployment](public-core.md) describes the separate public audience and operator approvals in core 0.1.1.

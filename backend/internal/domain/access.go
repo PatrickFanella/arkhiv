@@ -101,8 +101,8 @@ func AuthorizeTransport(collection Collection, rep Representation, raw []byte, r
 	if Digest(raw) != rep.Snapshot {
 		return fmt.Errorf("source inventory does not match bound snapshot")
 	}
-	if review.Snapshot != rep.Snapshot || !validDigest(review.Snapshot) || strings.TrimSpace(review.Notes) == "" || review.Public {
-		return fmt.Errorf("transport review unavailable, stale or public")
+	if review.Snapshot != rep.Snapshot || !validDigest(review.Snapshot) || strings.TrimSpace(review.Notes) == "" {
+		return fmt.Errorf("transport review unavailable or stale")
 	}
 	member := false
 	for _, id := range rep.Collections {

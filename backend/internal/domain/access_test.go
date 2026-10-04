@@ -37,8 +37,8 @@ func TestTransportIndependenceAndSourcePolicy(t *testing.T) {
 		t.Fatal("review bypassed source restriction")
 	}
 	review.Public = true
-	if AuthorizeTransport(c, rep, raw, review, PreservationApproval{}, PlayAction, "talk.mp4") == nil {
-		t.Fatal("new public access silently enabled")
+	if err := AuthorizeTransport(c, rep, raw, review, PreservationApproval{}, PlayAction, "talk.mp4"); err != nil {
+		t.Fatal("explicit public review lost source playback permission", err)
 	}
 	review.Public = false
 	if AuthorizeTransport(c, rep, append(raw, ' '), review, PreservationApproval{}, PlayAction, "talk.mp4") == nil {

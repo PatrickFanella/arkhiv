@@ -28,7 +28,7 @@ func (d *DB) Transport(ctx context.Context, item, representation, collection str
  JOIN catalog_representation_memberships rm ON rm.item_id=r.item_id AND rm.representation_id=r.id AND rm.collection_id=$3 AND rm.listed
  JOIN collections c ON c.id=$3
  JOIN representation_transport_reviews t ON t.item_id=r.item_id AND t.representation_id=r.id AND t.collection_id=$3
- WHERE r.item_id=$1 AND r.id=$2`, item, representation, collection).Scan(&e.Collection.ID, &e.Collection.Policy, &e.Collection.Budget, &e.Collection.Reserve, &e.Collection.SourceItem, &e.Representation.ID, &e.Representation.Media, &e.Representation.SourceItemID, &e.Representation.Snapshot, &e.Representation.File, &extension, &e.Raw, &review, &approval)
+ WHERE r.item_id=$1 AND r.id=$2 AND (NOT $4 OR (t.review @> '{"public":true}'::jsonb AND t.review->>'snapshot_sha256'=r.source_hash))`, item, representation, collection, d.PublicOnly).Scan(&e.Collection.ID, &e.Collection.Policy, &e.Collection.Budget, &e.Collection.Reserve, &e.Collection.SourceItem, &e.Representation.ID, &e.Representation.Media, &e.Representation.SourceItemID, &e.Representation.Snapshot, &e.Representation.File, &extension, &e.Raw, &review, &approval)
 	if err != nil {
 		return e, err
 	}
@@ -47,8 +47,19 @@ func (d *DB) Transport(ctx context.Context, item, representation, collection str
 // rights; each independently enabled action is checked against retained source
 // identity, actual files and existing immutable collection policy.
 func (d *DB) ReviewTransport(ctx context.Context, item, representation, collection string, review domain.TransportReview, approval domain.PreservationApproval) error {
-	if strings.TrimSpace(review.Notes) == "" || review.Public || len(review.Files) > 1000 {
-		return fmt.Errorf("invalid private transport review")
+	return d.reviewTransport(ctx, item, representation, collection, review, approval, false)
+}
+
+// ReviewPublicTransport requires an explicit operator approval path.
+func (d *DB) ReviewPublicTransport(ctx context.Context, item, representation, collection string, review domain.TransportReview, approval domain.PreservationApproval) error {
+	if !review.Public {
+		return fmt.Errorf("public review requires explicit public approval")
+	}
+	return d.reviewTransport(ctx, item, representation, collection, review, approval, true)
+}
+func (d *DB) reviewTransport(ctx context.Context, item, representation, collection string, review domain.TransportReview, approval domain.PreservationApproval, public bool) error {
+	if strings.TrimSpace(review.Notes) == "" || (review.Public && !public) || len(review.Files) > 1000 {
+		return fmt.Errorf("invalid transport review")
 	}
 	tx, err := d.Pool.Begin(ctx)
 	if err != nil {

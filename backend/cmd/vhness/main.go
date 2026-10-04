@@ -44,7 +44,7 @@ func load(p string, v any) error {
 }
 func run() error {
 	if len(os.Args) < 2 {
-		return fmt.Errorf("usage: vhness migrate|collection|review-budget|review-library|plan-replay|import|import-item|import-source|import-catalog|review-transport|index-print|register-audio|schedule-audio|fetch|inspect|acquire|audit|review|schedule|discover|refresh|report|seed|serve|healthcheck")
+		return fmt.Errorf("usage: vhness migrate|collection|review-budget|review-public-video|review-library|plan-replay|import|import-item|import-source|import-catalog|review-transport|index-print|register-audio|schedule-audio|fetch|inspect|acquire|audit|review|schedule|discover|refresh|report|seed|serve|healthcheck")
 	}
 	cmd := os.Args[1]
 	if cmd == "healthcheck" {
@@ -80,6 +80,7 @@ func run() error {
 	expectedBudget := f.Int64("expected-budget", 0, "previous reviewed budget required for explicit increase")
 	expectedReserve := f.Int64("expected-reserve", 0, "previous reviewed reserve required for explicit increase")
 	notes := f.String("notes", "", "authorization notes for explicit budget review")
+	approvePublic := f.Bool("approve-public", false, "explicit owner-authorized publication; false revokes video publication")
 	after := f.String("after-id", "", "bounded library review cursor")
 	days := f.Int("days", 7, "explicit replay horizon, 1 through 7 days")
 	pages := f.Int("pages", 1, "bounded discovery pages (0–100)")
@@ -91,11 +92,18 @@ func run() error {
 	if f.NArg() != 0 {
 		return fmt.Errorf("unexpected positional arguments")
 	}
+	publicValue := os.Getenv("ARKHIV_PUBLIC")
+	if publicValue != "" && publicValue != "0" && publicValue != "1" {
+		return fmt.Errorf("ARKHIV_PUBLIC must be 0 or 1")
+	}
+	if publicValue == "1" && (cmd != "serve" || len(allowlist) == 0) {
+		return fmt.Errorf("public mode requires serve and an explicit nonempty collection scope")
+	}
 	if *collection != "" && !allowlist.Allows(*collection) {
 		return fmt.Errorf("collection outside configured instance scope")
 	}
 	switch cmd {
-	case "migrate", "serve", "import-catalog", "schedule", "acquire", "review", "inspect", "seed":
+	case "migrate", "serve", "import-catalog", "schedule", "acquire", "review", "review-public-video", "inspect", "seed":
 	default:
 		if !allowlist.Allows(*collection) {
 			return fmt.Errorf("select a collection inside configured scope")
@@ -116,7 +124,8 @@ func run() error {
 		return err
 	}
 	defer d.Pool.Close()
-	if allowlist != nil && (cmd == "review" || cmd == "inspect") {
+	d.PublicOnly = publicValue == "1"
+	if allowlist != nil && (cmd == "review" || cmd == "review-public-video" || cmd == "inspect") {
 		entry, err := d.Entry(ctx, *id)
 		if err != nil || !allowlist.Allows(entry.Episode.CollectionID) {
 			return fmt.Errorf("episode outside configured instance scope")
@@ -178,7 +187,12 @@ func run() error {
 		if err := load(*file, &input); err != nil {
 			return err
 		}
+		if *approvePublic {
+			return d.ReviewPublicTransport(ctx, *id, *representation, *collection, input.Review, input.Preservation)
+		}
 		return d.ReviewTransport(ctx, *id, *representation, *collection, input.Review, input.Preservation)
+	case "review-public-video":
+		return d.ReviewPublicVideo(ctx, *id, *approvePublic, *notes)
 	case "migrate":
 		return d.Migrate(ctx, env("VHNESS_MIGRATIONS", "../migrations"))
 	case "collection":
