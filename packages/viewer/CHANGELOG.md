@@ -1,5 +1,17 @@
 # Shared viewer changes
 
+## 0.2.0 (unreleased)
+
+- Add the `@subcult/archive-viewer/print` entry with PDF page controls, zoom,
+  readable text and optional search through a consumer-supplied PDF backend.
+- Keep PDF runtime dependencies and worker assets in the consumer. Video
+  consumers continue to import the existing root entry.
+- Add the audio entry for full recordings, reviewed sets, track navigation,
+  source credits and shared station clock calculations.
+
+Print reading requires the engine's reviewed representation access. Search must
+report actual indexed coverage; OCR without page mapping remains document text.
+
 ## 0.1.1
 
 - Tie catalog results and errors to the active collection, query, year and page.

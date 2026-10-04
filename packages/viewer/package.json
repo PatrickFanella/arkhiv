@@ -1,6 +1,6 @@
 {
   "name": "@subcult/archive-viewer",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "type": "module",
   "license": "GPL-3.0-only",
   "files": [
@@ -13,6 +13,14 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./print": {
+      "types": "./dist/print.d.ts",
+      "import": "./dist/print.js"
+    },
+    "./audio": {
+      "types": "./dist/audio.d.ts",
+      "import": "./dist/audio.js"
     }
   },
   "main": "./dist/index.js",

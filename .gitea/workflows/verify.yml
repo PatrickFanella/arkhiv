@@ -1,10 +1,16 @@
 name: verify
 on:
+  workflow_dispatch:
+    inputs:
+      runner:
+        description: 'Runner label for isolated verification'
+        required: false
+        default: ubuntu-latest
   push:
   pull_request:
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     services:
       postgres:
         image: postgres:17
@@ -23,6 +29,13 @@ jobs:
         with:
           node-version: '24'
       - run: npm install --global pnpm@10.33.0 --force
+      - name: Install bounded print extraction tools
+        run: |
+          if [ "$(id -u)" = 0 ]; then
+            apt-get update && apt-get install --yes --no-install-recommends poppler-utils util-linux ffmpeg
+          else
+            sudo -n apt-get update && sudo -n apt-get install --yes --no-install-recommends poppler-utils util-linux ffmpeg
+          fi
       - name: Verify with this run's disposable database
         env:
           TEST_DATABASE_RUN: ${{ github.run_id }}-${{ github.run_attempt }}

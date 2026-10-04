@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+
+	"git.subcult.tv/subculture-collective/vhness/internal/music"
 )
 
 type Media string
@@ -17,9 +19,14 @@ const (
 func (m Media) Valid() bool { return m == PrintMedia || m == AudioMedia || m == VideoMedia }
 
 type PrintExtension struct {
-	DocumentID string `json:"document_id"`
-	Variant    string `json:"variant"`
-	Pages      int    `json:"pages"`
+	DocumentID string           `json:"document_id"`
+	Variant    string           `json:"variant"`
+	Pages      int              `json:"pages"`
+	Companions []PrintCompanion `json:"companions,omitempty"`
+}
+type PrintCompanion struct {
+	File string `json:"file"`
+	Role string `json:"role"` // ocr or cover, never an independent catalog item.
 }
 type AudioTrack struct {
 	ID          string `json:"id"`
@@ -33,6 +40,7 @@ type AudioExtension struct {
 	ConcertID   string            `json:"concert_id,omitempty"`
 	Tracks      []AudioTrack      `json:"tracks"`
 	Credits     map[string]string `json:"credits"`
+	Recording   *music.Recording  `json:"recording,omitempty"`
 }
 type VideoExtension struct {
 	EpisodeID string          `json:"episode_id"`
@@ -96,6 +104,16 @@ func (r Representation) Validate() error {
 		if p == nil || !ValidID(p.DocumentID) || strings.TrimSpace(p.Variant) == "" || p.Pages < 0 {
 			return fmt.Errorf("invalid print extension")
 		}
+		seen := map[string]bool{r.File: true}
+		if len(p.Companions) > 16 {
+			return fmt.Errorf("too many print companions")
+		}
+		for _, companion := range p.Companions {
+			if !SafeFile(companion.File) || seen[companion.File] || (companion.Role != "ocr" && companion.Role != "cover") {
+				return fmt.Errorf("invalid print companion")
+			}
+			seen[companion.File] = true
+		}
 	case AudioMedia:
 		a := r.Extension.Audio
 		if a == nil || !ValidID(a.RecordingID) || (a.ConcertID != "" && !ValidID(a.ConcertID)) || len(a.Tracks) == 0 || len(a.Tracks) > 1000 {
@@ -107,6 +125,24 @@ func (r Representation) Validate() error {
 				return fmt.Errorf("invalid track identity or unreviewed set")
 			}
 			seen[track.ID] = true
+		}
+		if a.Recording != nil {
+			if err := a.Recording.Validate(); err != nil {
+				return err
+			}
+			if a.Recording.ID != a.RecordingID || a.Recording.ConcertID != a.ConcertID || len(a.Recording.Tracks) != len(a.Tracks) {
+				return fmt.Errorf("recording identity or track mapping differs")
+			}
+			for i, track := range a.Recording.Tracks {
+				if track.File.Name != a.Tracks[i].File || !SafeFile(track.File.Name) || track.File.Bytes <= 0 {
+					return fmt.Errorf("invalid recording source file mapping")
+				}
+				for _, variant := range track.Variants {
+					if !SafeFile(variant.Name) || variant.Bytes <= 0 {
+						return fmt.Errorf("invalid audio source variant")
+					}
+				}
+			}
 		}
 	case VideoMedia:
 		if r.Extension.Video == nil || !ValidID(r.Extension.Video.EpisodeID) {

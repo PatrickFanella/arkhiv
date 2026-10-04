@@ -18,9 +18,11 @@ import (
 	"time"
 
 	"git.subcult.tv/subculture-collective/vhness/internal/app"
+	audiomodule "git.subcult.tv/subculture-collective/vhness/internal/audio"
 	"git.subcult.tv/subculture-collective/vhness/internal/catalog"
 	"git.subcult.tv/subculture-collective/vhness/internal/domain"
 	"git.subcult.tv/subculture-collective/vhness/internal/preservation"
+	printmodule "git.subcult.tv/subculture-collective/vhness/internal/print"
 	"git.subcult.tv/subculture-collective/vhness/internal/source"
 	"git.subcult.tv/subculture-collective/vhness/internal/worker"
 	"github.com/jackc/pgx/v5"
@@ -41,7 +43,7 @@ func load(p string, v any) error {
 }
 func run() error {
 	if len(os.Args) < 2 {
-		return fmt.Errorf("usage: vhness migrate|collection|review-budget|review-library|plan-replay|import|import-item|import-catalog|review-transport|fetch|inspect|acquire|audit|review|schedule|discover|refresh|report|seed|serve|healthcheck")
+		return fmt.Errorf("usage: vhness migrate|collection|review-budget|review-library|plan-replay|import|import-item|import-catalog|review-transport|index-print|register-audio|schedule-audio|fetch|inspect|acquire|audit|review|schedule|discover|refresh|report|seed|serve|healthcheck")
 	}
 	cmd := os.Args[1]
 	if cmd == "healthcheck" {
@@ -109,6 +111,23 @@ func run() error {
 		}
 	}
 	switch cmd {
+	case "register-audio":
+		var asset domain.AudioAsset
+		if err := load(*file, &asset); err != nil {
+			return err
+		}
+		return audiomodule.Register(ctx, d, os.Getenv("VHNESS_MEDIA"), os.Getenv("VHNESS_DERIVATIVES"), *id, *representation, *collection, asset, *notes)
+	case "schedule-audio":
+		var schedule domain.AudioSchedule
+		if err := load(*file, &schedule); err != nil {
+			return err
+		}
+		if schedule.Collection != *collection {
+			return fmt.Errorf("audio schedule outside selected collection")
+		}
+		return d.StoreAudioSchedule(ctx, schedule, *notes)
+	case "index-print":
+		return printmodule.Index(ctx, d, os.Getenv("VHNESS_MEDIA"), os.Getenv("VHNESS_DERIVATIVES"), *id, *representation, *collection)
 	case "import-catalog":
 		var item domain.CatalogItem
 		if err := load(*file, &item); err != nil {
@@ -532,7 +551,7 @@ func run() error {
 		}
 		return nil
 	case "serve":
-		server := &http.Server{Addr: env("API_ADDR", "127.0.0.1:8080"), Handler: (&app.Server{DB: d, Web: os.Getenv("VHNESS_WEB"), Media: os.Getenv("VHNESS_MEDIA"), Collection: scope}).Handler(), ReadHeaderTimeout: 5 * time.Second, IdleTimeout: 60 * time.Second}
+		server := &http.Server{Addr: env("API_ADDR", "127.0.0.1:8080"), Handler: (&app.Server{DB: d, Web: os.Getenv("VHNESS_WEB"), Media: os.Getenv("VHNESS_MEDIA"), Derivatives: os.Getenv("VHNESS_DERIVATIVES"), Collection: scope}).Handler(), ReadHeaderTimeout: 5 * time.Second, IdleTimeout: 60 * time.Second}
 		go func() {
 			<-ctx.Done()
 			shutdown, cancel := context.WithTimeout(context.Background(), 10*time.Second)

@@ -23,6 +23,7 @@ type Server struct {
 	DB                *catalog.DB
 	Clock             func() time.Time
 	Media             string
+	Derivatives       string
 	Web               string
 	Collection        string
 	failures          sync.Mutex
@@ -80,6 +81,12 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /api/catalog/v1/items/{id}", s.mixedCatalog)
 	mux.HandleFunc("GET /api/catalog/v1/items/{id}/representations/{representation}/resolve", s.resolveRepresentation)
 	mux.HandleFunc("GET /api/catalog/v1/items/{id}/representations/{representation}/media", s.representationMedia)
+	mux.HandleFunc("GET /api/catalog/v1/items/{id}/representations/{representation}/print", s.printStatus)
+	mux.HandleFunc("GET /api/catalog/v1/items/{id}/representations/{representation}/search", s.printSearch)
+	mux.HandleFunc("GET /api/catalog/v1/items/{id}/representations/{representation}/cover", s.printCover)
+	mux.HandleFunc("GET /api/catalog/v1/items/{id}/representations/{representation}/audio/resolve", s.audioResolve)
+	mux.HandleFunc("GET /api/catalog/v1/items/{id}/representations/{representation}/audio/media", s.audioMedia)
+	mux.HandleFunc("GET /api/audio/channel", s.audioChannel)
 	mux.HandleFunc("GET /api/collections", func(w http.ResponseWriter, r *http.Request) {
 		collections, err := s.DB.Collections(r.Context())
 		if err != nil {

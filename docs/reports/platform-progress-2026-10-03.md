@@ -29,7 +29,18 @@ separate metadata databases and no acquisition workers or media mounts.
 Continue in dependency order from the [platform roadmap](../plans/0003-multimedia-roadmap.md).
 The bounded shared video propagation gate is qualified. PR #63 adds the scoped
 metadata catalog and live video projection; full isolated verification and final
-source-file checks passed. Next are representation policy, print/audio,
+source-file checks passed. PR #64 adds exact representation transport reviews
+and history, local hash/range checks and provenance-based source-streaming rules.
+The print extraction adds typed companions, bounded PDF indexing and the shared
+reader entry; disposable tests deny revoked or corrupt PDF/OCR derivatives.
+Print PR #65 (`7ad16f4`) passed hosted push run 12560/job 22326 and pull-request
+run 12561/job 22327, as well as full isolated verification. Real document/browser
+qualification and release publication remain open. The audio extraction retains
+the pinned Dedhed recording/track/credit contracts, validates continuous assets
+separately from originals, and adds independent station revisions and shared
+controls/hooks. Full isolated checks passed with generated tones, including
+withdrawn future eligibility and corrupt-input/derivative guards. Real music and
+browser qualification remain open. Next are the neutral mixed frontend,
 all-brand adoption, migration/recovery and private cross-brand qualification.
 Milestone 6 records a concrete public rollout decision after those gates; it does
 not implicitly authorize deployment or additional media acquisition.
