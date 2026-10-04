@@ -6,9 +6,13 @@ import json
 from pathlib import Path
 import re
 import subprocess
+from core_release import validate_core
 
 
 def validate(release, consumer, current, artifact):
+    if consumer.get('mode') == 'api':
+        validate_core(release, consumer, current)
+        return
     if consumer['adoption'] != 'package':
         raise ValueError('Consumer has not completed package adoption')
     mode = consumer.get('mode', 'platform')
@@ -39,6 +43,8 @@ def validate(release, consumer, current, artifact):
         raise ValueError('Engine must be pinned to its registry digest')
     if not re.fullmatch(r'[0-9a-f]{40}', release['source_revision']):
         raise ValueError('Expected a full source revision')
+    if artifact is None:
+        raise ValueError('Package consumers require the verified package artifact')
     if hashlib.sha256(artifact.read_bytes()).hexdigest() != release['package_sha256']:
         raise ValueError('Package checksum mismatch')
     for name, digest in current['migrations'].items():
@@ -49,13 +55,35 @@ def validate(release, consumer, current, artifact):
 def prepare(root, consumer, release, artifact, run=subprocess.run):
     if subprocess.check_output(['git', 'status', '--porcelain'], cwd=root):
         raise ValueError('Use a clean isolated consumer checkout')
-    keys = ['release_file', 'package_file', 'lock_file']
+    api_only = consumer.get('mode') == 'api'
+    keys = ['release_file', 'engine_file'] if api_only else ['release_file', 'package_file', 'lock_file']
     if consumer.get('mode', 'platform') == 'platform':
         keys.append('engine_file')
     paths = [root / consumer[k] for k in keys]
     for path in paths:
         if not path.resolve().is_relative_to(root.resolve()) or not path.is_file():
             raise ValueError('Registered dependency file is missing or outside the checkout')
+    if len(set(p.resolve() for p in paths)) != len(paths):
+        raise ValueError('Registered dependency paths must be distinct')
+    if api_only:
+        receipt, engine_file = paths
+        current = json.loads(receipt.read_text())
+        validate_core(release, consumer, current)
+        if engine_file.read_text() != 'ARCHIVE_ENGINE_IMAGE=' + current['engine_digest'] + '\n':
+            raise ValueError('Core pin differs from the current release receipt')
+        if current == release:
+            return False
+        original = {p: p.read_bytes() for p in paths}
+        try:
+            receipt.write_text(json.dumps(release, indent=2) + '\n')
+            engine_file.write_text('ARCHIVE_ENGINE_IMAGE=' + release['engine_digest'] + '\n')
+            for command in consumer['checks']:
+                run(command, cwd=root, check=True)
+        except BaseException:
+            for path, data in original.items():
+                path.write_bytes(data)
+            raise
+        return True
     receipt, package_file, lock_file = paths[:3]
     engine_file = paths[3] if len(paths) == 4 else None
     current = json.loads(receipt.read_text())
@@ -91,7 +119,7 @@ def main():
     parser.add_argument('--consumer', required=True)
     parser.add_argument('--checkout', type=Path, required=True)
     parser.add_argument('--release', type=Path, required=True)
-    parser.add_argument('--package-artifact', type=Path, required=True)
+    parser.add_argument('--package-artifact', type=Path)
     args = parser.parse_args()
     registry = json.loads(args.registry.read_text())
     consumer = next(c for c in registry['consumers'] if c['repository'] == args.consumer)

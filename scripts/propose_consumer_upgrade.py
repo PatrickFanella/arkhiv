@@ -54,7 +54,8 @@ def proposal(release, consumer, clone, artifact, request=api, base_ref=None):
     base = '/repos/' + repository
     metadata = request(base)
     target = base_ref or metadata['default_branch']
-    branch = 'archive-upgrade/v' + release['version'] + '-' + release['source_revision']
+    api_only = consumer.get('mode') == 'api'
+    branch = ('archive-core-upgrade/v' if api_only else 'archive-upgrade/v') + release['version'] + '-' + release['source_revision']
     # Validate the base consumer before consulting or creating a proposal.
     current = json.loads((clone / consumer['release_file']).read_text())
     validate(release, consumer, current, artifact)
@@ -65,7 +66,7 @@ def proposal(release, consumer, clone, artifact, request=api, base_ref=None):
         return existing
     subprocess.run(['git', 'switch', '-c', branch], cwd=clone, check=True)
     prepare(clone, consumer, release, artifact)
-    files = [consumer[key] for key in ('package_file', 'lock_file', 'release_file')]
+    files = [consumer[key] for key in (('release_file', 'engine_file') if api_only else ('package_file', 'lock_file', 'release_file'))]
     if consumer.get('mode', 'platform') == 'platform':
         files.append(consumer['engine_file'])
     subprocess.run(['git', 'add', '--', *files], cwd=clone, check=True)
@@ -76,11 +77,14 @@ def proposal(release, consumer, clone, artifact, request=api, base_ref=None):
         result = request(base + '/pulls', 'POST', {
             'base': target, 'head': branch,
             'title': 'Upgrade shared archive platform to ' + release['version'],
-            'body': ('Updates the frontend package, lockfile and release provenance receipt; the consumer-owned backend remains unchanged.\n\n'
+            'body': ('Updates only the immutable headless core pin and compatibility receipt. The consumer owns its entire frontend; no frontend package is required.\n\n'
+                     if api_only else
+                     'Updates the frontend package, lockfile and release provenance receipt; the consumer-owned backend remains unchanged.\n\n'
                      if consumer.get('mode', 'platform') == 'components' else
                      'Updates the frontend lock, immutable engine digest and compatibility receipt together.\n\n') +
                     'Consumer checks passed in the isolated proposal checkout. Hosted checks and private qualification remain required. '
-                    'This PR does not deploy the consumer.\n\nSource: `' + release['source_revision'] + '`; package SHA-256: `' + release['package_sha256'] + '`.',
+                    'This PR does not deploy the consumer.\n\nSource: `' + release['source_revision'] + '`; ' +
+                    ('core digest: `' + release['engine_digest'] + '`.' if api_only else 'package SHA-256: `' + release['package_sha256'] + '`.'),
         })
     except (TimeoutError, ConnectionError, urllib.error.URLError) as error:
         if isinstance(error, urllib.error.HTTPError):
@@ -99,13 +103,13 @@ def main():
     parser.add_argument('--registry', type=Path, required=True)
     parser.add_argument('--consumer', required=True)
     parser.add_argument('--release', type=Path, required=True)
-    parser.add_argument('--package-artifact', type=Path, required=True)
+    parser.add_argument('--package-artifact', type=Path)
     parser.add_argument('--base-ref', help='Explicit reviewed adoption branch for a stacked proposal; defaults to the repository default branch')
     args = parser.parse_args()
     registry = json.loads(args.registry.read_text())
     consumer = next(c for c in registry['consumers'] if c['repository'] == args.consumer)
     release = json.loads(args.release.read_text())
-    if consumer['adoption'] != 'package':
+    if consumer['adoption'] != ('core' if consumer.get('mode') == 'api' else 'package'):
         raise SystemExit('Consumer package adoption is pending')
     if args.base_ref:
         subprocess.run(['git', 'check-ref-format', '--branch', args.base_ref], check=True, stdout=subprocess.DEVNULL)
@@ -114,7 +118,7 @@ def main():
         subprocess.run(['git', 'clone', '--quiet', 'https://git.subcult.tv/' + consumer['repository'] + '.git', str(clone)], check=True)
         if args.base_ref:
             subprocess.run(['git', 'switch', '--detach', 'origin/' + args.base_ref], cwd=clone, check=True)
-        print(proposal(release, consumer, clone, args.package_artifact.resolve(), base_ref=args.base_ref) or 'Release already applied; no PR')
+        print(proposal(release, consumer, clone, args.package_artifact.resolve() if args.package_artifact else None, base_ref=args.base_ref) or 'Release already applied; no PR')
 
 
 if __name__ == '__main__':

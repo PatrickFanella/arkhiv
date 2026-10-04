@@ -1,0 +1,79 @@
+name: headless-core-release
+on:
+  workflow_dispatch:
+    inputs:
+      runner:
+        description: Repository-scoped isolated qualification runner
+        required: false
+        default: ubuntu-latest
+  push:
+    tags: ['core-v*']
+jobs:
+  release:
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: vhness
+          POSTGRES_PASSWORD: disposable-release-only
+          POSTGRES_DB: vhness_release
+        options: --label vhness.release-database=${{ github.run_id }}-${{ github.run_attempt }} --health-cmd "pg_isready -U vhness -d vhness_release" --health-interval 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+          cache: false
+      - name: Install backend media verification tools
+        run: |
+          if [ "$(id -u)" = 0 ]; then
+            apt-get update && apt-get install --yes --no-install-recommends poppler-utils util-linux ffmpeg
+          else
+            sudo -n apt-get update && sudo -n apt-get install --yes --no-install-recommends poppler-utils util-linux ffmpeg
+          fi
+      - name: Verify independent core
+        env:
+          TEST_DATABASE_RUN: ${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          [[ "$TEST_DATABASE_RUN" =~ ^[0-9]+-[0-9]+$ ]]
+          test_db_id=$(docker ps --no-trunc --quiet --filter "label=vhness.release-database=$TEST_DATABASE_RUN")
+          [[ "$test_db_id" =~ ^[0-9a-f]{64}$ ]]
+          test_db_ip=$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$test_db_id")
+          [[ "$test_db_ip" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]
+          export TEST_DATABASE_URL="postgres://vhness:disposable-release-only@$test_db_ip:5432/vhness_release?sslmode=disable"
+          make verify-core
+          python3 -m unittest discover -s scripts -p 'test_core_release.py'
+          test -z "$(git status --porcelain)"
+      - name: Publish immutable core image and receipt
+        env:
+          ARCHIVE_PACKAGE_TOKEN: ${{ secrets.ARCHIVE_PACKAGE_TOKEN }}
+          ARCHIVE_REGISTRY_USER: ${{ vars.ARCHIVE_REGISTRY_USER }}
+        run: |
+          set -euo pipefail
+          test -n "$ARCHIVE_PACKAGE_TOKEN"
+          test -n "$ARCHIVE_REGISTRY_USER"
+          core_version=$(python3 -c 'import json; print(json.load(open("docs/reference/core-version.json"))["version"])')
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            test "$GITHUB_REF" = "refs/tags/core-v$core_version"
+          fi
+          release_auth_dir=$(mktemp -d)
+          trap 'rm -rf "$release_auth_dir"' EXIT
+          chmod 700 "$release_auth_dir"
+          export DOCKER_CONFIG="$release_auth_dir/docker"
+          printf '%s' "$ARCHIVE_PACKAGE_TOKEN" | docker login git.subcult.tv --username "$ARCHIVE_REGISTRY_USER" --password-stdin
+          core_image="git.subcult.tv/subculture-collective/archive-core:$GITHUB_SHA"
+          docker build --target core --label "org.opencontainers.image.revision=$GITHUB_SHA" --label "org.opencontainers.image.version=$core_version" --label org.subcult.archive-artifact=core -t "$core_image" .
+          docker run --rm --entrypoint sh "$core_image" -c 'test ! -e /app/web && ! command -v node && ! command -v npm'
+          test -z "$(docker inspect --format '{{range .Config.Env}}{{println .}}{{end}}' "$core_image" | sed -n '/^VHNESS_WEB=/p')"
+          docker push "$core_image"
+          core_digest=$(docker inspect --format '{{index .RepoDigests 0}}' "$core_image")
+          python3 scripts/core_release.py --engine-digest "$core_digest" --output ".artifacts/core-release-$core_version.json"
+      - uses: actions/upload-artifact@v3
+        with:
+          name: headless-core-release
+          path: .artifacts/core-release-*.json
+          if-no-files-found: error

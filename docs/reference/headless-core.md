@@ -77,6 +77,17 @@ upgrade order; frontend design is outside that contract.
 The existing six-consumer registry demonstrates supported integrations. Component
 consumers retaining their own backends share optional frontend code only; adopting
 those components does not mean they run the Arkhiv core. Future API-only consumers
-must record core image and API compatibility separately, without fabricated React
-package pins. That rollout mode and independently published artifacts remain
-part of issue #86 qualification.
+record core image and API compatibility separately, without React package pins.
+Register these with `mode: api`, `adoption: core`, `release_file`, `engine_file`,
+enabled `media`/`modules`, `rollout: reviewed-pr` and independent `checks`.
+The core release receipt contains its source, immutable image digest, API/module
+versions and migration checksums; it has no frontend package fields.
+
+`scripts/propose_release_upgrades.py --kind core --version VERSION` proposes only
+API consumers. It verifies compatibility and locked migration history, updates
+the core pin and receipt, runs the consumer checks and opens a reviewed PR.
+It does not install frontend dependencies or change frontend source. Failed checks
+restore both pin files. The separate `core-release.yml` workflow verifies and
+publishes the `core` target to `subculture-collective/archive-core`; the reference
+image and component package keep their own release stream. Issue #86 requires
+actual hosted publication and consumer/runtime evidence before qualification.

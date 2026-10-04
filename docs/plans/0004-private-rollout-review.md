@@ -1,10 +1,20 @@
 # Arkhiv rollout review
 
-This review belongs to milestone P6 and issue #52. It records candidates and
-pending qualification; it is not a deployment instruction. The existing video
-public gate #22 and each donor's public/access review remain authoritative.
-Current public print services retain their existing versions until replacement
-artifacts have been qualified and selected by the owner.
+This review belongs to milestone P6 and issue #52. On October 4, 2026 the owner
+instructed: "continue all the way to public rollout, don't stop unless you
+encounter a true roadblock." This authorizes development, qualification and
+public activation of the reviewed products without another generic deployment
+permission request. Existing content decisions, source-streaming restrictions,
+allowlists and storage limits still define the content each product can expose.
+Select exact qualified artifacts and a recoverable checkpoint before activation.
+
+The owner selected `anarchist-archive.subcult.tv` for the existing print product,
+`arkhiv.subcult.tv` for the mixed reference product, and
+`arkhiv-api.subcult.tv` for the headless core. Existing document links under the
+old print hostname need redirects preserving document identifiers and query
+parameters. Other proposed brand hostnames are `democracy-now.subcult.tv`,
+`bill-nye.subcult.tv`, `dedhed.subcult.tv` and `riot-grrrl.subcult.tv`; inspect
+existing DNS/ingress ownership before adding their routes.
 
 ## Products and delivery boundaries
 
@@ -54,12 +64,14 @@ reading/playback, reviewed music listening, schedule timing, independent restore
 behavior and old-artifact rollback first. Responsive Chromium evidence is
 separate from unavailable iOS/Android devices and from sustained natural runs.
 
-Then obtain the owner's exact decision per product: audience, source use/rights,
-asset provenance, domain/ingress, collection allowlist, byte limits/reserve and
-relay policy. Select the concrete qualified artifacts and recovery checkpoint.
-Approval of the implementation roadmap does not authorize expanded acquisition
-or a public cutover. Record the decision in issue #52 and the product's existing
-gate before activation.
+The owner's October 4 instruction authorizes rollout. Resolve each product's
+audience, existing source-use decisions, asset provenance, domain/ingress,
+collection allowlist, byte limits/reserve and relay policy from current project
+and deployment evidence. Select the concrete qualified artifacts and recovery
+checkpoint. Record the exact activation scope in issue #52 and the product's
+existing gate before deployment. A content decision that cannot be inferred
+from those records is a specific unresolved boundary; proceed with independent
+work while obtaining only the missing decision.
 
 After authorized activation, inspect the actual deployed revisions and verify
 representative public catalog, reading/download, on-demand playback, scheduled

@@ -34,15 +34,16 @@ def consumer_test_database(inspected, run, repository, resolve=socket.gethostbyn
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--version', required=True)
+    parser.add_argument('--kind', choices=['platform', 'core'], default='platform')
     parser.add_argument('--adoption-refs', action='store_true', help='Explicitly stack on registered adoption branches that are still in review')
     args = parser.parse_args()
     if not re.fullmatch(r'\d+\.\d+\.\d+', args.version):
         raise SystemExit('Expected a stable semantic release version')
     root = Path(__file__).resolve().parents[1]
-    release = json.loads((root / 'docs/releases' / ('release-' + args.version + '.json')).read_text())
+    release = json.loads((root / 'docs/releases' / (('core-release-' if args.kind == 'core' else 'release-') + args.version + '.json')).read_text())
     if release['version'] != args.version:
         raise SystemExit('Release filename and metadata disagree')
-    if release['package_file'] != 'subcult-archive-viewer-' + args.version + '.tgz':
+    if args.kind != 'core' and release['package_file'] != 'subcult-archive-viewer-' + args.version + '.tgz':
         raise SystemExit('Unexpected release package filename')
     registry = json.loads((root / 'docs/reference/consumer-registry.json').read_text())
     # Reset inherited helpers; never use a human or checkout action credential.
@@ -52,9 +53,11 @@ def main():
         'GIT_CONFIG_KEY_2': 'credential.useHttpPath', 'GIT_CONFIG_VALUE_2': 'true', 'GIT_TERMINAL_PROMPT': '0'})
     with tempfile.TemporaryDirectory(prefix='archive-proposals-') as temporary:
         work = Path(temporary)
-        artifact = download(release, work / release['package_file'])
+        artifact = None if args.kind == 'core' else download(release, work / release['package_file'])
         for consumer in registry['consumers']:
-            if consumer['adoption'] != 'package':
+            if (consumer.get('mode') == 'api') != (args.kind == 'core'):
+                continue
+            if consumer['adoption'] != ('core' if args.kind == 'core' else 'package'):
                 print(consumer['repository'], 'package adoption pending', flush=True)
                 continue
             base_ref = None
