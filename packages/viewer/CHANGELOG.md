@@ -1,5 +1,14 @@
 # Shared viewer changes
 
+## Unreleased
+
+- Add reviewed source artwork with safe placeholders and explicit series labels.
+- Persist video volume and mute across player changes, with a memory fallback.
+- Distinguish channel replay, joining, paused and on-demand playback; provide
+  channel pause/resume and rejoin controls without viewer schedule seeking.
+- Add safe source/selected-file details and full-catalog metadata filters.
+- Keep branded interfaces and independent package adoption in consumer repositories.
+
 ## 0.2.3
 
 - Let remote source seeks finish before shared-channel clock corrections.

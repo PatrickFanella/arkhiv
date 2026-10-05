@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { assetKey, request, type Channel, type Episode, type Playback, type Session } from './model.js';
 import { catalogFeedback, type Catalog, type CatalogResult } from './catalogFeedback.js';
+import { videoCatalogURL, type VideoFilters } from './videoCatalog.js';
+import type { VideoState } from './videoState.js';
 export type { Catalog } from './catalogFeedback.js';
 
 export type Collection = { id: string; title: string; policy: 'source_stream' | 'local_preserve'; episodes: number };
@@ -16,7 +18,9 @@ export function useViewer(defaultCollection: string, options: ViewerOptions = {}
   useEffect(() => { const controller = new AbortController(); void request<Collection[]>('/api/collections', controller.signal).then(setCollections).catch(() => {}); return () => controller.abort(); }, []);
   const [year, setYear] = useState('');
   const [page, setPage] = useState(1);
-  const catalogURL = `/api/episodes?collection=${encodeURIComponent(collection)}&q=${encodeURIComponent(query)}&year=${encodeURIComponent(year)}&page=${page}`;
+  const [filters, updateFilters] = useState<VideoFilters>({});
+  const setFilters = (next: VideoFilters) => { updateFilters(next); setPage(1); };
+  const catalogURL = videoCatalogURL(collection, query, year, page, filters);
   const { catalog, error } = catalogFeedback(catalogResult, catalogURL);
   const [playError, setPlayError] = useState('');
   const [errorCollection,setErrorCollection] = useState('');
@@ -26,6 +30,7 @@ export function useViewer(defaultCollection: string, options: ViewerOptions = {}
   const [channelCollection,setChannelCollection] = useState('');
   const [session, setSession] = useState<Session | null>(null);
   const [paused, setPaused] = useState(false);
+  const [reportedState, setReportedState] = useState<{ key: string; state: VideoState }>({ key: '', state: 'loading' });
   const [mode, setMode] = useState<'ondemand' | 'channel'>('ondemand');
   const action = useRef(0);
   useEffect(() => () => {action.current++;},[collection]);
@@ -94,6 +99,12 @@ export function useViewer(defaultCollection: string, options: ViewerOptions = {}
     finally { if (token === action.current) setResolving(false); }
   };
   const key = activeSession ? assetKey(activeSession) : '';
-  const onPaused = (value: boolean) => { if (currentKey.current === key) setPaused(value); };
-  return { catalog, query, setQuery, collection, setCollection, collections, year, setYear, page, setPage, error, playError:errorCollection===collection?playError:'', resolving:resolvingCollection===collection&&resolving, channel:channelCollection===collection?channel:null, session:activeSession, paused, mode, watch, tune, key, onPaused };
+  const onPaused = (value: boolean) => {
+    if (currentKey.current !== key) return;
+    if (!value && paused && activeSession?.mode === 'channel') { void tune(); return; }
+    setPaused(value);
+  };
+  const onPlaybackState = (state: VideoState) => { if (currentKey.current === key) setReportedState(previous => previous.key === key && previous.state === state ? previous : { key, state }); };
+  const playbackState: VideoState = activeSession ? (paused ? 'paused' : reportedState.key === key ? reportedState.state : 'loading') : 'unavailable';
+  return { catalog, query, setQuery, collection, setCollection, collections, year, setYear, page, setPage, filters, setFilters, error, playError:errorCollection===collection?playError:'', resolving:resolvingCollection===collection&&resolving, channel:channelCollection===collection?channel:null, session:activeSession, paused, mode, watch, tune, key, onPaused, playbackState, onPlaybackState };
 }

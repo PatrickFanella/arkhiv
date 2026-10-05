@@ -143,6 +143,14 @@ deciding whether to release the streaming product.
 
 ## Confirmed boundaries
 
+The owner's pre-headless Bill Nye viewer notes are retained in the
+[video viewer feedback plan](docs/plans/0006-viewer-feedback.md). It records
+current source evidence, shared versus consumer ownership, proposed channel
+controls, and implementation acceptance criteria. Accounts and chat require
+separate design; this intake does not claim implementation or qualification.
+The cross-repository issue checklist and dependencies are owned by
+[viewer improvements #105](https://git.subcult.tv/subculture-collective/arkhiv/issues/105).
+
 - Both on-demand viewing and a shared scheduled channel are required.
 - Delivery policy is per collection and independent of viewing mode.
 - Democracy Now! is source-streaming only; browser buffering does not authorize

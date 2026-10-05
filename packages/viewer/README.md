@@ -19,13 +19,21 @@ function Archive() {
 ```
 
 Consumers own page composition and CSS for the documented classes already used
-by the video apps. `Player` uses native video controls, source attribution,
+by the video apps. `Player` uses native on-demand controls and channel-specific
+pause/resume, rejoin, volume and fullscreen controls, source attribution,
 caption controls and explicit loading/failure messages. A keyed player owns one
 asset; channel clock updates do not reload it. `useViewer` exposes listener-local
 state and commands independently of page layout. Set
 `useViewer(collection, { scrollTarget: false })` for consumer-owned navigation,
 or supply a custom selector. The default retains the existing `#screen` scroll
 behavior and honors reduced motion.
+
+The unreleased viewer changes add reviewed artwork, safe video details, metadata
+filters, volume/mute persistence and explicit channel playback state. Consumers
+using `Player` directly should pass `onRejoin={viewer.tune}` and
+`onPlaybackState={viewer.onPlaybackState}`. `Screen` supplies both. See the
+[video viewer contract](../../docs/reference/video-viewer.md) for API fields,
+filter semantics, state labels and independent adoption requirements.
 
 The root entry supports video API version `1`. `Compatibility` verifies the exact
 collection for standalone consumers. Video channel/playback requests name the

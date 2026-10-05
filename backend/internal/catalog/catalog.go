@@ -192,9 +192,9 @@ func (d *DB) Snapshot(ctx context.Context, item string, raw []byte, status int, 
 func (d *DB) entries(ctx context.Context, ids []string, summaries bool) (map[string]domain.Entry, error) {
 	source := "e.source"
 	if summaries {
-		source = "e.source-'files'"
+		source = `(e.source-'files') || jsonb_build_object('files',COALESCE((SELECT jsonb_agg(f) FROM jsonb_array_elements(CASE WHEN jsonb_typeof(e.source->'files')='array' THEN e.source->'files' ELSE '[]'::jsonb END) f WHERE f->>'name'=e.decision->>'file' OR f->>'name'=e.decision->'artwork'->>'file'),'[]'::jsonb))`
 	}
-	rows, err := d.Pool.Query(ctx, `SELECT `+source+`,e.decision,c.policy,e.source_hash,e.unavailable,e.local_path,e.local_sha256,e.local_file,e.local_snapshot FROM episodes e JOIN collections c ON c.id=e.collection_id WHERE ($1::text[] IS NULL OR e.id=ANY($1)) AND (NOT $2::boolean OR e.decision->>'published'='true') AND (NOT $3 OR EXISTS(SELECT 1 FROM episode_public_reviews p WHERE p.episode_id=e.id AND p.approved AND p.source_hash=e.source_hash AND p.file=e.decision->>'file'))`, ids, summaries, d.PublicOnly)
+	rows, err := d.Pool.Query(ctx, `SELECT `+source+`,e.decision,c.policy,e.source_hash,e.unavailable,e.local_path,e.local_sha256,e.local_file,e.local_snapshot,COALESCE(s.parsed->'metadata'->'subject','null'::jsonb),COALESCE(s.parsed->'metadata'->'language','null'::jsonb) FROM episodes e JOIN collections c ON c.id=e.collection_id JOIN snapshots s ON s.sha256=e.source_hash WHERE ($1::text[] IS NULL OR e.id=ANY($1)) AND (NOT $2::boolean OR e.decision->>'published'='true') AND (NOT $3 OR EXISTS(SELECT 1 FROM episode_public_reviews p WHERE p.episode_id=e.id AND p.approved AND p.source_hash=e.source_hash AND p.file=e.decision->>'file'))`, ids, summaries, d.PublicOnly)
 	if err != nil {
 		return nil, err
 	}
@@ -202,8 +202,8 @@ func (d *DB) entries(ctx context.Context, ids []string, summaries bool) (map[str
 	out := map[string]domain.Entry{}
 	for rows.Next() {
 		var e domain.Entry
-		var s, b []byte
-		if err = rows.Scan(&s, &b, &e.Policy, &e.SourceHash, &e.Unavailable, &e.LocalPath, &e.LocalSHA256, &e.LocalFile, &e.LocalSnapshot); err != nil {
+		var s, b, subjects, languages []byte
+		if err = rows.Scan(&s, &b, &e.Policy, &e.SourceHash, &e.Unavailable, &e.LocalPath, &e.LocalSHA256, &e.LocalFile, &e.LocalSnapshot, &subjects, &languages); err != nil {
 			return nil, err
 		}
 		if err = json.Unmarshal(s, &e.Episode); err != nil {
@@ -212,6 +212,9 @@ func (d *DB) entries(ctx context.Context, ids []string, summaries bool) (map[str
 		if err = json.Unmarshal(b, &e.Decision); err != nil {
 			return nil, err
 		}
+		e.Episode.Subjects = domain.MetadataStrings(subjects)
+		e.Episode.Languages = domain.MetadataStrings(languages)
+		e.SourceTitle = e.Episode.Title
 		if e.Decision.Title != "" {
 			e.Episode.Title = e.Decision.Title
 		}
@@ -277,12 +280,14 @@ func (d *DB) Decide(ctx context.Context, id string, decision domain.Decision) er
 	defer tx.Rollback(ctx)
 	var source []byte
 	var policy domain.Policy
-	err = tx.QueryRow(ctx, `SELECT e.source,c.policy FROM episodes e JOIN collections c ON c.id=e.collection_id WHERE e.id=$1 FOR UPDATE OF e`, id).Scan(&source, &policy)
+	var sourceHash string
+	err = tx.QueryRow(ctx, `SELECT e.source,c.policy,e.source_hash FROM episodes e JOIN collections c ON c.id=e.collection_id WHERE e.id=$1 FOR UPDATE OF e`, id).Scan(&source, &policy, &sourceHash)
 	if err != nil {
 		return err
 	}
 	var e domain.Entry
 	e.Policy = policy
+	e.SourceHash = sourceHash
 	if err = json.Unmarshal(source, &e.Episode); err != nil {
 		return err
 	}

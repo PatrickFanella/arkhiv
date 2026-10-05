@@ -3,3 +3,7 @@ export * from './useViewer.js';
 export * from './Viewer.js';
 export * from './Player.js';
 export * from './Compatibility.js';
+export * from './Artwork.js';
+export * from './videoPreferences.js';
+export * from './videoState.js';
+export * from './videoCatalog.js';

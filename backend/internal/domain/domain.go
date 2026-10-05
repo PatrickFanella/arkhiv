@@ -101,19 +101,23 @@ func (f File) Candidate() bool {
 func SafeFile(s string) bool { return s != "" && s != "." && !strings.ContainsAny(s, "/\\\x00") }
 
 type Episode struct {
-	ID                string   `json:"id"`
-	CollectionID      string   `json:"collection_id"`
-	SourceItemID      string   `json:"source_item_id,omitempty"`
-	SourceCollections []string `json:"source_collections,omitempty"`
-	SourceFile        string   `json:"source_file,omitempty"`
-	Title             string   `json:"title"`
-	Date              string   `json:"date"`
-	Description       string   `json:"description"`
-	Creator           string   `json:"creator,omitempty"`
-	Rights            string   `json:"rights,omitempty"`
-	LicenseURL        string   `json:"license_url,omitempty"`
-	Files             []File   `json:"files"`
-	Synthetic         bool     `json:"synthetic"`
+	ID                string        `json:"id"`
+	CollectionID      string        `json:"collection_id"`
+	SourceItemID      string        `json:"source_item_id,omitempty"`
+	SourceCollections []string      `json:"source_collections,omitempty"`
+	SourceFile        string        `json:"source_file,omitempty"`
+	Title             string        `json:"title"`
+	Date              string        `json:"date"`
+	Description       string        `json:"description"`
+	Creator           string        `json:"creator,omitempty"`
+	Rights            string        `json:"rights,omitempty"`
+	LicenseURL        string        `json:"license_url,omitempty"`
+	Files             []File        `json:"files"`
+	Synthetic         bool          `json:"synthetic"`
+	Subjects          []string      `json:"subjects,omitempty"`
+	Languages         []string      `json:"languages,omitempty"`
+	Artwork           *Artwork      `json:"artwork,omitempty"`
+	Video             *VideoDetails `json:"video,omitempty"`
 }
 
 func (e Episode) Validate() error {
@@ -144,6 +148,7 @@ type Decision struct {
 	Title       string          `json:"title,omitempty"`
 	Notes       string          `json:"notes"`
 	Captions    []CaptionReview `json:"captions,omitempty"`
+	Artwork     *ArtworkReview  `json:"artwork,omitempty"`
 }
 
 // CaptionReview records a browser-qualified source WebVTT file. Discovery never
@@ -187,6 +192,7 @@ func (e Entry) reviewedCaptions(d Decision) ([]Caption, error) {
 }
 
 type Entry struct {
+	SourceTitle   string   `json:"-"`
 	Episode       Episode  `json:"episode"`
 	Decision      Decision `json:"decision"`
 	Policy        Policy   `json:"policy"`
@@ -234,6 +240,9 @@ func (e Entry) ValidateDecision(d Decision) error {
 		return fmt.Errorf("publication and channel use require playback permission")
 	}
 	if _, err := e.reviewedCaptions(d); err != nil {
+		return err
+	}
+	if _, err := e.reviewedArtwork(d); err != nil {
 		return err
 	}
 	return nil

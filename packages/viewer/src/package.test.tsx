@@ -10,6 +10,7 @@ function viewer(): Viewer {
     resolving: false, channel: { state: 'unavailable', reason: 'Schedule exhausted',
       revision: '', offset: 0, server_time: '' }, session: null, paused: false,
     mode: 'ondemand', watch: async () => {}, tune: async () => {}, key: '', onPaused: () => {},
+    filters: {}, setFilters: () => {}, playbackState: 'unavailable', onPlaybackState: () => {},
   };
 }
 

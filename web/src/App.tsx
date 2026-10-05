@@ -16,7 +16,7 @@ function Archive({ brand }: { brand: Brand }) {
     <a className="skip-link" href="#library">Skip to episode library</a>
     <header><a className="wordmark" href="/">{brand.logo && <img src={brand.logo} alt="" />}{brand.title}<span>{brand.subtitle}</span></a><nav aria-label="Main navigation"><a href="#screen">Watch</a><a href="#library">Library</a></nav></header>
     <section className="screen-layout" aria-label="Viewing screen"><Screen viewer={viewer}><div className="intro"><p className="eyebrow">{brand.kicker}</p><h1>{brand.headline}</h1><p className="lede">{brand.description}</p></div></Screen><ChannelPanel viewer={viewer} /></section>
-    <Library viewer={viewer} />
+    <Library viewer={viewer} metadataFilters />
     <footer><span>{brand.title}</span><span>{viewer.collections.find(c => c.id === brand.collection)?.policy === 'local_preserve' ? 'Verified local video · Source metadata retained' : 'Video streamed from Internet Archive · Source metadata retained'}</span></footer>
   </main>;
 }

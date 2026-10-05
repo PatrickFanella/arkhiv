@@ -1,5 +1,7 @@
 export type SourceFile = { name: string; duration: number; width: number; height: number; bytes: number };
-export type Episode = { id: string; collection_id?: string; title: string; date: string; description: string; creator?: string; synthetic: boolean };
+export type Artwork = { file: string; episode_file?: string; url: string; snapshot_sha256: string; source_item_id: string; scope: 'episode' | 'series' };
+export type VideoDetails = { source_title: string; title_origin: 'source' | 'editorial'; source_url: string; snapshot_sha256: string; file?: string; format?: string; duration?: number; width?: number; height?: number; bytes?: number };
+export type Episode = { id: string; collection_id?: string; title: string; date: string; description: string; creator?: string; rights?: string; license_url?: string; subjects?: string[]; languages?: string[]; source_item_id?: string; source_file?: string; artwork?: Artwork; video?: VideoDetails; synthetic: boolean };
 export type Caption = { file: string; label: string; language: string; url: string };
 export type Playback = { id: string; policy: 'source_stream' | 'local_preserve'; url: string; source_url: string; file: SourceFile; snapshot_sha256: string; captions?: Caption[] };
 export type Program = { episode_id: string; file: string; policy: Playback['policy']; start: string; duration: number };
@@ -10,6 +12,17 @@ export function targetOffset(session: Session, now: number): number {
   return Math.max(0, Math.min(session.playback.file.duration - 0.25, session.offset + elapsed));
 }
 export function assetKey(session: Session): string { return `${session.mode}:${session.episode.id}:${session.playback.url}:${session.generation}:${session.programKey || ""}:${JSON.stringify(session.playback.captions || [])}`; }
+export function artworkURL(episode: Episode): string | undefined {
+  const a = episode.artwork;
+  if (!a) return undefined;
+  const url = new URL(a.url);
+  const item = episode.source_item_id || episode.id;
+  const expectedFile = a.file.split('/').map(encodeURIComponent).join('/');
+  const expected = `/download/${encodeURIComponent(item)}/${expectedFile}`;
+  const safeFile = !/[\\\0]/.test(a.file) && a.file.split('/').every(part => part !== '' && part !== '.' && part !== '..');
+  if (url.protocol !== 'https:' || url.hostname !== 'archive.org' || url.username || url.password || url.port || decodeURIComponent(url.pathname) !== decodeURIComponent(expected) || url.search || url.hash || a.source_item_id !== item || !/^[a-f0-9]{64}$/.test(a.snapshot_sha256) || !safeFile || !/\.(jpe?g|png|webp)$/i.test(a.file) || (a.scope !== 'episode' && a.scope !== 'series') || (episode.source_item_id && a.scope === 'episode' && (!a.episode_file || a.episode_file !== episode.source_file))) throw new Error('Invalid source artwork reference.');
+  return url.href;
+}
 export function playbackURL(value: Playback): string {
   if (value.policy === 'local_preserve') {
     if (!value.url.startsWith('/api/media/') || value.url.includes('..')) throw new Error('Invalid local playback URL.');
