@@ -1,0 +1,34 @@
+name: curation
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  verify-curation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify copied discovery, curation and recovery workflows
+        run: |
+          set -euo pipefail
+          node --check curation/arkhiv_curation/static/app.js
+          docker build --target verify -f curation/Dockerfile curation
+      - name: Build independent curation runtime
+        run: |
+          set -euo pipefail
+          image="arkhiv-curation-check:${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          name="arkhiv-curation-check-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          docker build --target runtime --label "org.opencontainers.image.revision=$GITHUB_SHA" -t "$image" -f curation/Dockerfile curation
+          trap 'docker rm -f "$name" >/dev/null 2>&1 || true' EXIT
+          docker run -d --name "$name" --read-only --tmpfs /app/data:uid=1000,gid=1000,mode=0700 --tmpfs /tmp:uid=1000,gid=1000,mode=0700 --cap-drop ALL --security-opt no-new-privileges "$image"
+          for attempt in $(seq 1 30); do
+            if docker exec "$name" /app/.venv/bin/python -c 'import json,urllib.request; r=json.load(urllib.request.urlopen("http://127.0.0.1:18764/api/health")); assert r["worker_alive"]'; then
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs "$name"
+          exit 1

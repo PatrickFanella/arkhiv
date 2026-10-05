@@ -1,4 +1,7 @@
-.PHONY: verify verify-core test test-integration
+.PHONY: verify verify-core verify-curation test test-integration
+verify-curation:
+	cd curation && uv sync --frozen && uv run --frozen pytest -q && uv run --frozen ruff check . && uv run --frozen ruff format --check .
+	node --check curation/arkhiv_curation/static/app.js
 verify-core:
 	cd backend && test -z "$$(gofmt -l cmd internal)" && go vet ./... && go test -race ./... && go build ./cmd/vhness
 verify: verify-core

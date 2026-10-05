@@ -1,0 +1,20 @@
+services:
+  curation:
+    image: ${ARKHIV_CURATION_IMAGE:?Select the reviewed Arkhiv curation image}
+    ports:
+      - "127.0.0.1:${ARKHIV_CURATION_PORT:-18764}:18764"
+    environment:
+      ARKHIV_CURATION_CORE_URL: ${ARKHIV_CURATION_CORE_URL:-}
+      ARKHIV_CURATION_CORE_TOKEN: ${ARKHIV_CURATION_CORE_TOKEN:-}
+    volumes:
+      - curation-data:/app/data
+    restart: unless-stopped
+    stop_grace_period: 60s
+    read_only: true
+    tmpfs: [/tmp:size=64m]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    mem_limit: 512m
+    cpus: 1
+volumes:
+  curation-data:

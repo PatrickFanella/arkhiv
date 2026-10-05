@@ -51,3 +51,7 @@ __pycache__/
 /packages/*/node_modules/
 /packages/*/coverage/
 /.artifacts/
+/curation/.venv/
+/curation/.pytest_cache/
+/curation/.ruff_cache/
+/curation/data/

@@ -1,6 +1,9 @@
-# Kollektor curation integration
+# Arkhiv curation and reviewed manifests
 
-Kollektor reads the combined `/api/catalog/v1/items` API on the server. It retains
+Arkhiv's [private curation workbench](../curation/README.md) contains copied
+Kollektor discovery, review, and export code maintained in this repository.
+It requires no separate Kollektor application. It reads the combined
+`/api/catalog/v1/items` API on the server and retains
 selected representations with their source identifiers, snapshot hashes, filenames,
 media extensions and credits. Attachments enter the local review queue. Existing
 acceptance, rejection, notes and discovery provenance survive later attachments.
@@ -15,7 +18,7 @@ that media can be read or played.
 The operator can prepare a draft in an instance that already holds the source catalog:
 
 ```sh
-vhness prepare-curation --file kollektor-1-core-manifest.json --notes "Reviewed collection selection"
+vhness prepare-curation --file arkhiv-curation-1-core-manifest.json --notes "Reviewed collection selection"
 ```
 
 The target collection must already exist and lie within the configured instance
@@ -28,4 +31,4 @@ operator steps. The seven access fields must all be present and false; adding an
 permission to the manifest causes rejection.
 
 This workflow transfers curation evidence. It does not acquire media, change Archive
-items, run readers or players inside Kollektor, or authorize a public collection.
+items, run readers or players inside the workbench, or authorize a public collection.

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#203d38" />
+    <title>Arkhiv — Curation</title>
+    <link rel="icon" href="/static/mark.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/static/style.css" />
+    <script type="module" src="/static/app.js"></script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to workspace</a>
+    <div class="shell">
+      <aside class="sidebar">
+        <a class="brand" href="/"
+          ><img
+            src="/static/mark.svg"
+            alt=""
+            width="36"
+            height="36"
+          />arkhiv<span>ARCHIVE CURATION</span></a
+        >
+        <div class="side-label">
+          YOUR COLLECTIONS
+          <button
+            id="new-collection"
+            class="icon-button"
+            aria-label="Create collection"
+          >
+            +
+          </button>
+        </div>
+        <nav id="collections" aria-label="Collections">
+          <p class="side-empty">Loading collections…</p>
+        </nav>
+        <div class="side-bottom">
+          <span class="dot"></span> Private workspace
+          <p>Curated here. Sourced from<br />the Internet Archive.</p>
+          <a
+            href="https://git.subcult.tv/subculture-collective/arkhiv"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Source code ↗</a
+          >
+        </div>
+      </aside>
+      <main id="main" tabindex="-1">
+        <header class="topbar">
+          <span>THE CURATION WORKBENCH</span
+          ><a
+            href="https://archive.org"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Internet Archive ↗</a
+          >
+        </header>
+        <div id="workspace" aria-busy="true">
+          <div class="loading">Opening your workspace…</div>
+        </div>
+      </main>
+    </div>
+    <div id="notice" role="status" aria-live="polite" hidden></div>
+    <dialog id="modal"><div id="modal-content"></div></dialog>
+  </body>
+</html>

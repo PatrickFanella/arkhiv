@@ -1,0 +1,27 @@
+{
+  "repository": "https://git.subcult.tv/subculture-collective/kollektor",
+  "revision": "91566208710e9fb3d04ff33305ec508cf9608cde",
+  "license": "AGPL-3.0",
+  "source_sha256": {
+    "LICENSE": "8c8fe0d0b40f04453df5228b700d0ebea954e8995c6d34f39a74ab2460120f43",
+    "kollektor/__init__.py": "b5b0654d658f1ec200769c7b46f86a90aa4336dd99379b3066a35f4c0832f723",
+    "kollektor/__main__.py": "f993604d4dc0f4f1315b3054bfc267342849f082084ee78611018f1ecdee9614",
+    "kollektor/app.py": "a2f7c6f296d4f4f7fb99b57e61cefc98f63a01684aad2ef24c21658668b3d11b",
+    "kollektor/archive.py": "2ee7099593c0a2632d2ccb0da3c1444f5ac485a5c84d16bfdef73706ca3f331c",
+    "kollektor/core.py": "802b42fbfea5971afc47142c7541313637280ab061262a861d605d291f58ab3e",
+    "kollektor/curation.py": "ebaa48ba28cd505d1d64fa0369099191dfb79f8ff35525a122dfe19e58df5ff5",
+    "kollektor/db.py": "8f8532f991f131294e12d0636f14320a0b9dcf348613f76492af6759faa8882d",
+    "kollektor/static/app.js": "dda7beaecd1ee4616d1d454bca4c7b2c5fdda14833e653ab84d86ef725e4bdf3",
+    "kollektor/static/index.html": "c904c66560125e8d608580a7526e6acc0e77ceded13e1fcf30f7acc31e692e95",
+    "kollektor/static/mark.svg": "534948dc74486df6ea16ebe0be51e66e9e1751b097a1324257a93f29eac1b6e8",
+    "kollektor/static/style.css": "18b5478d5f383af9be1c7ba48fea8076cf21e62517cdba5c9d1f5e6564f93aa7",
+    "kollektor/worker.py": "c660564a0dc944fab8f6d7423bad862ec988d34be47ca74bd3dee48d4e609789",
+    "lists/riot-grrrl.json": "a839c1c6f024ae5c00cdc795ae0fb9ef7496930777138513ddd6fe236afb5aef",
+    "pyproject.toml": "2d8c3d8c2f5153e5938eb788a880ef7811c34966117b31d3bff5aae8415178ce",
+    "scripts/install_list.py": "0c6807874958ff0041e1f2fa6e60773ee8576847cc610e610f675a7dd63139c9",
+    "tests/test_core_curation.py": "b65ef6279e90f1d4059fccf5c07e88f4d73513d55c311ec899afc13cada22ea2",
+    "tests/test_workflow.py": "2afca7ea67ae694a68ff4d446fd91e07ed4da06f7073e706b49fe6655971ef6a",
+    "uv.lock": "022aa1f7978c543f1fa8413cfb5b4818cc7dc180fa998cf3491f847d3c3ac9f2"
+  },
+  "ownership": "Copied source maintained in Arkhiv; no separately running Kollektor application is required."
+}

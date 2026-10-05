@@ -17,6 +17,12 @@ disposable `TEST_DATABASE_URL`; no production/preview database may be reset.
 Browser playback, actual audiovisual fidelity, hosted CI, complete collection
 coverage, sustained qualification, and restore proof are distinct checks.
 
+Arkhiv owns the copied private curation workbench under `curation/`. Use its
+frozen uv lockfile and Python 3.12 or newer. Its additional required gate is
+`make verify-curation`; the curation workflow verifies its container separately.
+Keep its AGPL license and source provenance. Branded frontend source remains in
+the consumer repositories; engine releases must not replace those interfaces.
+
 Keep Gitea issues open until required evidence exists. Original dates and replay
 labels must be visible. Viewer controls cannot alter shared schedules. Public
 deployment requires its separate owner decision.
