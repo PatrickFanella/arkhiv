@@ -16,6 +16,7 @@ describe('channel correction while a remote source buffers', () => {
     const playing = media([[119, 125], [132, 138]]);
     expect(channelSeekTarget(playing, 128)).toBeNull();
     expect(channelSeekTarget(playing, 140)).toBeNull();
+    expect(channelSeekTarget(playing, 134)).toBeNull();
     expect(channelSeekTarget(playing, 138)).toBeNull();
   });
   it('corrects drift after the media is playable and the target has buffered', () => {
