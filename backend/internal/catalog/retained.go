@@ -73,5 +73,24 @@ func (d *DB) RetainLegacy(ctx context.Context, raw []byte, collection, notes str
 			return err
 		}
 	}
+	if e.Module == "print" {
+		// Materialize once. Scanning and decompressing a complete donor export for
+		// every edition makes large independently recovered imports impractical.
+		_, err = tx.Exec(ctx, `WITH recovered AS MATERIALIZED (
+ SELECT payload->'tables' AS tables FROM retained_legacy_exports WHERE collection_id=$1 AND module='print' AND recovery_sha256=$2
+), texts AS MATERIALIZED (
+ SELECT row->>'asset_sha' AS asset,jsonb_agg(row) AS sections FROM recovered,jsonb_array_elements(COALESCE(tables->'page_text','[]'::jsonb)) row GROUP BY row->>'asset_sha'
+), variants AS MATERIALIZED (
+ SELECT row->>'asset_sha' AS asset,jsonb_agg(row) AS variants FROM recovered,jsonb_array_elements(COALESCE(tables->'variants','[]'::jsonb)) row GROUP BY row->>'asset_sha'
+)
+ INSERT INTO retained_print_indexes(collection_id,recovery_sha256,asset_sha256,derivative,sections,variants)
+ SELECT $1,$2,row->>'asset_sha',row,COALESCE(texts.sections,'[]'::jsonb),COALESCE(variants.variants,'[]'::jsonb)
+ FROM recovered CROSS JOIN LATERAL jsonb_array_elements(COALESCE(tables->'derivatives','[]'::jsonb)) row
+ LEFT JOIN texts ON texts.asset=row->>'asset_sha' LEFT JOIN variants ON variants.asset=row->>'asset_sha'
+ ON CONFLICT DO NOTHING`, collection, e.Recovery)
+		if err != nil {
+			return err
+		}
+	}
 	return tx.Commit(ctx)
 }

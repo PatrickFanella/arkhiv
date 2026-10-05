@@ -55,11 +55,8 @@ func RestoreIndex(ctx context.Context, db *catalog.DB, mediaRoot, derivativeRoot
 	// Bind pages, tool, and every text section to the immutable recovered database,
 	// rather than trusting a second operator-supplied transcription.
 	var derivative, text []byte
-	err = db.Pool.QueryRow(ctx, `SELECT
- (SELECT row FROM jsonb_array_elements(payload->'tables'->'derivatives') row WHERE row->>'asset_sha'=$5),
- COALESCE((SELECT jsonb_agg(row) FROM jsonb_array_elements(payload->'tables'->'page_text') row WHERE row->>'asset_sha'=$5),'[]'::jsonb)
- FROM retained_legacy_exports WHERE collection_id=$1 AND module='print' AND recovery_sha256=$2
- AND EXISTS(SELECT 1 FROM jsonb_array_elements(payload->'tables'->'variants') row WHERE row->>'id'=$3 AND row->>'document_id'=$4 AND row->>'asset_sha'=$5 AND row->>'filename'=$6)`, collection, input.Recovery, representation, item, input.Original, file).Scan(&derivative, &text)
+	err = db.Pool.QueryRow(ctx, `SELECT derivative,sections FROM retained_print_indexes WHERE collection_id=$1 AND recovery_sha256=$2 AND asset_sha256=$5
+ AND EXISTS(SELECT 1 FROM jsonb_array_elements(variants) row WHERE row->>'id'=$3 AND row->>'document_id'=$4 AND row->>'asset_sha'=$5 AND row->>'filename'=$6)`, collection, input.Recovery, representation, item, input.Original, file).Scan(&derivative, &text)
 	if err != nil {
 		return fmt.Errorf("recovered edition/index unavailable: %w", err)
 	}
