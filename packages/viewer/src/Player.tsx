@@ -1,3 +1,4 @@
+import { channelSeekTarget } from './channelSync.js';
 import { useEffect, useRef, useState } from 'react';
 import { captionURL, playbackURL, targetOffset, type Session } from './model.js';
 
@@ -80,7 +81,8 @@ export function Player({ session, paused, onPaused }: { session: Session; paused
     const element = video.current;
     if (session.mode === 'channel' && element && element.readyState > 0 && !paused) {
       const expected = targetOffset(session, performance.now());
-      if (Math.abs(element.currentTime - expected) > 3) element.currentTime = expected;
+      const correction = channelSeekTarget(element, expected);
+      if (correction !== null) element.currentTime = correction;
     }
   }, [session, paused]);
   return <div className="player">

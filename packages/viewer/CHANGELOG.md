@@ -1,6 +1,11 @@
 # Shared viewer changes
 
-## 0.2.2 (unreleased)
+## 0.2.3
+
+- Let remote source seeks finish before shared-channel clock corrections.
+- Correct drift only when the target position is buffered and playable.
+
+## 0.2.2
 
 - Request deadlines show a clear retry message while preserving caller cancellation.
 - Catalog requests accept a bounded timeout for integrity-checked continuous audio resolution.
