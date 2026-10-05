@@ -720,6 +720,9 @@ textarea {
   margin: 22px 0;
 }
 .exports a {
+  white-space: normal;
+  flex-wrap: wrap;
+  overflow-wrap: anywhere;
   justify-content: flex-start;
 }
 #notice {

@@ -44,7 +44,7 @@ func load(p string, v any) error {
 }
 func run() error {
 	if len(os.Args) < 2 {
-		return fmt.Errorf("usage: vhness migrate|collection|review-budget|review-public-video|review-library|plan-replay|import|import-item|import-source|import-catalog|prepare-curation|retain-legacy|review-transport|index-print|restore-print-index|register-audio|schedule-audio|fetch|inspect|acquire|audit|review|schedule|discover|refresh|report|seed|serve|healthcheck")
+		return fmt.Errorf("usage: vhness migrate|collection|review-budget|review-public-video|review-library|plan-replay|import|import-item|import-source|import-catalog|prepare-curation|retain-legacy|review-transport|index-print|restore-print-index|register-audio|schedule-audio|renew-public-audio|fetch|inspect|acquire|audit|review|schedule|discover|refresh|report|seed|serve|healthcheck")
 	}
 	cmd := os.Args[1]
 	if cmd == "healthcheck" {
@@ -83,6 +83,7 @@ func run() error {
 	approvePublic := f.Bool("approve-public", false, "explicit owner-authorized publication; false revokes video publication")
 	after := f.String("after-id", "", "bounded library review cursor")
 	days := f.Int("days", 7, "explicit replay horizon, 1 through 7 days")
+	hours := f.Int("hours", 168, "public audio renewal horizon, 1 through 168 hours")
 	pages := f.Int("pages", 1, "bounded discovery pages (0–100)")
 	items := f.Int("items", 20, "bounded metadata fetches (0–1000)")
 	timeout := f.Duration("timeout", 10*time.Minute, "run deadline")
@@ -190,6 +191,25 @@ func run() error {
 			return fmt.Errorf("audio schedule outside selected collection")
 		}
 		return d.StoreAudioSchedule(ctx, schedule, *notes)
+	case "renew-public-audio":
+		input, err := os.Open(*file)
+		if err != nil {
+			return err
+		}
+		defer input.Close()
+		raw, err := io.ReadAll(io.LimitReader(input, (64<<10)+1))
+		if err != nil {
+			return err
+		}
+		var selected []audiomodule.ScheduleSelection
+		if len(raw) > 64<<10 || json.Unmarshal(raw, &selected) != nil {
+			return fmt.Errorf("invalid bounded public audio selection")
+		}
+		schedule, err := audiomodule.RenewPublicSchedule(ctx, d, os.Getenv("VHNESS_MEDIA"), os.Getenv("VHNESS_DERIVATIVES"), *collection, selected, *hours, time.Now(), *notes)
+		if err != nil {
+			return err
+		}
+		return json.NewEncoder(os.Stdout).Encode(schedule)
 	case "index-print":
 		return printmodule.Index(ctx, d, os.Getenv("VHNESS_MEDIA"), os.Getenv("VHNESS_DERIVATIVES"), *id, *representation, *collection)
 	case "restore-print-index":

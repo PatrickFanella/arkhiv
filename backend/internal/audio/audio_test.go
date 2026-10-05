@@ -249,4 +249,75 @@ func TestContinuousAudioRightsAndStationIntegration(t *testing.T) {
 	if w = get(base+"/media", nil); w.Code != 404 {
 		t.Fatal("corrupt continuous derivative exposed", w.Code)
 	}
+
+	// A longer synthetic recording exercises bounded public renewal and repeat
+	// delivery without publishing any real material or relying on wall time.
+	long := tone(10)
+	if err = os.WriteFile(filepath.Join(media, "one.wav"), long, 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err = os.WriteFile(filepath.Join(derived, "renewal.wav"), long, 0600); err != nil {
+		t.Fatal(err)
+	}
+	r.ID = "renewal"
+	r.Duration = 10
+	r.Tracks = []music.Track{{Title: "Synthetic renewal", Position: 0, Duration: 10, File: music.File{Name: "one.wav", Bytes: int64(len(long))}}}
+	r.Sets = nil
+	rep.Extension.Audio.Recording = &r
+	rep.Extension.Audio.RecordingID = r.ID
+	rep.Extension.Audio.Tracks = []domain.AudioTrack{{ID: "one", File: "one.wav"}}
+	approval.Manifest = []domain.LocalOriginal{{File: "one.wav", Bytes: int64(len(long)), SHA256: domain.Digest(long), Path: "one.wav"}}
+	asset.Path = "renewal.wav"
+	asset.Duration = 10
+	asset.Bytes = int64(len(long))
+	asset.SHA256 = domain.Digest(long)
+	asset.ManifestSHA256 = domain.ManifestDigest(approval)
+	review.Files = []string{"one.wav"}
+	review.Playback = true
+	review.Schedule = true
+	review.Public = true
+	review.Notes = "Explicit synthetic public renewal fixture"
+	item := domain.CatalogItem{ID: r.ID, Title: r.Title, Collections: []string{c.ID}, Representations: []domain.Representation{rep}}
+	if err = db.InsertCatalog(ctx, item, "Synthetic renewal mapping"); err != nil {
+		t.Fatal(err)
+	}
+	if err = db.ReviewPublicTransport(ctx, item.ID, rep.ID, c.ID, review, approval); err != nil {
+		t.Fatal(err)
+	}
+	if err = audiomodule.Register(ctx, db, media, derived, item.ID, rep.ID, c.ID, asset, "Synthetic renewal asset"); err != nil {
+		t.Fatal(err)
+	}
+	selected := []audiomodule.ScheduleSelection{{Item: item.ID, Representation: rep.ID}}
+	renewed, err := audiomodule.RenewPublicSchedule(ctx, db, media, derived, c.ID, selected, 1, now.Add(10*time.Minute), "Retain exact synthetic selection")
+	if err != nil || len(renewed.Programs) != 360 || !renewed.Programs[0].Start.Equal(now) {
+		t.Fatal("bounded public renewal", err, len(renewed.Programs))
+	}
+	repeated, err := audiomodule.RenewPublicSchedule(ctx, db, media, derived, c.ID, selected, 1, now.Add(20*time.Minute), "Repeat exact synthetic selection")
+	if err != nil || repeated.Revision != renewed.Revision {
+		t.Fatal("repeat renewal changed timeline", err)
+	}
+	var count int
+	if err = db.Pool.QueryRow(ctx, `SELECT count(*) FROM audio_schedules WHERE collection_id=$1 AND revision=$2`, c.ID, renewed.Revision).Scan(&count); err != nil || count != 1 {
+		t.Fatal("repeat renewal duplicated history", err, count)
+	}
+	if _, err = audiomodule.RenewPublicSchedule(ctx, db, media, derived, c.ID, append(selected, selected...), 1, now, "Reject duplicate selection"); err == nil {
+		t.Fatal("duplicate renewal accepted")
+	}
+	if err = os.WriteFile(filepath.Join(derived, "renewal.wav"), []byte("changed"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = audiomodule.RenewPublicSchedule(ctx, db, media, derived, c.ID, selected, 1, now, "Reject changed media"); err == nil {
+		t.Fatal("corrupt renewal media accepted")
+	}
+	if err = os.WriteFile(filepath.Join(derived, "renewal.wav"), long, 0600); err != nil {
+		t.Fatal(err)
+	}
+	review.Public = false
+	review.Notes = "Withdraw synthetic public eligibility"
+	if err = db.ReviewTransport(ctx, item.ID, rep.ID, c.ID, review, approval); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = audiomodule.RenewPublicSchedule(ctx, db, media, derived, c.ID, selected, 1, now, "Reject private selection"); err == nil {
+		t.Fatal("private renewal recording accepted")
+	}
 }

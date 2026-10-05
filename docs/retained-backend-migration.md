@@ -39,6 +39,15 @@ OCR decisions. Whole-document OCR remains page zero. It preserves existing deriv
 without re-running extraction or granting additional access. Unpublished editions and
 failed derivatives stay in recovery history for later explicit review.
 
+For an adopted public audio station, `renew-public-audio --collection COLLECTION
+--file SELECTION --hours 168 --notes BASIS` replaces the legacy renewal command.
+`SELECTION` is a JSON array of exact `item_id` and `representation_id` pairs.
+The command verifies all preserved inputs and continuous media, rejects private or
+withdrawn recordings, and repeats only this explicit selection. Repeating it within
+the same hour preserves the same timeline and revision. It does not add recordings,
+acquire sources, or change access reviews. Keep the brand's maintenance lock and
+operator schedule when switching its renewal command.
+
 By default, migration preparation grants no public approval. With
 `--retain-public-approvals`, print preparation retains only already published and
 approved variants. Audio preparation requires the donor's current approved audience
