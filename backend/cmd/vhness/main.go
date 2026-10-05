@@ -44,7 +44,7 @@ func load(p string, v any) error {
 }
 func run() error {
 	if len(os.Args) < 2 {
-		return fmt.Errorf("usage: vhness migrate|collection|review-budget|review-public-video|review-library|plan-replay|import|import-item|import-source|import-catalog|review-transport|index-print|register-audio|schedule-audio|fetch|inspect|acquire|audit|review|schedule|discover|refresh|report|seed|serve|healthcheck")
+		return fmt.Errorf("usage: vhness migrate|collection|review-budget|review-public-video|review-library|plan-replay|import|import-item|import-source|import-catalog|prepare-curation|retain-legacy|review-transport|index-print|register-audio|schedule-audio|fetch|inspect|acquire|audit|review|schedule|discover|refresh|report|seed|serve|healthcheck")
 	}
 	cmd := os.Args[1]
 	if cmd == "healthcheck" {
@@ -132,6 +132,32 @@ func run() error {
 		}
 	}
 	switch cmd {
+	case "retain-legacy":
+		input, err := os.Open(*file)
+		if err != nil {
+			return err
+		}
+		defer input.Close()
+		raw, err := io.ReadAll(io.LimitReader(input, (256<<20)+1))
+		if err != nil {
+			return err
+		}
+		return d.RetainLegacy(ctx, raw, *collection, *notes)
+	case "prepare-curation":
+		input, err := os.Open(*file)
+		if err != nil {
+			return err
+		}
+		defer input.Close()
+		raw, err := io.ReadAll(io.LimitReader(input, (16<<20)+1))
+		if err != nil {
+			return err
+		}
+		sha, err := d.PrepareCuration(ctx, raw, allowlist, *notes)
+		if err != nil {
+			return err
+		}
+		return json.NewEncoder(os.Stdout).Encode(map[string]any{"draft_sha256": sha, "state": "operator-review", "public": false, "transport_granted": false})
 	case "import-source":
 		if _, err := d.GetCollection(ctx, *collection); err != nil {
 			return err
@@ -594,7 +620,14 @@ func run() error {
 		}
 		return nil
 	case "serve":
-		server := &http.Server{Addr: env("API_ADDR", "127.0.0.1:8080"), Handler: (&app.Server{DB: d, Web: os.Getenv("VHNESS_WEB"), Media: os.Getenv("VHNESS_MEDIA"), Derivatives: os.Getenv("VHNESS_DERIVATIVES"), Collection: scope, Collections: allowlist}).Handler(), ReadHeaderTimeout: 5 * time.Second, IdleTimeout: 60 * time.Second}
+		compatibility := os.Getenv("ARKHIV_COMPATIBILITY")
+		if compatibility != "" && compatibility != "print" && compatibility != "audio" {
+			return fmt.Errorf("ARKHIV_COMPATIBILITY must be print or audio")
+		}
+		if compatibility != "" && len(allowlist) != 1 {
+			return fmt.Errorf("compatibility API requires exactly one collection")
+		}
+		server := &http.Server{Addr: env("API_ADDR", "127.0.0.1:8080"), Handler: (&app.Server{DB: d, Compatibility: compatibility, Revision: os.Getenv("ARKHIV_REVISION"), Web: os.Getenv("VHNESS_WEB"), Media: os.Getenv("VHNESS_MEDIA"), Derivatives: os.Getenv("VHNESS_DERIVATIVES"), Collection: scope, Collections: allowlist}).Handler(), ReadHeaderTimeout: 5 * time.Second, IdleTimeout: 60 * time.Second}
 		go func() {
 			<-ctx.Done()
 			shutdown, cancel := context.WithTimeout(context.Background(), 10*time.Second)

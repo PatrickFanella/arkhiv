@@ -170,3 +170,6 @@ func (d *DB) catalogView() string {
 	}
 	return "visible_catalog_representations"
 }
+
+// CatalogView exposes the fixed audience-filtered view name to compatibility adapters.
+func (d *DB) CatalogView() string { return d.catalogView() }

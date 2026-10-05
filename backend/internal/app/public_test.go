@@ -62,7 +62,8 @@ func TestPublicPublicationIntegration(t *testing.T) {
 		t.Fatal(err)
 	}
 	rep := domain.Representation{ID: "pdf", Media: domain.PrintMedia, SourceItemID: "print-source", Snapshot: domain.Digest(raw), File: "original.pdf", Collections: []string{c.ID}, Extension: domain.MediaExtension{Print: &domain.PrintExtension{DocumentID: "print", Variant: "original", Pages: 1}}}
-	item := domain.CatalogItem{ID: "print", Title: "Reviewed fixture print", Collections: []string{c.ID}, Representations: []domain.Representation{rep}}
+	legacyEditorial := json.RawMessage(`{"legacy_document":{"published":true,"source_item":"print-source","source_key":"original","rights":"unknown-rights","review_note":"Private operator note","metadata":{"title":"Reviewed fixture print","creator":"Fixture author","language":"en","subjects":["print"],"private":"operator-only"},"overrides":{}}}`)
+	item := domain.CatalogItem{Editorial: legacyEditorial, ID: "print", Title: "Reviewed fixture print", Collections: []string{c.ID}, Representations: []domain.Representation{rep}}
 	if err = operator.InsertCatalog(ctx, item, "Private mapping"); err != nil {
 		t.Fatal(err)
 	}
@@ -123,6 +124,51 @@ func TestPublicPublicationIntegration(t *testing.T) {
 	if w := get(printPath + "/media?collection=" + c.ID); w.Code != 200 || string(content) != w.Body.String() {
 		t.Fatal("approved original bytes", w.Code, w.Body.String())
 	}
+
+	index := domain.PrintIndex{Snapshot: rep.Snapshot, OriginalSHA256: hash, Pages: 1, TextStatus: "page-text", Tool: "Synthetic retained fixture"}
+	if err = operator.StorePrintIndex(ctx, item.ID, rep.ID, rep.File, index, map[int]string{1: "A retained OCR passage about solidarity."}); err != nil {
+		t.Fatal("retained print index", err)
+	}
+	retained := catalog.RetainedExport{Collection: c.ID, Module: "print", Recovery: domain.Digest([]byte("independent fixture restore")), Tables: map[string][]json.RawMessage{"collections": {json.RawMessage(`{"id":"public-fixture","config":{"name":"Fixture print","introduction":"Retained introduction","accent":"red"}}`)}}, Counts: map[string]int{"collections": 1}}
+	retainedRaw, _ := json.Marshal(retained)
+	if err = operator.RetainLegacy(ctx, retainedRaw, c.ID, "Retain original print configuration"); err != nil {
+		t.Fatal("retain print export", err)
+	}
+	if _, _, err = public.LegacyPrintDocuments(ctx, c.ID, "", "", "", "", 1, 0); err != nil {
+		t.Fatal("compatibility print SQL", err)
+	}
+	server.Compatibility = "print"
+	server.Collections = domain.CollectionScope{c.ID}
+	if w := get("/api/collections"); w.Code != 200 || !strings.Contains(w.Body.String(), "Retained introduction") {
+		t.Fatal("compatibility collections", w.Code, w.Body.String())
+	}
+	if w := get("/api/documents?q=solidarity"); w.Code != 200 || !strings.Contains(w.Body.String(), `"total":1`) || strings.Contains(w.Body.String(), "operator-only") || strings.Contains(w.Body.String(), "Private operator note") {
+		t.Fatal("retained metadata/OCR search", w.Code, w.Body.String())
+	}
+	if w := get("/api/facets"); w.Code != 200 || w.Body.String() != "{\"subjects\":[\"print\"]}\n" {
+		t.Fatal("compatibility facets", w.Code, w.Body.String())
+	}
+	if w := get("/api/documents/print"); w.Code != 200 || !strings.Contains(w.Body.String(), "unknown-rights") || !strings.Contains(w.Body.String(), `"pages":1`) {
+		t.Fatal("retained print detail", w.Code, w.Body.String())
+	}
+	if w := get("/api/assets/pdf?download=1"); w.Code != 200 || w.Header().Get("ETag") != `"`+hash+`"` || !strings.Contains(w.Header().Get("Content-Disposition"), "attachment") || w.Body.String() != string(content) {
+		t.Fatal("legacy original/download bytes", w.Code, w.Header(), w.Body.String())
+	}
+	w := httptest.NewRecorder()
+	request := httptest.NewRequest("GET", "/api/assets/pdf", nil)
+	request.Header.Set("Range", "bytes=0-3")
+	server.Handler().ServeHTTP(w, request)
+	if w.Code != 206 || w.Body.String() != string(content[:4]) {
+		t.Fatal("legacy PDF byte range", w.Code, w.Body.String())
+	}
+	if w := get("/api/assets/pdf/search?q=solidarity"); w.Code != 200 || !strings.Contains(w.Body.String(), `"variant":"pdf"`) || !strings.Contains(w.Body.String(), `"page":1`) {
+		t.Fatal("legacy OCR search shape", w.Code, w.Body.String())
+	}
+	if w := get("/api/documents?collection=" + videoCollection.ID); w.Code != 404 {
+		t.Fatal("compatibility scope bypass", w.Code)
+	}
+	server.Compatibility = ""
+	server.Collections = domain.CollectionScope{c.ID, videoCollection.ID}
 	if err = operator.ReviewPublicVideo(ctx, video.ID, true, "Owner-approved fixture publication"); err != nil {
 		t.Fatal(err)
 	}

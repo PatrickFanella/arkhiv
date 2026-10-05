@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -104,6 +105,50 @@ func TestMetadataIntegration(t *testing.T) {
 	if err = d.Decide(ctx, e.ID, decision); err != nil {
 		t.Fatal(err)
 	}
+
+	// A reviewed selection becomes a durable draft without acquiring or publishing
+	// media, modifying the legacy video decision, or adding target membership.
+	page, err := d.Catalog(ctx, CatalogQuery{ID: "legacy-video:item", Page: 1})
+	if err != nil || len(page.Items) != 1 {
+		t.Fatal("curation source", err, page)
+	}
+	denied := map[string]bool{"read": false, "playback": false, "download": false, "acquisition": false, "relay": false, "schedule": false, "public": false}
+	manifest := CurationManifest{Schema: "arkhiv.curation.v1", Intent: "reviewed-curation", Target: local.ID, Access: denied, Mappings: []CurationMapping{{Item: page.Items[0], Evidence: strings.Repeat("a", 64), Notes: "Reviewed source identity and credits", Access: denied}}}
+	draftRaw, _ := json.Marshal(manifest)
+	sha, err := d.PrepareCuration(ctx, draftRaw, nil, "Reviewed Kollektor import")
+	if err != nil || sha != domain.Digest(draftRaw) {
+		t.Fatal("prepare curation", sha, err)
+	}
+	if _, err = d.PrepareCuration(ctx, draftRaw, nil, "Repeat same draft"); err != nil {
+		t.Fatal("idempotent curation", err)
+	}
+	var drafts, memberships, transports int
+	if err = d.Pool.QueryRow(ctx, `SELECT count(*) FROM curation_drafts`).Scan(&drafts); err != nil || drafts != 1 {
+		t.Fatal("draft retention", err, drafts)
+	}
+	_ = d.Pool.QueryRow(ctx, `SELECT count(*) FROM catalog_memberships`).Scan(&memberships)
+	_ = d.Pool.QueryRow(ctx, `SELECT count(*) FROM representation_transport_reviews`).Scan(&transports)
+	if memberships != 0 || transports != 0 {
+		t.Fatal("curation silently granted membership or transport")
+	}
+	if _, err = d.PrepareCuration(ctx, draftRaw, domain.CollectionScope{domain.DemocracyNow}, "Outside target scope"); err == nil {
+		t.Fatal("out-of-scope curation accepted")
+	}
+	changedCuration := manifest
+	changedCuration.Mappings = append([]CurationMapping{}, manifest.Mappings...)
+	changedCuration.Mappings[0].Item.Representations = append([]domain.Representation{}, page.Items[0].Representations...)
+	changedCuration.Mappings[0].Item.Representations[0].Snapshot = strings.Repeat("b", 64)
+	bad, _ := json.Marshal(changedCuration)
+	if _, err = d.PrepareCuration(ctx, bad, nil, "Changed source"); err == nil {
+		t.Fatal("changed curation source accepted")
+	}
+	grant := manifest
+	grant.Access = map[string]bool{"public": true}
+	bad, _ = json.Marshal(grant)
+	if _, err = d.PrepareCuration(ctx, bad, nil, "No public authority"); err == nil {
+		t.Fatal("public grant in curation accepted")
+	}
+
 	var recovered []byte
 	if err = d.Pool.QueryRow(ctx, `SELECT raw FROM snapshots WHERE sha256=$1`, domain.Digest(raw)).Scan(&recovered); err != nil || string(recovered) != string(raw) {
 		t.Fatal("raw snapshot fidelity", err)

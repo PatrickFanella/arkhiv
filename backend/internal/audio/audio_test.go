@@ -93,12 +93,14 @@ func TestContinuousAudioRightsAndStationIntegration(t *testing.T) {
 	if err = db.Snapshot(ctx, "audio-source", raw, 200, "", "", nil); err != nil {
 		t.Fatal(err)
 	}
-	r := music.Recording{ID: "recording", ConcertID: "concert", Title: "Synthetic continuous recording", Source: "Generated tone", Taper: "Fixture generator", Duration: 2, Synthetic: true, Warnings: []string{"Unreviewed set boundary retained"}, Tracks: []music.Track{{Title: "First", Position: 0, Start: 0, Duration: 1, File: music.File{Name: "one.wav", Bytes: int64(len(one))}}, {Title: "Second", Position: 1, Start: 1, Duration: 1, File: music.File{Name: "two.wav", Bytes: int64(len(one))}}}, Sets: []music.Set{{Title: "Reviewed second track", First: 1, Last: 1, Reviewed: true}}}
+	r := music.Recording{Date: "1977-05-08", ID: "recording", ConcertID: "concert", Title: "Synthetic continuous recording", Source: "Generated tone", Taper: "Fixture generator", Duration: 2, Synthetic: true, Warnings: []string{"Unreviewed set boundary retained"}, Tracks: []music.Track{{Title: "First", Position: 0, Start: 0, Duration: 1, File: music.File{Name: "one.wav", Bytes: int64(len(one))}}, {Title: "Second", Position: 1, Start: 1, Duration: 1, File: music.File{Name: "two.wav", Bytes: int64(len(one))}}}, Sets: []music.Set{{Title: "Reviewed second track", First: 1, Last: 1, Reviewed: true}}}
 	rep := domain.Representation{ID: "recording", Media: domain.AudioMedia, SourceItemID: "audio-source", Snapshot: snapshot, File: "one.wav", Collections: []string{c.ID}, Extension: domain.MediaExtension{Audio: &domain.AudioExtension{RecordingID: r.ID, ConcertID: r.ConcertID, Recording: &r, Tracks: []domain.AudioTrack{{ID: "one", File: "one.wav"}, {ID: "two", File: "two.wav"}}, Credits: map[string]string{"taper": r.Taper}}}}
 	approval := domain.PreservationApproval{Snapshot: snapshot, IndependentRecoverySHA256: domain.Digest([]byte("synthetic original recovery")), Manifest: []domain.LocalOriginal{{File: "one.wav", Bytes: int64(len(one)), SHA256: domain.Digest(one), Path: "one.wav"}, {File: "two.wav", Bytes: int64(len(one)), SHA256: domain.Digest(one), Path: "two.wav"}}}
 	review := domain.TransportReview{Snapshot: snapshot, Files: []string{"one.wav", "two.wav"}, Playback: true, Schedule: true, Notes: "Synthetic private audio review"}
 	asset := domain.AudioAsset{Snapshot: snapshot, ManifestSHA256: domain.ManifestDigest(approval), Path: "continuous.wav", SHA256: domain.Digest(continuous), Bytes: int64(len(continuous)), Duration: 2, RecoverySHA256: domain.Digest([]byte("synthetic derived recovery")), Tool: "Synthetic PCM fixture"}
 	for _, id := range []string{"first", "future"} {
+		r.ID = id
+		rep.Extension.Audio.RecordingID = id
 		item := domain.CatalogItem{ID: id, Title: r.Title, Collections: []string{c.ID}, Representations: []domain.Representation{rep}}
 		if err = db.InsertCatalog(ctx, item, "Synthetic recording mapping"); err != nil {
 			t.Fatal(err)
@@ -120,7 +122,7 @@ func TestContinuousAudioRightsAndStationIntegration(t *testing.T) {
 	if err = db.StoreAudioSchedule(ctx, schedule, "Synthetic station"); err != nil {
 		t.Fatal(err)
 	}
-	server := &app.Server{DB: db, Media: media, Derivatives: derived, Collection: c.ID, Clock: func() time.Time { return now.Add(1500 * time.Millisecond) }}
+	server := &app.Server{Compatibility: "audio", DB: db, Media: media, Derivatives: derived, Collection: c.ID, Clock: func() time.Time { return now.Add(1500 * time.Millisecond) }}
 	handler := server.Handler()
 	get := func(path string, headers map[string]string) *httptest.ResponseRecorder {
 		w := httptest.NewRecorder()
@@ -130,6 +132,39 @@ func TestContinuousAudioRightsAndStationIntegration(t *testing.T) {
 		}
 		handler.ServeHTTP(w, r)
 		return w
+	}
+
+	inventoryRows := []json.RawMessage{}
+	for _, id := range []string{"first", "future"} {
+		row := map[string]any{"id": id, "show_date": "1977-05-08", "date_text": "1977-05-08", "artist": "Fixture artist", "venue": "Fixture venue", "location": "Fixture location", "title": "Synthetic continuous recording", "kind": "synthetic", "source": "Generated tone", "lineage": "Retained fixture lineage", "taper": "Fixture generator", "transferer": "Fixture transfer", "downloads": 1, "avg_rating": 5, "num_reviews": 1, "item_size": len(continuous), "added_at": now, "tracks": r.Tracks, "songs": "First Second", "duration": r.Duration, "warnings": []string{}, "summary": map[string]any{}, "snapshot_sha256": snapshot, "observed_at": now, "updated_at": now}
+		encoded, _ := json.Marshal(row)
+		inventoryRows = append(inventoryRows, encoded)
+	}
+	retained := catalog.RetainedExport{Collection: c.ID, Module: "audio", Recovery: domain.Digest([]byte("independent fixture recovery")), Tables: map[string][]json.RawMessage{"source_items": inventoryRows}, Counts: map[string]int{"source_items": 2}}
+	retainedRaw, _ := json.Marshal(retained)
+	if err = db.RetainLegacy(ctx, retainedRaw, c.ID, "Retain complete fixture inventory"); err != nil {
+		t.Fatal("retained inventory import", err)
+	}
+	if err = db.RetainLegacy(ctx, retainedRaw, c.ID, "Idempotent recovery import"); err != nil {
+		t.Fatal("repeat retained inventory", err)
+	}
+	if w := get("/api/recordings", nil); w.Code != 200 || !bytes.Contains(w.Body.Bytes(), []byte(`"total":2`)) || !bytes.Contains(w.Body.Bytes(), []byte("Fixture generator")) {
+		t.Fatal("legacy audio listing and credits", w.Code, w.Body.String())
+	}
+	if w := get("/api/recordings/first", nil); w.Code != 200 || !bytes.Contains(w.Body.Bytes(), []byte("Reviewed second track")) {
+		t.Fatal("retained reviewed set", w.Code, w.Body.String())
+	}
+	if w := get("/api/audio/first", map[string]string{"Range": "bytes=0-43"}); w.Code != 206 || w.Header().Get("ETag") != `"`+asset.SHA256+`"` || !bytes.Equal(w.Body.Bytes(), continuous[:44]) {
+		t.Fatal("legacy audio ranges and validator", w.Code, w.Header())
+	}
+	var legacyState music.Now
+	if w := get("/api/station", nil); w.Code != 200 || json.Unmarshal(w.Body.Bytes(), &legacyState) != nil || legacyState.Program.RecordingID != "first" || legacyState.Revision != schedule.Revision || legacyState.Offset != 1.5 || legacyState.Track != 1 || legacyState.Next == nil || legacyState.Next.RecordingID != "future" {
+		t.Fatal("legacy station timeline", w.Code, w.Body.String())
+	}
+	for _, path := range []string{"/api/calendar?year=1977", "/api/on-this-day?month=5&day=8", "/api/shows?q=Fixture&year=1977", "/api/dates/1977-05-08"} {
+		if w := get(path, nil); w.Code != 200 || !bytes.Contains(w.Body.Bytes(), []byte("1977")) {
+			t.Fatal("retained inventory contract", path, w.Code, w.Body.String())
+		}
 	}
 	base := "/api/catalog/v1/items/first/representations/recording/audio"
 	w := get(base+"/resolve", nil)
@@ -170,6 +205,9 @@ func TestContinuousAudioRightsAndStationIntegration(t *testing.T) {
 	if err = db.ReviewTransport(ctx, "future", rep.ID, c.ID, review, approval); err != nil {
 		t.Fatal(err)
 	}
+	if w := get("/api/station", nil); w.Code != 503 {
+		t.Fatal("legacy station ignored future withdrawal", w.Code, w.Body.String())
+	}
 	w = get("/api/audio/channel", nil)
 	if !bytes.Contains(w.Body.Bytes(), []byte(`"state":"unavailable"`)) {
 		t.Fatal("withdrawn future program exposed station", w.Body.String())
@@ -181,6 +219,12 @@ func TestContinuousAudioRightsAndStationIntegration(t *testing.T) {
 	review.Notes = "Withdraw first recording playback"
 	if err = db.ReviewTransport(ctx, "first", rep.ID, c.ID, review, approval); err != nil {
 		t.Fatal(err)
+	}
+	if w := get("/api/audio/first", map[string]string{"If-None-Match": `"` + asset.SHA256 + `"`}); w.Code != 404 {
+		t.Fatal("legacy conditional media ignored withdrawal", w.Code)
+	}
+	if w := get("/api/recordings/first", nil); w.Code != 404 {
+		t.Fatal("legacy detail ignored withdrawal", w.Code)
 	}
 	if w = get(base+"/media", map[string]string{"If-None-Match": `"sha256-` + asset.SHA256 + `"`}); w.Code != 404 {
 		t.Fatal("revoked conditional audio exposed", w.Code)

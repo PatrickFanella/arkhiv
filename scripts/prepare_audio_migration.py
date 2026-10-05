@@ -20,7 +20,7 @@ def encode(value):
     return json.dumps(value, ensure_ascii=False, separators=(',', ':')).replace('&', '\\u0026').replace('<', '\\u003c').replace('>', '\\u003e').replace('\u2028', '\\u2028').replace('\u2029', '\\u2029').encode()
 
 
-def prepare(backup, export, receipt, output, collection):
+def prepare(backup, export, receipt, output, collection, retain_public=False):
     backup, output = Path(backup), Path(output)
     manifest = json.loads((backup / 'manifest.json').read_text())
     recovered = json.loads(Path(receipt).read_text())
@@ -44,6 +44,9 @@ def prepare(backup, export, receipt, output, collection):
     snapshots = {row['sha256']: row for row in data['source_snapshots']}
     sources, inputs, mappings = [], {}, []
     approved = 0
+    public_count = 0
+    public_approvals = {row['recording_id']: row for row in data.get('public_approvals', [])}
+    scheduled = set()
     for row in data['recordings']:
         identity = row['id']
         if not identity or '/' in identity or '\\' in identity or '..' in identity:
@@ -86,8 +89,8 @@ def prepare(backup, export, receipt, output, collection):
                               'recording_id': identity, 'concert_id': recording.get('concert_id', ''), 'tracks': tracks,
                               'recording': recording, 'credits': {key: recording.get(key, '') for key in ['source', 'taper', 'transferer']}}}}
         item = {'id': identity, 'title': recording['title'], 'creator': recording['artist'], 'date': recording['date'],
-                'description': row['review'].get('notes', ''), 'collections': [collection], 'representations': [representation],
-                'editorial': {'legacy_record': row, 'legacy_snapshot_mapping': mappings[-1], 'migration_scope': 'private pilot'}}
+                'description': recording.get('source', ''), 'collections': [collection], 'representations': [representation],
+                'editorial': {'legacy_record': row, 'legacy_snapshot_mapping': mappings[-1], 'migration_scope': 'retained current decisions; public approval imported separately'}}
         inputs['item-' + identity + '.json'] = encode(item)
         review = row['review']
         if not (review.get('published') and review.get('playback') and row['playback'] and row['media']):
@@ -105,9 +108,22 @@ def prepare(backup, export, receipt, output, collection):
         derived = backup / 'data/media' / row['media']
         if derived.name != row['media'] or digest(derived) != row['media_sha256']:
             raise ValueError('Continuous recording differs')
+        public = False
+        prior_public = public_approvals.get(identity, {})
+        if retain_public and prior_public.get('approved'):
+            if (prior_public.get('source_hash') != row['source_hash']
+                    or prior_public.get('media_sha256') != row['media_sha256']
+                    or review.get('kind') != 'audience' or row['source'].get('synthetic')
+                    or not prior_public.get('policy_basis') or not prior_public.get('reviewer')):
+                raise ValueError('Retained public approval does not match current reviewed audience source/audio')
+            public = True
+            public_count += 1
+        relay = bool(review.get('relay') or public)
+        if relay:
+            scheduled.add(identity)
         access = {'snapshot_sha256': source_hash, 'files': [track['file'] for track in tracks], 'read': False, 'playback': True,
-                  'download': False, 'acquisition': False, 'relay': False, 'schedule': False, 'public': False,
-                  'notes': review['notes'] + ' Migrated private playback only; original decisions and schedule remain retained.'}
+                  'download': False, 'acquisition': False, 'relay': relay, 'schedule': relay, 'public': public,
+                  'notes': review['notes'] + (' Retained public approval: ' + prior_public['policy_basis'] + '; reviewer: ' + prior_public['reviewer'] if public else ' Retained private playback and existing relay decision.')}
         preservation = {'snapshot_sha256': source_hash, 'manifest': originals, 'independent_recovery_sha256': recovery}
         inputs['review-' + identity + '.json'] = encode({'review': access, 'preservation': preservation})
         asset = {'snapshot_sha256': source_hash, 'manifest_sha256': hashlib.sha256(encode(originals)).hexdigest(),
@@ -118,8 +134,11 @@ def prepare(backup, export, receipt, output, collection):
         approved += 1
     plan = {'collection': collection, 'recordings': len(data['recordings']), 'private_playback_recordings': approved,
             'sources': sources, 'snapshot_mappings': mappings, 'legacy_schedule': data['station_schedule'],
-            'independent_recovery_sha256': recovery, 'new_acquisition': False, 'public': False}
+            'independent_recovery_sha256': recovery, 'new_acquisition': False, 'public': public_count > 0, 'public_playback_recordings': public_count, 'schedule_eligible': sorted(scheduled)}
     inputs['migration-plan.json'] = encode(plan)
+    retained_export = {'collection': collection, 'module': 'audio', 'independent_recovery_sha256': recovery,
+                       'tables': data, 'counts': {table: len(rows) for table, rows in data.items()}}
+    inputs['retained-export.json'] = encode(retained_export)
     output.mkdir(mode=0o700, exist_ok=False)
     for name, value in inputs.items():
         (output / name).write_bytes(value)
@@ -131,8 +150,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ['backup', 'export', 'receipt', 'output', 'collection']:
         parser.add_argument('--' + name, required=True)
+    parser.add_argument('--retain-public-approvals', action='store_true', help='Preserve exact current hash-bound audience approvals from the independently restored donor')
     args = parser.parse_args()
-    plan = prepare(args.backup, args.export, args.receipt, args.output, args.collection)
+    plan = prepare(args.backup, args.export, args.receipt, args.output, args.collection, args.retain_public_approvals)
     print(json.dumps({key: plan[key] for key in ['recordings', 'private_playback_recordings', 'new_acquisition', 'public']}))
 
 
