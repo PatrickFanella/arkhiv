@@ -113,3 +113,7 @@ The full source PDFs total 3,510,725,119 bytes before OCR companions. Explicit c
 `approve-automatic --config PATH` applies the recorded policy to the exact collection/source item after original hashes and successful reader manifests are verified. It writes exact variant/hash decision manifests and events, asserts no reuse license, and respects revocations, document withdrawals and source holds/rejections. Repeat runs add no duplicate approval events. Scheduled source acquisition applies the same policy after extraction. A collection without this explicit policy continues to require individual public approval.
 
 All 700 selected PDFs and 468 usable OCR companions are acquired and verified, totaling 3,541,315,927 bytes. All PDFs passed extraction; the catalog contains 12,732 pages. All 700 download hashes and first-page reader checks passed on the public site. The independent NUC snapshot passed file/dump verification and isolated catalog replay. The [full-source qualification report](docs/reports/full-anarchist-qualification-20261003.md) records those proof boundaries, rollback and operating limits. See [issue #52](https://git.subcult.tv/subculture-collective/arkhiv-alpha/issues/52) and the [expansion plan](docs/plans/0004-full-anarchist-collection.md).
+
+The original frontend remains in this repository. A versioned headless Arkhiv
+engine can serve it through the [shared-core release runbook](docs/runbooks/shared-core-release.md),
+with an immutable pin and independently verified upgrades.
