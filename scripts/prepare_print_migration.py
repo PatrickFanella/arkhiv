@@ -27,7 +27,7 @@ def filename(value):
     return value
 
 
-def prepare(backup, catalog_file, restore_file, output):
+def prepare(backup, catalog_file, restore_file, output, retain_public=False):
     receipt = json.loads((backup / 'complete.json').read_text())
     restore = json.loads(restore_file.read_text())
     catalog = json.loads(catalog_file.read_text())
@@ -112,7 +112,7 @@ def prepare(backup, catalog_file, restore_file, output):
                 reviewed.append({'item_id': document['id'], 'representation_id': variant['id'], 'collection': collection,
                     'input': {'review': {'snapshot_sha256': bound_snapshot, 'files': [entry['file'] for entry in manifest],
                         'read': True, 'download': True, 'playback': False, 'acquisition': False, 'relay': False,
-                        'schedule': False, 'public': False, 'notes': 'Retained private pilot reading/download decision. ' + document['review_note']},
+                        'schedule': False, 'public': bool(retain_public and variant.get('public_approved')), 'notes': ('Retained current public variant approval. ' if retain_public and variant.get('public_approved') else 'Retained private pilot reading/download decision. ') + document['review_note']},
                         'preservation': {'snapshot_sha256': bound_snapshot, 'manifest': manifest,
                                          'independent_recovery_sha256': recovery}}})
         if not item['representations']:
@@ -140,7 +140,13 @@ def prepare(backup, catalog_file, restore_file, output):
                 for key, (item, _, bound_snapshot) in snapshots.items()],
             'reviews': [{k: v for k, v in review.items() if k != 'input'} for review in reviewed],
             'history_owner': 'Retained original dump and independently restored legacy database',
-            'scope': 'Private existing pilot only; no acquisition, relay or public approval'}
+            'scope': ('Retained current published variant approvals only; no new public scope' if retain_public else 'Private existing pilot only; no acquisition, relay or public approval')}
+    for collection in collections:
+        if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._-]{0,199}', collection):
+            raise ValueError('Invalid retained collection identity')
+        save('retained-export-' + collection + '.json', {'collection': collection, 'module': 'print',
+             'independent_recovery_sha256': recovery, 'tables': catalog,
+             'counts': {table: len(rows) for table, rows in catalog.items()}})
     save('migration-plan.json', plan)
     return plan
 
@@ -151,6 +157,7 @@ if __name__ == '__main__':
     parser.add_argument('--restored-catalog', required=True, type=Path)
     parser.add_argument('--restore-receipt', required=True, type=Path)
     parser.add_argument('--output', required=True, type=Path)
+    parser.add_argument('--retain-public-approvals', action='store_true', help='Preserve only current published/approved variants in the independently restored donor; never approve additional variants')
     args = parser.parse_args()
-    plan = prepare(args.backup, args.restored_catalog, args.restore_receipt, args.output)
+    plan = prepare(args.backup, args.restored_catalog, args.restore_receipt, args.output, args.retain_public_approvals)
     print('Private migration inputs:', plan['documents'], 'documents,', plan['variants'], 'variants')

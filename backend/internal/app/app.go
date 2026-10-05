@@ -20,6 +20,8 @@ import (
 )
 
 type Server struct {
+	Compatibility     string
+	Revision          string
 	DB                *catalog.DB
 	Clock             func() time.Time
 	Media             string
@@ -66,7 +68,23 @@ func write(w http.ResponseWriter, status int, v any) {
 }
 func (s *Server) Handler() http.Handler {
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /api/health", func(w http.ResponseWriter, r *http.Request) { write(w, 200, map[string]string{"status": "ok"}) })
+	mux.HandleFunc("GET /api/health", func(w http.ResponseWriter, r *http.Request) {
+		audience := "private"
+		if s.DB != nil && s.DB.PublicOnly {
+			audience = "public"
+		}
+		write(w, 200, map[string]string{"status": "ok", "revision": s.Revision, "audience": audience})
+	})
+	if s.Compatibility == "audio" {
+		mux.HandleFunc("GET /api/recordings", s.legacyRecordings)
+		mux.HandleFunc("GET /api/recordings/{id}", s.legacyRecordings)
+		mux.HandleFunc("GET /api/audio/{id}", s.legacyAudioMedia)
+		mux.HandleFunc("GET /api/station", s.legacyStation)
+		mux.HandleFunc("GET /api/calendar", s.legacyCalendar)
+		mux.HandleFunc("GET /api/dates/{date}", s.legacyDate)
+		mux.HandleFunc("GET /api/on-this-day", s.legacyOnThisDay)
+		mux.HandleFunc("GET /api/shows", s.legacyShows)
+	}
 	mux.HandleFunc("GET /api/version", func(w http.ResponseWriter, r *http.Request) {
 		audience := "private"
 		if s.DB != nil && s.DB.PublicOnly {
@@ -77,6 +95,10 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /api/ready", func(w http.ResponseWriter, r *http.Request) {
 		if err := s.DB.Pool.Ping(r.Context()); err != nil {
 			write(w, 503, map[string]string{"error": "database unavailable"})
+			return
+		}
+		if s.Compatibility == "print" {
+			write(w, 200, map[string]any{"status": "ok", "stage": "archive", "public": s.DB.PublicOnly, "revision": s.Revision})
 			return
 		}
 		write(w, 200, map[string]string{"status": "ready"})
@@ -93,23 +115,33 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /api/catalog/v1/items/{id}/representations/{representation}/audio/resolve", s.audioResolve)
 	mux.HandleFunc("GET /api/catalog/v1/items/{id}/representations/{representation}/audio/media", s.audioMedia)
 	mux.HandleFunc("GET /api/audio/channel", s.audioChannel)
-	mux.HandleFunc("GET /api/collections", func(w http.ResponseWriter, r *http.Request) {
-		collections, err := s.DB.Collections(r.Context())
-		if err != nil {
-			write(w, 503, map[string]string{"error": "collections unavailable"})
-			return
-		}
-		if s.collectionScope() != nil {
-			selected := []catalog.CollectionSummary{}
-			for _, collection := range collections {
-				if s.allowsCollection(collection.ID) {
-					selected = append(selected, collection)
-				}
+	if s.Compatibility == "print" {
+		mux.HandleFunc("GET /api/collections", s.legacyPrintCollections)
+		mux.HandleFunc("GET /api/documents", s.legacyDocuments)
+		mux.HandleFunc("GET /api/documents/{id}", s.legacyDocuments)
+		mux.HandleFunc("GET /api/facets", s.legacyFacets)
+		mux.HandleFunc("GET /api/assets/{id}", s.legacyPrintAsset)
+		mux.HandleFunc("GET /api/assets/{id}/cover", s.legacyPrintCover)
+		mux.HandleFunc("GET /api/assets/{id}/search", s.legacyPrintSearch)
+	} else {
+		mux.HandleFunc("GET /api/collections", func(w http.ResponseWriter, r *http.Request) {
+			collections, err := s.DB.Collections(r.Context())
+			if err != nil {
+				write(w, 503, map[string]string{"error": "collections unavailable"})
+				return
 			}
-			collections = selected
-		}
-		write(w, 200, collections)
-	})
+			if s.collectionScope() != nil {
+				selected := []catalog.CollectionSummary{}
+				for _, collection := range collections {
+					if s.allowsCollection(collection.ID) {
+						selected = append(selected, collection)
+					}
+				}
+				collections = selected
+			}
+			write(w, 200, collections)
+		})
+	}
 	mux.HandleFunc("GET /api/episodes/{id}", s.episode)
 	mux.HandleFunc("GET /api/playback/{id}", s.playback)
 	mux.HandleFunc("GET /api/channel", s.channel)

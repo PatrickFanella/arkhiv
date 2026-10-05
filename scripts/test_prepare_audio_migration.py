@@ -65,6 +65,46 @@ class AudioMigrationTests(unittest.TestCase):
             self.assertFalse((args[3] / 'review-recording.json').exists())
             self.assertFalse((args[3] / 'audio-recording.json').exists())
 
+    def test_exact_public_approval_and_relay_are_retained(self):
+        with tempfile.TemporaryDirectory() as temp:
+            args = self.fixture(Path(temp))
+            data = json.loads(args[1].read_text())
+            row = data['recordings'][0]
+            row['review']['kind'] = 'audience'
+            data['public_approvals'] = [{'recording_id': row['id'], 'approved': True,
+                'source_hash': row['source_hash'], 'media_sha256': row['media_sha256'],
+                'policy_basis': 'Reviewed noncommercial pilot', 'reviewer': 'Owner'}]
+            args[1].write_text(json.dumps(data))
+            receipt = json.loads(args[2].read_text())
+            receipt['counts'] = {key: len(value) for key, value in data.items()}
+            args[2].write_text(json.dumps(receipt))
+            plan = prepare(*args, retain_public=True)
+            review = json.loads((args[3] / 'review-recording.json').read_text())['review']
+            self.assertEqual(plan['public_playback_recordings'], 1)
+            for action in ['public', 'playback', 'relay', 'schedule']:
+                self.assertTrue(review[action])
+            self.assertFalse(review['download'])
+            self.assertFalse(review['acquisition'])
+            retained = json.loads((args[3] / 'retained-export.json').read_text())
+            self.assertEqual(retained['tables'], data)
+
+    def test_stale_public_approval_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temp:
+            args = self.fixture(Path(temp))
+            data = json.loads(args[1].read_text())
+            row = data['recordings'][0]
+            row['review']['kind'] = 'audience'
+            data['public_approvals'] = [{'recording_id': row['id'], 'approved': True,
+                'source_hash': row['source_hash'], 'media_sha256': '0' * 64,
+                'policy_basis': 'Reviewed pilot', 'reviewer': 'Owner'}]
+            args[1].write_text(json.dumps(data))
+            receipt = json.loads(args[2].read_text())
+            receipt['counts'] = {key: len(value) for key, value in data.items()}
+            args[2].write_text(json.dumps(receipt))
+            with self.assertRaisesRegex(ValueError, 'public approval does not match'):
+                prepare(*args, retain_public=True)
+            self.assertFalse(args[3].exists())
+
     def test_corrupt_original_fails_before_allocating_output(self):
         with tempfile.TemporaryDirectory() as temp:
             args = self.fixture(Path(temp))

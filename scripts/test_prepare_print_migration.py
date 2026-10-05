@@ -69,6 +69,19 @@ class PrintMigrationTests(unittest.TestCase):
         self.assertEqual(len(list((self.root / 'output').glob('item-*.json'))), 1)
         self.assertEqual(list((self.root / 'output').glob('review-*.json')), [])
 
+    def test_public_retention_requires_existing_variant_approval(self):
+        self.catalog['variants'][0]['public_approved'] = True
+        self.catalog_file.write_text(json.dumps(self.catalog))
+        prepare(self.root, self.catalog_file, self.restore_file, self.root / 'output', retain_public=True)
+        review = json.loads(next((self.root / 'output').glob('review-*.json')).read_text())['review']
+        self.assertTrue(review['public'])
+        self.assertTrue(review['read'])
+        self.assertFalse(review['acquisition'])
+        self.assertFalse(review['relay'])
+        retained = json.loads((self.root / 'output/retained-export-zines.json').read_text())
+        self.assertEqual(retained['tables'], self.catalog)
+        self.assertEqual(retained['counts']['variants'], 1)
+
     def test_corrupt_independent_original_rejected_before_output_creation(self):
         original = next((self.root / 'archive/originals').rglob('*' + self.catalog['assets'][0]['sha256']))
         original.write_bytes(b'changed bytes')
