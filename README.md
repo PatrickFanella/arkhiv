@@ -1,48 +1,42 @@
-# VHNESS
+# Arkhiv
 
-VHNESS is the selected base for a **planned multi-media archive platform**:
-shared print/audio/video modules, a neutral white-label frontend, and distinct
-branded interfaces built from versioned shared components. See the
-[platform design](docs/plans/0003-multimedia-platform.md) and
-[dependency-ordered roadmap](docs/plans/0003-multimedia-roadmap.md).
-This expansion is planned; the implemented engine described below remains
-video-focused. Naming and public rollout are separate decisions.
+Arkhiv is the shared archive engine for independent print, audio, and video apps.
+It preserves source metadata, editorial history, reviewed access decisions,
+media identities, search indexes, and shared playback schedules.
 
-The owner selected a shared engine with separate Democracy Now! and Bill Nye
-app repositories, each with its own design system and deployment. VHNESS naming
-and visual identity remain deferred. See the [standalone product plan](docs/plans/0002-standalone-products.md).
+The branded apps own their frontend source, design, and deployment in separate
+repositories: Anarchist Archive (`arkhiv-alpha`), Riot Grrrl Zine Archive,
+Dedhed, Bill Nye TV, and Democracy Now! TV. Arkhiv supplies a versioned headless
+engine and optional shared viewer components. Updating the engine does not
+replace a brand's interface.
 
-VHNESS is a proposed video library with on-demand viewing and a shared scheduled
-television channel. Its first collection is
-[Democracy Now! on Internet Archive](https://archive.org/details/democracy_now_vid).
-It brings together the preservation approach of
-[Arkhiv](https://git.subcult.tv/subculture-collective/arkhiv) and the library plus
-shared-station approach of
-[Dedhed](https://git.subcult.tv/subculture-collective/dedhed).
+Engine releases use immutable container digests, API and module compatibility
+versions, and checksum-locked additive migrations. Each consumer records its
+pin and upgrades through a reviewed, independently verified PR. See the
+[consumer registry](docs/reference/consumer-registry.json),
+[core release contract](docs/reference/core-release-contract.json), and
+[retained backend migration guide](docs/retained-backend-migration.md).
 
-Viewers would browse episodes and play a selected broadcast from the beginning.
-**Tune in** would join the channel at its current program position. Original
-broadcast dates, descriptions, source links, and credits would stay with each
-episode, and archived programs would be labeled as replays.
+The private curation workbench under [`curation/`](curation/README.md) contains
+copied Kollektor code, its license, and exact source provenance. It provides
+saved searches, bounded discovery, collection review, notes, and exports.
+It runs from this repository and connects directly to Arkhiv's catalog;
+it does not require a running Kollektor app. Reviewed exports do not grant
+acquisition, playback, or public access.
 
-Delivery is configured per collection: **stream from the source** or **preserve
-selected video locally**. Both modes retain complete source metadata and support
-on-demand viewing and scheduled playback. Democracy Now! will use source-hosted
-streaming only because local video storage is unavailable. Its video files will
-not be downloaded, cached by VHNESS, or transcoded locally.
+Print compatibility preserves original document and edition IDs, PDF readers,
+searchable page text, OCR companions, and covers. Audio compatibility preserves
+recording credits, sets, calendar browsing, original audio bytes, and shared
+station playback. Explicit public station renewal verifies every selected
+recording before extending its timeline.
 
-Status: the shared engine and configurable white-label frontend are implemented.
-Source/local playback, channel transitions, owner audiovisual confirmation,
-and a continuous source episode have private pilot evidence. All 100 Bill Nye
-MP4s are locally integrity verified. Complete metadata recovery and standalone
-app/deployment qualification are in progress. See [deployment operations](docs/DEPLOYMENT.md)
-and [development instructions](DEVELOPMENT.md).
-Both viewing modes and both delivery designs are in scope; Democracy Now!'s
-streaming-only policy is confirmed. Local preservation remains an explicit,
-budgeted choice for other collections.
+Democracy Now! (`democracy_now_vid`) remains permanently source-streaming only.
+Local preservation for other collections requires explicit review, bounded
+storage, verified original bytes, and independent recovery evidence. Original
+rights and source credits remain with each item.
 
-See the [roadmap](ROADMAP.md) and
-[Gitea tracking issue #2](https://git.subcult.tv/subculture-collective/VHNESS/issues/2)
-for milestone order and implementation tasks. The
-[initial design proposal](docs/plans/0001-video-archive-and-channel.md) covers
-scope, reuse boundaries, delivery policies, and verification gates.
+The core 0.1.2 source has passed isolated database integration and hosted CI.
+Release qualification uses recovered catalogs and the original branded
+frontends. Production rollout, owner audiovisual review, and natural operation
+are separate evidence. See [development instructions](DEVELOPMENT.md),
+[deployment operations](docs/DEPLOYMENT.md), and the [roadmap](ROADMAP.md).

@@ -61,6 +61,28 @@ class PrintMigrationTests(unittest.TestCase):
         self.assertEqual(item['representations'][0]['snapshot_sha256'], source['sha256'])
         self.assertEqual(item['editorial']['legacy_variants'][0]['source_snapshot'], source['legacy_snapshot_id'])
 
+    def test_database_only_unreferenced_history_is_retained_without_fabricated_bytes(self):
+        self.catalog['source_snapshots'].append({'id': 'f' * 64, 'item_id': 'retained-source', 'raw': {'history': True}})
+        self.catalog_file.write_text(json.dumps(self.catalog))
+        restore = json.loads(self.restore_file.read_text())
+        restore['table_counts']['source_snapshots'] = 2
+        self.restore_file.write_text(json.dumps(restore))
+        plan = self.run_prepare()
+        self.assertEqual(plan['database_only_historical_snapshots'], ['f' * 64])
+        self.assertEqual(len(plan['sources']), 1)
+        retained = json.loads((self.root / 'output/retained-export-zines.json').read_text())
+        self.assertEqual(retained['tables']['source_snapshots'], self.catalog['source_snapshots'])
+
+    def test_missing_active_snapshot_still_rejects_migration(self):
+        for path in (self.root / 'archive/snapshots').iterdir():
+            path.unlink()
+        receipt = json.loads((self.root / 'complete.json').read_text())
+        receipt['files'] = {key: value for key, value in receipt['files'].items() if not key.startswith('snapshots/')}
+        (self.root / 'complete.json').write_text(json.dumps(receipt))
+        with self.assertRaises(FileNotFoundError):
+            self.run_prepare()
+        self.assertFalse((self.root / 'output').exists())
+
     def test_unpublished_listing_does_not_gain_transport_or_public_access(self):
         self.catalog['documents'][0]['published'] = False
         self.catalog_file.write_text(json.dumps(self.catalog))
