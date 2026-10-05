@@ -49,9 +49,18 @@ def prepare(backup, catalog_file, restore_file, output, retain_public=False):
             raise ValueError('Restored table coverage differs: ' + table)
     assets = {sha(row['sha256']): row for row in catalog['assets']}
     snapshots = {}
+    required_snapshots = {row['source_snapshot'] for row in catalog['variants']}
+    required_snapshots.update(row['source_snapshot'] for row in catalog['asset_companions'])
+    historical_snapshots = []
     for row in catalog['source_snapshots']:
         key = sha(row['id'])
-        raw = (archive / 'snapshots' / (key + '.json')).read_bytes()
+        snapshot_file = archive / 'snapshots' / (key + '.json')
+        if not snapshot_file.exists() and key not in required_snapshots:
+            # Unreferenced audit refreshes can exist only in the donor database.
+            # Keep their full rows in the immutable export; never invent raw bytes.
+            historical_snapshots.append(key)
+            continue
+        raw = snapshot_file.read_bytes()
         # Legacy snapshot IDs can identify a prior JSON serialization. Bind the
         # shared source to the exact independently retained file bytes, while
         # preserving the old identity and checking complete semantic equality.
@@ -186,6 +195,7 @@ def prepare(backup, catalog_file, restore_file, output, retain_public=False):
                 for key, (item, _, bound_snapshot) in snapshots.items()],
             'reviews': [{k: v for k, v in review.items() if k != 'input'} for review in reviewed],
             'indexes': [{k: v for k, v in index.items() if k != 'input'} for index in indexes],
+            'database_only_historical_snapshots': historical_snapshots,
             'history_owner': 'Retained original dump and independently restored legacy database',
             'scope': ('Retained current published variant approvals only; no new public scope' if retain_public else 'Private existing pilot only; no acquisition, relay or public approval')}
     for collection in collections:
