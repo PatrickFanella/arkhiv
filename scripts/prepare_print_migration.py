@@ -61,6 +61,8 @@ def prepare(backup, catalog_file, restore_file, output, retain_public=False):
     collections = {row['id']: row['config'] for row in catalog['collections']}
     planned = []
     reviewed = []
+    indexes = []
+    derivatives = {row['asset_sha']: row for row in catalog.get('derivatives', [])}
     used_variants = set()
     recovery = digest(restore_file.read_bytes())
 
@@ -99,7 +101,20 @@ def prepare(backup, catalog_file, restore_file, output, retain_public=False):
                 if companion['asset_sha'] != variant['asset_sha']:
                     continue
                 if companion['source_snapshot'] != variant['source_snapshot']:
-                    raise ValueError('OCR companion source differs from its edition')
+                    companion_source, companion_raw, _ = snapshots[companion['source_snapshot']]
+                    prior = next((f for f in json.loads(companion_raw)['files'] if f['name'] == companion['filename']), None)
+                    current = next((f for f in json.loads(raw)['files'] if f['name'] == companion['filename']), None)
+                    # A metadata refresh can produce another snapshot identity
+                    # while retaining exactly the same OCR object. Require the
+                    # same source and complete size/checksum evidence in both.
+                    if (companion_source != source or prior is None or current is None
+                            or any(not prior.get(k) or prior[k] != current.get(k) for k in ('size', 'sha1', 'md5'))):
+                        raise ValueError('OCR companion source differs from its edition')
+                    companion_key = sha(companion['companion_sha'])
+                    data = (archive / ('originals/' + companion_key[:2] + '/' + companion_key)).read_bytes()
+                    if (str(len(data)) != prior['size'] or hashlib.sha1(data).hexdigest() != prior['sha1']
+                            or hashlib.md5(data).hexdigest() != prior['md5']):
+                        raise ValueError('Refreshed OCR companion bytes differ')
                 companions.append({'file': filename(companion['filename']), 'role': 'ocr'})
                 manifest.append(original(companion['filename'], companion['companion_sha']))
             inventory = {entry['name'] for entry in json.loads(raw)['files']}
@@ -115,6 +130,35 @@ def prepare(backup, catalog_file, restore_file, output, retain_public=False):
                         'schedule': False, 'public': bool(retain_public and variant.get('public_approved')), 'notes': ('Retained current public variant approval. ' if retain_public and variant.get('public_approved') else 'Retained private pilot reading/download decision. ') + document['review_note']},
                         'preservation': {'snapshot_sha256': bound_snapshot, 'manifest': manifest,
                                          'independent_recovery_sha256': recovery}}})
+                derivative = derivatives.get(variant['asset_sha'])
+                if derivative and derivative['status'] in ('page-text', 'document-text', 'no-text'):
+                    sections = {}
+                    for row in catalog.get('page_text', []):
+                        if row['asset_sha'] != variant['asset_sha']:
+                            continue
+                        page = row['page']
+                        if page in sections or not isinstance(page, int) or page < 0 or page > derivative['pages']:
+                            raise ValueError('Invalid recovered text page')
+                        sections[page] = row['text']
+                    if (not 1 <= derivative['pages'] <= 10000 or sum(len(text.encode()) for text in sections.values()) > 16 << 20
+                            or (derivative['status'] == 'page-text' and (not sections or 0 in sections))
+                            or (derivative['status'] == 'document-text' and set(sections) != {0})
+                            or (derivative['status'] == 'no-text' and sections)):
+                        raise ValueError('Invalid recovered text coverage')
+                    index = {'independent_recovery_sha256': recovery, 'snapshot_sha256': bound_snapshot,
+                             'original_sha256': variant['asset_sha'], 'pages': derivative['pages'],
+                             'text_status': derivative['status'], 'tool': derivative['tool'], 'sections': sections,
+                             'text_file': '', 'text_sha256': '', 'cover_path': '', 'cover_sha256': '', 'cover_bytes': 0}
+                    if derivative['status'] == 'document-text':
+                        candidates = [entry for entry in manifest[1:] if (archive / entry['path']).read_text() == sections[0]]
+                        if len(candidates) != 1:
+                            raise ValueError('Recovered document text has no exact preserved OCR companion')
+                        index['text_file'], index['text_sha256'] = candidates[0]['file'], candidates[0]['sha256']
+                    cover = 'derivatives/' + variant['asset_sha'] + '/cover.png'
+                    if cover in receipt['files']:
+                        index.update(cover_path=cover, cover_sha256=receipt['files'][cover], cover_bytes=(archive / cover).stat().st_size)
+                    indexes.append({'item_id': document['id'], 'representation_id': variant['id'],
+                                    'collection': collection, 'input': index})
         if not item['representations']:
             raise ValueError('Document has no mapped representation')
         planned.append(item)
@@ -134,11 +178,14 @@ def prepare(backup, catalog_file, restore_file, output, retain_public=False):
         save('item-' + sha(item['id']) + '.json', item)
     for review in reviewed:
         save('review-' + sha(review['representation_id']) + '.json', review['input'])
+    for index in indexes:
+        save('index-' + sha(index['representation_id']) + '.json', index['input'])
     plan = {'legacy_dump_sha256': receipt['catalog_sha256'], 'legacy_export_sha256': digest(catalog_file.read_bytes()),
             'independent_restore_sha256': recovery, 'documents': len(planned), 'variants': len(used_variants),
             'collections': collections, 'sources': [{'item_id': item, 'legacy_snapshot_id': key, 'sha256': bound_snapshot}
                 for key, (item, _, bound_snapshot) in snapshots.items()],
             'reviews': [{k: v for k, v in review.items() if k != 'input'} for review in reviewed],
+            'indexes': [{k: v for k, v in index.items() if k != 'input'} for index in indexes],
             'history_owner': 'Retained original dump and independently restored legacy database',
             'scope': ('Retained current published variant approvals only; no new public scope' if retain_public else 'Private existing pilot only; no acquisition, relay or public approval')}
     for collection in collections:

@@ -89,6 +89,29 @@ class PrintMigrationTests(unittest.TestCase):
             self.run_prepare()
         self.assertFalse((self.root / 'output').exists())
 
+    def test_recovered_page_text_and_cover_keep_exact_identity(self):
+        asset = self.catalog['assets'][0]['sha256']
+        cover = 'derivatives/' + asset + '/cover.png'
+        path = self.root / 'archive' / cover
+        path.parent.mkdir(parents=True)
+        path.write_bytes(b'verified synthetic cover')
+        receipt_path = self.root / 'complete.json'
+        receipt = json.loads(receipt_path.read_text())
+        receipt['files'][cover] = hashlib.sha256(path.read_bytes()).hexdigest()
+        receipt_path.write_text(json.dumps(receipt))
+        self.catalog['derivatives'] = [{'asset_sha': asset, 'status': 'page-text', 'pages': 2, 'tool': 'retained tool'}]
+        self.catalog['page_text'] = [{'asset_sha': asset, 'page': 2, 'text': 'Exact original page two'}]
+        self.catalog_file.write_text(json.dumps(self.catalog))
+        restore = json.loads(self.restore_file.read_text())
+        restore['table_counts'].update(derivatives=1, page_text=1)
+        self.restore_file.write_text(json.dumps(restore))
+        plan = self.run_prepare()
+        self.assertEqual(len(plan['indexes']), 1)
+        index = json.loads(next((self.root / 'output').glob('index-*.json')).read_text())
+        self.assertEqual(index['sections'], {'2': 'Exact original page two'})
+        self.assertEqual(index['cover_sha256'], receipt['files'][cover])
+        self.assertEqual(index['original_sha256'], asset)
+
 
 if __name__ == '__main__':
     unittest.main()

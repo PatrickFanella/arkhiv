@@ -44,7 +44,7 @@ func load(p string, v any) error {
 }
 func run() error {
 	if len(os.Args) < 2 {
-		return fmt.Errorf("usage: vhness migrate|collection|review-budget|review-public-video|review-library|plan-replay|import|import-item|import-source|import-catalog|prepare-curation|retain-legacy|review-transport|index-print|register-audio|schedule-audio|fetch|inspect|acquire|audit|review|schedule|discover|refresh|report|seed|serve|healthcheck")
+		return fmt.Errorf("usage: vhness migrate|collection|review-budget|review-public-video|review-library|plan-replay|import|import-item|import-source|import-catalog|prepare-curation|retain-legacy|review-transport|index-print|restore-print-index|register-audio|schedule-audio|fetch|inspect|acquire|audit|review|schedule|discover|refresh|report|seed|serve|healthcheck")
 	}
 	cmd := os.Args[1]
 	if cmd == "healthcheck" {
@@ -192,6 +192,21 @@ func run() error {
 		return d.StoreAudioSchedule(ctx, schedule, *notes)
 	case "index-print":
 		return printmodule.Index(ctx, d, os.Getenv("VHNESS_MEDIA"), os.Getenv("VHNESS_DERIVATIVES"), *id, *representation, *collection)
+	case "restore-print-index":
+		input, err := os.Open(*file)
+		if err != nil {
+			return err
+		}
+		defer input.Close()
+		raw, err := io.ReadAll(io.LimitReader(input, (32<<20)+1))
+		if err != nil {
+			return err
+		}
+		var index printmodule.RecoveryIndex
+		if len(raw) > 32<<20 || json.Unmarshal(raw, &index) != nil {
+			return fmt.Errorf("invalid bounded print recovery input")
+		}
+		return printmodule.RestoreIndex(ctx, d, os.Getenv("VHNESS_MEDIA"), os.Getenv("VHNESS_DERIVATIVES"), *id, *representation, *collection, index)
 	case "import-catalog":
 		var item domain.CatalogItem
 		if err := load(*file, &item); err != nil {

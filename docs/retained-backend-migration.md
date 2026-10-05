@@ -28,6 +28,17 @@ mappings. `retain-legacy` stores those exports immutably and projects the comple
 inventory for calendar/search views. Public inventory visibility follows current core
 approval; private recovery history remains outside public responses.
 
+Print preparation also writes `index-{variant}.json` and an `indexes` plan list
+for already published editions with successful retained derivatives. After importing
+the retained export and its current transport review, run `restore-print-index
+--id DOCUMENT --representation VARIANT --collection COLLECTION --file INPUT`.
+Set `VHNESS_MEDIA` and `VHNESS_DERIVATIVES` to the independently recovered archive
+root. The command compares every page and the original extraction metadata with the
+immutable donor export, verifies PDF and cover hashes, and checks current reading and
+OCR decisions. Whole-document OCR remains page zero. It preserves existing derivatives
+without re-running extraction or granting additional access. Unpublished editions and
+failed derivatives stay in recovery history for later explicit review.
+
 By default, migration preparation grants no public approval. With
 `--retain-public-approvals`, print preparation retains only already published and
 approved variants. Audio preparation requires the donor's current approved audience

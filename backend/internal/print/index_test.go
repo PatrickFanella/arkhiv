@@ -122,6 +122,61 @@ func TestPrintIndexAndPrivateAccessIntegration(t *testing.T) {
 	if err != nil || index.Pages != 2 || index.TextStatus != "page-text" || index.CoverBytes <= 0 {
 		t.Fatal("native PDF extraction", err, index)
 	}
+	// Recovery must preserve the exact donor text, with the independently
+	// recovered original and cover still present. It must reject transcription
+	// changes and cannot revive a withdrawn reading decision.
+	sections := map[int]string{}
+	rows, err := db.Pool.Query(ctx, `SELECT page,text FROM print_page_text WHERE item_id=$1 AND representation_id='native'`, item.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var textRows []json.RawMessage
+	for rows.Next() {
+		var page int
+		var text string
+		if err = rows.Scan(&page, &text); err != nil {
+			t.Fatal(err)
+		}
+		sections[page] = text
+		encoded, _ := json.Marshal(map[string]any{"asset_sha": index.OriginalSHA256, "page": page, "text": text})
+		textRows = append(textRows, encoded)
+	}
+	if err = rows.Err(); err != nil {
+		t.Fatal(err)
+	}
+	rows.Close()
+	variant, _ := json.Marshal(map[string]any{"id": "native", "document_id": item.ID, "asset_sha": index.OriginalSHA256, "filename": "native.pdf"})
+	derivative, _ := json.Marshal(map[string]any{"asset_sha": index.OriginalSHA256, "pages": index.Pages, "status": index.TextStatus, "tool": index.Tool})
+	retained := catalog.RetainedExport{Collection: c.ID, Module: "print", Recovery: nativeApproval.IndependentRecoverySHA256, Tables: map[string][]json.RawMessage{"variants": {variant}, "derivatives": {derivative}, "page_text": textRows}, Counts: map[string]int{"variants": 1, "derivatives": 1, "page_text": len(textRows)}}
+	retainedRaw, _ := json.Marshal(retained)
+	if err = db.RetainLegacy(ctx, retainedRaw, c.ID, "Independent synthetic print database recovery"); err != nil {
+		t.Fatal(err)
+	}
+	recovered := printmodule.RecoveryIndex{Recovery: retained.Recovery, Snapshot: snapshot, Original: index.OriginalSHA256, Pages: index.Pages, Status: index.TextStatus, Tool: index.Tool, Sections: sections, CoverPath: index.CoverPath, CoverSHA: index.CoverSHA256, CoverBytes: index.CoverBytes}
+	if _, err = db.Pool.Exec(ctx, `DELETE FROM print_page_text WHERE item_id=$1`, item.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = db.Pool.Exec(ctx, `DELETE FROM print_indexes WHERE item_id=$1`, item.ID); err != nil {
+		t.Fatal(err)
+	}
+	if err = printmodule.RestoreIndex(ctx, db, media, derivatives, item.ID, "native", c.ID, recovered); err != nil {
+		t.Fatal("recover exact donor index", err)
+	}
+	wrong := recovered
+	wrong.Sections = map[int]string{1: "Invented recovered text"}
+	if printmodule.RestoreIndex(ctx, db, media, derivatives, item.ID, "native", c.ID, wrong) == nil {
+		t.Fatal("altered donor text accepted")
+	}
+	wrong = recovered
+	wrong.CoverSHA = domain.Digest([]byte("changed cover"))
+	if printmodule.RestoreIndex(ctx, db, media, derivatives, item.ID, "native", c.ID, wrong) == nil {
+		t.Fatal("altered donor cover accepted")
+	}
+	wrong = recovered
+	wrong.Recovery = domain.Digest([]byte("another recovery"))
+	if printmodule.RestoreIndex(ctx, db, media, derivatives, item.ID, "native", c.ID, wrong) == nil {
+		t.Fatal("unbound recovery accepted")
+	}
 	server := &app.Server{DB: db, Media: media, Derivatives: derivatives, Collection: c.ID}
 	handler := server.Handler()
 	get := func(path string) *httptest.ResponseRecorder {
@@ -176,6 +231,9 @@ func TestPrintIndexAndPrivateAccessIntegration(t *testing.T) {
 	nativeReview.Notes = "Withdraw synthetic reading"
 	if err = db.ReviewTransport(ctx, item.ID, "native", c.ID, nativeReview, nativeApproval); err != nil {
 		t.Fatal(err)
+	}
+	if printmodule.RestoreIndex(ctx, db, media, derivatives, item.ID, "native", c.ID, recovered) == nil {
+		t.Fatal("recovery revived withdrawn reading")
 	}
 	for _, path := range []string{base + "/cover", base + "/search?q=knownword", base + "/print"} {
 		if w = get(path); w.Code != 404 {
