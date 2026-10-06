@@ -49,7 +49,9 @@ It reserves another 16 MiB within the working allowance for reports and receipts
 Install the reviewed tools image separately. Processing resolves its immutable
 local image ID and runs Podman without network access, with a read-only original
 mount, a new writable output directory, a read-only container filesystem,
-1 GiB memory, two CPUs, bounded file sizes and a one-hour runtime limit.
+1 GiB memory, two CPUs, bounded file sizes and a one-hour runtime limit. A host
+timeout or tool failure removes only that invocation's uniquely named container
+before returning, so a failed processing attempt does not leave a writer running.
 
 ```sh
 python3 scripts/process_video.py \

@@ -10,6 +10,7 @@ import resource
 import shutil
 import subprocess
 import time
+import uuid
 
 
 DERIVATIVE_CAP = 384 << 20
@@ -172,7 +173,9 @@ class ContainerTools:
             raise ValueError('immutable local tool image identity required')
 
     def run(self, args):
-        command = ['podman', 'run', '--rm', '--network', 'none', '--read-only',
+        name = 'arkhiv-processing-' + uuid.uuid4().hex
+        command = ['podman', 'run', '--rm', '--name', name,
+                   '--label', 'arkhiv.qualification=video-processing', '--network', 'none', '--read-only',
                    '--memory', '1g', '--cpus', '2', '--pids-limit', '128', '--timeout', '3600',
                    '--ulimit', f'fsize={self.cap}:{self.cap}',
                    '-v', f'{self.root}:/input:ro', '-v', f'{self.output}:/output:rw', self.image, *args]
@@ -186,8 +189,16 @@ class ContainerTools:
         stdout = self.output / f'tool-{self.sequence}.stdout'
         stderr = self.output / f'tool-{self.sequence}.stderr'
         with stdout.open('xb') as report, stderr.open('xb') as log:
-            subprocess.run(command, stdout=report, stderr=log, check=True,
-                           timeout=3660, preexec_fn=limit_reports)
+            try:
+                subprocess.run(command, stdout=report, stderr=log, check=True,
+                               timeout=3660, preexec_fn=limit_reports)
+            except BaseException:
+                # A host-side timeout or log limit must not leave a writer running.
+                # Only this invocation's unique owned container may be removed.
+                subprocess.run(['podman', 'rm', '--force', '--time', '5', name],
+                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                               check=False, timeout=30)
+                raise
         return stdout.read_text()
 
 

@@ -80,10 +80,11 @@ limits, and produced a 216,642-byte H.264/AAC MP4. Both complete decode checks
 passed. The derivative SHA-256 was
 `12c9b93c26f7182cd8c36676bf1aa99849cf3314e51b9b530325d9f866a8d55b`.
 
-Six operator tests cover source/policy/checksum refusals, compatible-codec remux
+Seven operator tests cover source/policy/checksum refusals, compatible-codec remux
 selection, source collection relabelling, capacity and reserve checks, failed
 output retention, altered display proportions/timing, and unpreserved caption
-streams. The fixture uses generated test patterns and tones; it does not claim
+streams and exact owned-container cleanup after a runtime failure. The fixture
+uses generated test patterns and tones; it does not claim
 human audiovisual qualification of the Bill Nye original. The real pilot
 original, derivative and independently restored evidence remain unchanged.
 See the [operator instructions](../reference/private-video-processing.md).

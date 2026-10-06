@@ -3,10 +3,11 @@ import hashlib
 import json
 from pathlib import Path
 import tempfile
+import subprocess
 import unittest
 from unittest.mock import patch
 
-from process_video import DERIVATIVE_CAP, RESERVE, WORKING_CAP, preflight, process, validate_probes
+from process_video import ContainerTools, DERIVATIVE_CAP, RESERVE, WORKING_CAP, preflight, process, validate_probes
 
 
 def probe(video='mpeg4', audio='mp3'):
@@ -42,6 +43,18 @@ class Tools:
 
 
 class ProcessingTests(unittest.TestCase):
+    def test_failed_runtime_removes_only_its_owned_writer(self):
+        with tempfile.TemporaryDirectory() as name, patch('process_video.subprocess.check_output', return_value='a' * 64), patch('process_video.subprocess.run') as run:
+            root = Path(name); output = root / 'output'; output.mkdir()
+            run.side_effect = [subprocess.TimeoutExpired('podman', 3660), subprocess.CompletedProcess('podman', 0)]
+            tools = ContainerTools(root, output, 'image', 4 << 20)
+            with self.assertRaises(subprocess.TimeoutExpired):
+                tools.run(['ffmpeg', '-version'])
+            launched = run.call_args_list[0].args[0]
+            owned_name = launched[launched.index('--name') + 1]
+            self.assertTrue(owned_name.startswith('arkhiv-processing-'))
+            self.assertEqual(run.call_args_list[1].args[0], ['podman', 'rm', '--force', '--time', '5', owned_name])
+
     def fixture(self, root):
         content = b'preserved original'
         (root / 'original.avi').write_bytes(content)
