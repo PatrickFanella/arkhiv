@@ -87,3 +87,7 @@ and runner labels remain unchanged. The owner will cancel queued runs in the UI.
 When a compatible runner returns, remove the PR markers, stop using skip markers
 in new commits, and rerun verification and the curation workflow on the current
 heads. The waiver applies to these viewer PRs, not other repository work.
+
+## Current follow-up, October 6
+
+Source and consumer branches have advanced since the historical entries above. Published viewer 0.4.1 now has an independent SDK-only receipt; core 0.3.0 and reference engine 0.4.0 keep separate immutable receipts. Six consumers passed frozen-lock gates and root make verify plus make verify-curation passed with 42 SDK checks and 19 curation checks. Current heads and proof boundaries are in docs/reference/platform-consumers.json current_release_qualification and the October 6 cross-brand matrix. Actual browser volume, artwork and curation receipts now qualify #107, #106 and the copied curation workbench. #108 and product-wide playback/browsing/account/chat proofs retain their own outstanding requirements. Android SDK license/setup approval is requested to make emulator coverage available; iOS still needs a Mac/Xcode. These updates preserve the earlier failures as historical observations rather than current blockers.
