@@ -1,3 +1,9 @@
+## 0.4.2
+
+Show retryable archive errors when an upstream proxy returns HTML or unreadable
+JSON. Video, print and audio catalog requests retain scoped missing-item and
+structured source errors without exposing JSON parser details to viewers.
+
 ## 0.4.1
 
 Warn when browser storage rejects favorite or pending-sync changes. Retain the

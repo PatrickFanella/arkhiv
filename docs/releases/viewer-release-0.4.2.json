@@ -1,0 +1,11 @@
+{
+  "package": "@subcult/archive-viewer",
+  "version": "0.4.2",
+  "source_revision": "1619d86a615bf4bd69c7a601bf585ff5b3a6ef89",
+  "package_file": "subcult-archive-viewer-0.4.2.tgz",
+  "package_sha256": "6eaf356a37bfcde823227f61f0fe42a50385dde4502efdd35eab7ecd675bb04d",
+  "license": "GPL-3.0-only",
+  "scope": "Frontend SDK patch; no engine or core image release",
+  "compatible_core_receipt": "core-release-0.3.0.json",
+  "registry": "https://git.subcult.tv/api/packages/subculture-collective/npm/"
+}

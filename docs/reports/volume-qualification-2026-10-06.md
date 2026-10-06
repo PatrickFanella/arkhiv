@@ -1,0 +1,12 @@
+# Volume and mute browser qualification — October 6, 2026
+
+Issue #107's optional origin-wide helper is shipped in the independently pinned viewer 0.4.1 SDK. The three video products retain their frontends and adopt that exact package in Bill Nye TV #14, Democracy Now! TV #14 and Video Archive Template #13. All six consumer frozen-lock gates passed; audio uses the same optional media helper. Root `make verify` and `make verify-curation` passed again on October 6, including focused preference validation tests and packed ESM imports.
+
+The actual T3 Chromium browser ran the product-owned bundles against bounded, clearly labeled generated test-pattern/sine-tone videos in the owned `vhness` preview. Production collection constants were unchanged: generated qualification copies select the fixture collection. No Democracy Now! video was requested or preserved.
+
+- Bill Nye: native media volume changes to 0.35 and mute=true persisted under `arkhiv.video.preferences.v1`. Three 20-second channel source changes retained them. A focused channel volume slider handled ArrowLeft, changing 0.35 to 0.30 and updating storage. Channel/on-demand changes, two different on-demand episode sources and a document reload retained 0.30/mute=true.
+- Democracy Now!: its independently built bundle restored 0.30/mute=true when joining the fixture channel on the same origin. Template restored the same preferences. Preferences are deliberately shared per origin, rather than per collection.
+- Template: invalid stored volume=999 and a nonboolean mute fell back to 1/false on reload. Injected preference-key read/write exceptions did not prevent playback: native changes to 0.45/mute=true survived an episode remount in memory, with actual media paused=false. Prototypes and valid storage were restored afterward.
+- A separately identified injected `NotAllowedError` caused one failed play attempt, explicit `On demand · blocked` and `Start playback`, without altering volume/mute or automatically retrying. The native retry button then started actual playback. This is controlled denial-path evidence, not a claim about every device's native autoplay policy.
+
+The browser paused some muted playback when controls scrolled the media out of view. Pause/suspension semantics and uninterrupted multi-viewer drift qualification remain tracked separately by #108; the observed media retained its preferences through those states. This report makes no physical mobile-device, real broadcast fidelity, hosted CI or public deployment claim.
