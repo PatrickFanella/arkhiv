@@ -100,3 +100,51 @@ func TestSourceCaptionsRequireExplicitReviewAndCurrentEligibility(t *testing.T) 
 		t.Fatal("source captions enabled without independent local sidecar preservation")
 	}
 }
+
+func TestProcessingOriginalDoesNotGrantPlayback(t *testing.T) {
+	f := File{Name: "original.avi", Source: "original", Bytes: 100, Duration: 60, MD5: "91b3b5e772b76c3a03b5238103ff114a"}
+	e := Entry{Policy: Local, Episode: Episode{ID: "avi", CollectionID: "private-processing", SourceFile: f.Name, Files: []File{f}}, Decision: Decision{Acquisition: true, ProcessingOriginal: true, File: f.Name, Notes: "Owner approved bounded private processing"}}
+	if err := e.ValidateDecision(e.Decision); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := e.SelectedOriginal(); !ok {
+		t.Fatal("explicit original unavailable")
+	}
+	e.LocalPath = "original.avi"
+	e.LocalSHA256 = Digest([]byte("retained"))
+	e.LocalFile = f.Name
+	e.LocalSnapshot = e.SourceHash
+	if _, ok := e.Selected(); ok || e.Watchable() {
+		t.Fatal("AVI treated as browser media")
+	}
+	for _, permission := range []string{"playback", "published", "channel", "public"} {
+		d := e.Decision
+		switch permission {
+		case "playback":
+			d.Playback = true
+		case "published":
+			d.Published = true
+		case "channel":
+			d.Channel = true
+		case "public":
+			d.Public = true
+		}
+		if e.ValidateDecision(d) == nil {
+			t.Fatal("processing original granted", permission)
+		}
+	}
+	d := e.Decision
+	d.ProcessingOriginal = false
+	if e.ValidateDecision(d) == nil {
+		t.Fatal("implicit AVI acquisition allowed")
+	}
+	e.Policy = Stream
+	if e.ValidateDecision(e.Decision) == nil {
+		t.Fatal("stream processing allowed")
+	}
+	e.Policy = Local
+	e.Episode.SourceCollections = []string{DemocracyNow}
+	if e.ValidateDecision(e.Decision) == nil {
+		t.Fatal("relabeled Democracy processing allowed")
+	}
+}

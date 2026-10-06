@@ -98,6 +98,26 @@ type File struct {
 func (f File) Candidate() bool {
 	return !f.Private && strings.HasSuffix(strings.ToLower(f.Name), ".mp4") && f.Bytes > 0 && Duration(f.Duration) && SafeFile(f.Name)
 }
+
+// PreservationCandidate allows a checksummed source AVI to be retained for an
+// explicitly approved processing job. It does not establish playback eligibility.
+func (f File) PreservationCandidate() bool {
+	if f.Candidate() {
+		return true
+	}
+	return !f.Private && f.Source == "original" && strings.HasSuffix(strings.ToLower(f.Name), ".avi") && f.Bytes > 0 && Duration(f.Duration) && SafeFile(f.Name) && (validSourceChecksum(f.MD5, 32) || validSourceChecksum(f.SHA1, 40))
+}
+func validSourceChecksum(value string, length int) bool {
+	if len(value) != length {
+		return false
+	}
+	for _, c := range value {
+		if !strings.ContainsRune("0123456789abcdef", c) {
+			return false
+		}
+	}
+	return true
+}
 func SafeFile(s string) bool { return s != "" && s != "." && !strings.ContainsAny(s, "/\\\x00") }
 
 type Episode struct {
@@ -139,16 +159,17 @@ func (e Episode) Validate() error {
 }
 
 type Decision struct {
-	Acquisition bool            `json:"acquisition"`
-	Published   bool            `json:"published"`
-	Playback    bool            `json:"playback"`
-	Channel     bool            `json:"channel"`
-	Public      bool            `json:"public"`
-	File        string          `json:"file"`
-	Title       string          `json:"title,omitempty"`
-	Notes       string          `json:"notes"`
-	Captions    []CaptionReview `json:"captions,omitempty"`
-	Artwork     *ArtworkReview  `json:"artwork,omitempty"`
+	ProcessingOriginal bool            `json:"processing_original,omitempty"`
+	Acquisition        bool            `json:"acquisition"`
+	Published          bool            `json:"published"`
+	Playback           bool            `json:"playback"`
+	Channel            bool            `json:"channel"`
+	Public             bool            `json:"public"`
+	File               string          `json:"file"`
+	Title              string          `json:"title,omitempty"`
+	Notes              string          `json:"notes"`
+	Captions           []CaptionReview `json:"captions,omitempty"`
+	Artwork            *ArtworkReview  `json:"artwork,omitempty"`
 }
 
 // CaptionReview records a browser-qualified source WebVTT file. Discovery never
@@ -215,6 +236,23 @@ func (e Entry) Selected() (File, bool) {
 	}
 	return File{}, false
 }
+
+// SelectedOriginal requires a distinct processing decision for an AVI original.
+// Selected remains limited to browser candidates, including after local binding.
+func (e Entry) SelectedOriginal() (File, bool) {
+	if f, ok := e.Selected(); ok {
+		return f, true
+	}
+	if e.Policy != Local || e.Episode.DemocracySource() || !e.Decision.Acquisition || !e.Decision.ProcessingOriginal || (e.Episode.SourceFile != "" && e.Decision.File != e.Episode.SourceFile) {
+		return File{}, false
+	}
+	for _, f := range e.Episode.Files {
+		if f.Name == e.Decision.File && f.PreservationCandidate() {
+			return f, true
+		}
+	}
+	return File{}, false
+}
 func (e Entry) Watchable() bool {
 	_, ok := e.Selected()
 	return ok && e.Decision.Published && e.Decision.Playback && !e.Unavailable && (e.Policy == Stream || (e.LocalPath != "" && e.LocalSHA256 != "" && e.LocalFile == e.Decision.File && e.LocalSnapshot == e.SourceHash))
@@ -231,7 +269,15 @@ func (e Entry) ValidateDecision(d Decision) error {
 	}
 	copy := e
 	copy.Decision = d
-	if d.Playback || d.Published || d.Channel || d.Acquisition {
+	if d.ProcessingOriginal && (e.Policy != Local || e.Episode.DemocracySource() || !d.Acquisition || d.Playback || d.Published || d.Channel || d.Public) {
+		return fmt.Errorf("processing-original approval requires private acquisition only")
+	}
+	if d.Acquisition {
+		if _, ok := copy.SelectedOriginal(); !ok {
+			return fmt.Errorf("acquisition requires an explicitly reviewed eligible original")
+		}
+	}
+	if d.Playback || d.Published || d.Channel {
 		if _, ok := copy.Selected(); !ok {
 			return fmt.Errorf("review requires an eligible selected file")
 		}

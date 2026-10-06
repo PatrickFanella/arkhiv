@@ -97,7 +97,7 @@ func (m Manifest) Validate(c domain.Collection, e domain.Entry) error {
 	if c.Policy != domain.Local || e.Policy != domain.Local || c.ID == domain.DemocracyNow || e.Episode.DemocracySource() {
 		return fmt.Errorf("streaming-policy acquisition forbidden")
 	}
-	f, ok := e.Selected()
+	f, ok := e.SelectedOriginal()
 	if !ok || !e.Decision.Acquisition || m.Collection != c.ID || e.Episode.CollectionID != c.ID || m.ID != e.Episode.ID || m.File != f.Name || m.Bytes != f.Bytes || m.Snapshot != e.SourceHash || strings.TrimSpace(m.Notes) == "" {
 		return fmt.Errorf("manifest does not match reviewed source snapshot")
 	}
@@ -202,7 +202,7 @@ func (a *Acquirer) Acquire(ctx context.Context, c domain.Collection, e domain.En
 			if err != nil {
 				return receipt, err
 			}
-			selected, _ := e.Selected()
+			selected, _ := e.SelectedOriginal()
 			if (selected.MD5 != "" && !strings.EqualFold(selected.MD5, md)) || (selected.SHA1 != "" && !strings.EqualFold(selected.SHA1, one)) {
 				return receipt, fmt.Errorf("source MD5 mismatch")
 			}
@@ -354,7 +354,7 @@ func (a *Acquirer) Acquire(ctx context.Context, c domain.Collection, e domain.En
 	if err != nil {
 		return receipt, err
 	}
-	selected, _ := e.Selected()
+	selected, _ := e.SelectedOriginal()
 	if bytes != m.Bytes || (m.SHA256 != "" && hash != m.SHA256) || (selected.MD5 != "" && !strings.EqualFold(md, selected.MD5)) || (selected.SHA1 != "" && !strings.EqualFold(one, selected.SHA1)) {
 		return receipt, fmt.Errorf("original checksum mismatch; partial retained")
 	}
