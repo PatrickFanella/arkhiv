@@ -331,7 +331,7 @@
     }
   },
   "current_release_qualification": {
-    "observed_at": "2026-10-06T06:23:42.984729+00:00",
+    "observed_at": "2026-10-06T07:10:55.263052+00:00",
     "host": "sputnik",
     "consumer_heads": [
       {
@@ -339,120 +339,132 @@
         "media": [
           "video"
         ],
-        "head_revision": "798328513337472e37174a4c0ceb1e5abfe68761",
+        "head_revision": "aa3a73c599ce910803978d663532278ec1bfd2a2",
         "adoption_ref": "feat/issue-audit-release",
         "pull_request": "https://git.subcult.tv/subculture-collective/bill-nye-tv/pulls/14",
-        "viewer_version": "0.4.1",
-        "viewer_source": "14dd96bb216bb6e3a1331e65dbb3f6ebadbd4dff",
-        "viewer_sha256": "ef53c68743ed2ff19bcc7e971296911b66bd9dc697a2682e4304adef08e93ab2",
+        "viewer_version": "0.4.2",
+        "viewer_source": "1619d86a615bf4bd69c7a601bf585ff5b3a6ef89",
+        "viewer_sha256": "6eaf356a37bfcde823227f61f0fe42a50385dde4502efdd35eab7ecd675bb04d",
         "core_version": "0.3.0",
         "core_digest": "sha256:1a9b02ff15eee3483d14a16d859a44d5dad705510fb0bfede137696fe0c63100",
         "reference_engine_version": "0.4.0",
         "frontend_ownership": "consumer",
         "backend_ownership": "independent headless pin",
-        "source_gate": "full make verify passed in isolated frozen-lock snapshot; subsequent changes are documentation only",
+        "source_gate": "make verify passed with frozen registry lock and disposable database; incoming merged favorite-warning and backup changes preserved and reverified",
         "hosted_ci": "owner-waived while Kvant is down",
-        "deployment": "not changed by this adoption"
+        "deployment": "not changed by this adoption",
+        "adoption_state": "merged",
+        "qualification_ref": "docs/library-qualification",
+        "qualification_pull_request": "https://git.subcult.tv/subculture-collective/bill-nye-tv/pulls/15"
       },
       {
         "repository": "subculture-collective/democracy-now-tv",
         "media": [
           "video"
         ],
-        "head_revision": "cef317da897592cfda5bc367454d7f8bf274ea12",
+        "head_revision": "0fdc94d54e9f008f2edb7ad088f74f3a921ea19b",
         "adoption_ref": "feat/issue-audit-release",
         "pull_request": "https://git.subcult.tv/subculture-collective/democracy-now-tv/pulls/14",
-        "viewer_version": "0.4.1",
-        "viewer_source": "14dd96bb216bb6e3a1331e65dbb3f6ebadbd4dff",
-        "viewer_sha256": "ef53c68743ed2ff19bcc7e971296911b66bd9dc697a2682e4304adef08e93ab2",
+        "viewer_version": "0.4.2",
+        "viewer_source": "1619d86a615bf4bd69c7a601bf585ff5b3a6ef89",
+        "viewer_sha256": "6eaf356a37bfcde823227f61f0fe42a50385dde4502efdd35eab7ecd675bb04d",
         "core_version": "0.3.0",
         "core_digest": "sha256:1a9b02ff15eee3483d14a16d859a44d5dad705510fb0bfede137696fe0c63100",
         "reference_engine_version": "0.4.0",
         "frontend_ownership": "consumer",
         "backend_ownership": "independent headless pin",
-        "source_gate": "full make verify passed in isolated frozen-lock snapshot; subsequent changes are documentation only",
+        "source_gate": "make verify passed with frozen registry lock and disposable database; incoming merged favorite-warning and backup changes preserved and reverified",
         "hosted_ci": "owner-waived while Kvant is down",
-        "deployment": "not changed by this adoption"
+        "deployment": "not changed by this adoption",
+        "adoption_state": "merged",
+        "qualification_ref": "docs/library-qualification",
+        "qualification_pull_request": "https://git.subcult.tv/subculture-collective/democracy-now-tv/pulls/15"
       },
       {
         "repository": "subculture-collective/video-archive-template",
         "media": [
           "video"
         ],
-        "head_revision": "61121bcc4ac01743fd1b89107a9e474e44692d07",
+        "head_revision": "ab1ba7be3c9aaf748918bc978316073cc6afd406",
         "adoption_ref": "feat/issue-audit-release",
         "pull_request": "https://git.subcult.tv/subculture-collective/video-archive-template/pulls/13",
-        "viewer_version": "0.4.1",
-        "viewer_source": "14dd96bb216bb6e3a1331e65dbb3f6ebadbd4dff",
-        "viewer_sha256": "ef53c68743ed2ff19bcc7e971296911b66bd9dc697a2682e4304adef08e93ab2",
+        "viewer_version": "0.4.2",
+        "viewer_source": "1619d86a615bf4bd69c7a601bf585ff5b3a6ef89",
+        "viewer_sha256": "6eaf356a37bfcde823227f61f0fe42a50385dde4502efdd35eab7ecd675bb04d",
         "core_version": "0.3.0",
         "core_digest": "sha256:1a9b02ff15eee3483d14a16d859a44d5dad705510fb0bfede137696fe0c63100",
         "reference_engine_version": "0.4.0",
         "frontend_ownership": "consumer",
         "backend_ownership": "independent headless pin",
-        "source_gate": "full make verify passed in isolated frozen-lock snapshot; subsequent changes are documentation only",
+        "source_gate": "make verify passed with frozen registry lock and disposable database; incoming merged favorite-warning and backup changes preserved and reverified",
         "hosted_ci": "owner-waived while Kvant is down",
-        "deployment": "not changed by this adoption"
+        "deployment": "not changed by this adoption",
+        "adoption_state": "merged",
+        "qualification_ref": "docs/library-qualification",
+        "qualification_pull_request": "https://git.subcult.tv/subculture-collective/video-archive-template/pulls/14"
       },
       {
         "repository": "subculture-collective/dedhed",
         "media": [
           "audio"
         ],
-        "head_revision": "921ec4ce13dd2595a15a90967ee0b6a76e2abcf1",
-        "adoption_ref": "feat/issue-audit-release",
-        "pull_request": "https://git.subcult.tv/subculture-collective/dedhed/pulls/35",
-        "viewer_version": "0.4.1",
-        "viewer_source": "14dd96bb216bb6e3a1331e65dbb3f6ebadbd4dff",
-        "viewer_sha256": "ef53c68743ed2ff19bcc7e971296911b66bd9dc697a2682e4304adef08e93ab2",
+        "head_revision": "b5841577b6ca105bc0559a6ee1f9c5e32612fee8",
+        "adoption_ref": "feat/viewer-response-errors",
+        "pull_request": "https://git.subcult.tv/subculture-collective/dedhed/pulls/36",
+        "viewer_version": "0.4.2",
+        "viewer_source": "1619d86a615bf4bd69c7a601bf585ff5b3a6ef89",
+        "viewer_sha256": "6eaf356a37bfcde823227f61f0fe42a50385dde4502efdd35eab7ecd675bb04d",
         "core_version": "0.3.0",
         "core_digest": "sha256:1a9b02ff15eee3483d14a16d859a44d5dad705510fb0bfede137696fe0c63100",
         "reference_engine_version": null,
         "frontend_ownership": "consumer",
         "backend_ownership": "native; shared-core cutover unactivated",
-        "source_gate": "full make verify passed in isolated frozen-lock snapshot; subsequent changes are documentation only",
+        "source_gate": "make verify passed with frozen registry lock and disposable database; incoming merged favorite-warning and backup changes preserved and reverified",
         "hosted_ci": "owner-waived while Kvant is down",
-        "deployment": "not changed by this adoption"
+        "deployment": "not changed by this adoption",
+        "adoption_state": "ready follow-up"
       },
       {
         "repository": "subculture-collective/arkhiv-anarchist",
         "media": [
           "print"
         ],
-        "head_revision": "24ed720b31506ac0db8fb68e4cb2016f0d2a56a6",
-        "adoption_ref": "feat/viewer-feedback",
-        "pull_request": "https://git.subcult.tv/subculture-collective/arkhiv-anarchist/pulls/64",
-        "viewer_version": "0.4.1",
-        "viewer_source": "14dd96bb216bb6e3a1331e65dbb3f6ebadbd4dff",
-        "viewer_sha256": "ef53c68743ed2ff19bcc7e971296911b66bd9dc697a2682e4304adef08e93ab2",
+        "head_revision": "71df42dd571d1af915a1fb983b955112e4349e4b",
+        "adoption_ref": "feat/viewer-response-errors",
+        "pull_request": "https://git.subcult.tv/subculture-collective/arkhiv-anarchist/pulls/66",
+        "viewer_version": "0.4.2",
+        "viewer_source": "1619d86a615bf4bd69c7a601bf585ff5b3a6ef89",
+        "viewer_sha256": "6eaf356a37bfcde823227f61f0fe42a50385dde4502efdd35eab7ecd675bb04d",
         "core_version": "0.3.0",
         "core_digest": "sha256:1a9b02ff15eee3483d14a16d859a44d5dad705510fb0bfede137696fe0c63100",
         "reference_engine_version": null,
         "frontend_ownership": "consumer",
         "backend_ownership": "native; shared-core cutover unactivated",
-        "source_gate": "full make verify passed in isolated frozen-lock snapshot; subsequent changes are documentation only",
+        "source_gate": "make verify passed with frozen registry lock and disposable database; incoming merged favorite-warning and backup changes preserved and reverified",
         "hosted_ci": "owner-waived while Kvant is down",
-        "deployment": "not changed by this adoption"
+        "deployment": "not changed by this adoption",
+        "adoption_state": "ready follow-up"
       },
       {
         "repository": "subculture-collective/arkhiv-riot-grrrl",
         "media": [
           "print"
         ],
-        "head_revision": "096c51898faa92a3b18987f9ffbc646611cbaccd",
-        "adoption_ref": "feat/viewer-feedback",
-        "pull_request": "https://git.subcult.tv/subculture-collective/arkhiv-riot-grrrl/pulls/15",
-        "viewer_version": "0.4.1",
-        "viewer_source": "14dd96bb216bb6e3a1331e65dbb3f6ebadbd4dff",
-        "viewer_sha256": "ef53c68743ed2ff19bcc7e971296911b66bd9dc697a2682e4304adef08e93ab2",
+        "head_revision": "10b444b4897f43b92480be6138a6e167bfdcf294",
+        "adoption_ref": "feat/viewer-response-errors",
+        "pull_request": "https://git.subcult.tv/subculture-collective/arkhiv-riot-grrrl/pulls/17",
+        "viewer_version": "0.4.2",
+        "viewer_source": "1619d86a615bf4bd69c7a601bf585ff5b3a6ef89",
+        "viewer_sha256": "6eaf356a37bfcde823227f61f0fe42a50385dde4502efdd35eab7ecd675bb04d",
         "core_version": "0.3.0",
         "core_digest": "sha256:1a9b02ff15eee3483d14a16d859a44d5dad705510fb0bfede137696fe0c63100",
         "reference_engine_version": null,
         "frontend_ownership": "consumer",
         "backend_ownership": "native; shared-core cutover unactivated",
-        "source_gate": "full make verify passed in isolated frozen-lock snapshot; subsequent changes are documentation only",
+        "source_gate": "make verify passed with frozen registry lock and disposable database; incoming merged favorite-warning and backup changes preserved and reverified",
         "hosted_ci": "owner-waived while Kvant is down",
-        "deployment": "not changed by this adoption"
+        "deployment": "not changed by this adoption",
+        "adoption_state": "ready follow-up"
       }
     ],
     "engine_source": "39a49fb45005b001e14218823c22ed19c3de1177",
@@ -460,5 +472,138 @@
     "sdk_publication": "SDK-only patch; no new engine/core image",
     "devices": "iOS unavailable without macOS/Xcode; Android unavailable without SDK; no physical-device claim",
     "runtime": "native print/audio deployments retained; see dated migration and release reports"
-  }
+  },
+  "release_qualification_history": [
+    {
+      "observed_at": "2026-10-06T06:23:42.984729+00:00",
+      "host": "sputnik",
+      "consumer_heads": [
+        {
+          "repository": "subculture-collective/bill-nye-tv",
+          "media": [
+            "video"
+          ],
+          "head_revision": "798328513337472e37174a4c0ceb1e5abfe68761",
+          "adoption_ref": "feat/issue-audit-release",
+          "pull_request": "https://git.subcult.tv/subculture-collective/bill-nye-tv/pulls/14",
+          "viewer_version": "0.4.1",
+          "viewer_source": "14dd96bb216bb6e3a1331e65dbb3f6ebadbd4dff",
+          "viewer_sha256": "ef53c68743ed2ff19bcc7e971296911b66bd9dc697a2682e4304adef08e93ab2",
+          "core_version": "0.3.0",
+          "core_digest": "sha256:1a9b02ff15eee3483d14a16d859a44d5dad705510fb0bfede137696fe0c63100",
+          "reference_engine_version": "0.4.0",
+          "frontend_ownership": "consumer",
+          "backend_ownership": "independent headless pin",
+          "source_gate": "full make verify passed in isolated frozen-lock snapshot; subsequent changes are documentation only",
+          "hosted_ci": "owner-waived while Kvant is down",
+          "deployment": "not changed by this adoption"
+        },
+        {
+          "repository": "subculture-collective/democracy-now-tv",
+          "media": [
+            "video"
+          ],
+          "head_revision": "cef317da897592cfda5bc367454d7f8bf274ea12",
+          "adoption_ref": "feat/issue-audit-release",
+          "pull_request": "https://git.subcult.tv/subculture-collective/democracy-now-tv/pulls/14",
+          "viewer_version": "0.4.1",
+          "viewer_source": "14dd96bb216bb6e3a1331e65dbb3f6ebadbd4dff",
+          "viewer_sha256": "ef53c68743ed2ff19bcc7e971296911b66bd9dc697a2682e4304adef08e93ab2",
+          "core_version": "0.3.0",
+          "core_digest": "sha256:1a9b02ff15eee3483d14a16d859a44d5dad705510fb0bfede137696fe0c63100",
+          "reference_engine_version": "0.4.0",
+          "frontend_ownership": "consumer",
+          "backend_ownership": "independent headless pin",
+          "source_gate": "full make verify passed in isolated frozen-lock snapshot; subsequent changes are documentation only",
+          "hosted_ci": "owner-waived while Kvant is down",
+          "deployment": "not changed by this adoption"
+        },
+        {
+          "repository": "subculture-collective/video-archive-template",
+          "media": [
+            "video"
+          ],
+          "head_revision": "61121bcc4ac01743fd1b89107a9e474e44692d07",
+          "adoption_ref": "feat/issue-audit-release",
+          "pull_request": "https://git.subcult.tv/subculture-collective/video-archive-template/pulls/13",
+          "viewer_version": "0.4.1",
+          "viewer_source": "14dd96bb216bb6e3a1331e65dbb3f6ebadbd4dff",
+          "viewer_sha256": "ef53c68743ed2ff19bcc7e971296911b66bd9dc697a2682e4304adef08e93ab2",
+          "core_version": "0.3.0",
+          "core_digest": "sha256:1a9b02ff15eee3483d14a16d859a44d5dad705510fb0bfede137696fe0c63100",
+          "reference_engine_version": "0.4.0",
+          "frontend_ownership": "consumer",
+          "backend_ownership": "independent headless pin",
+          "source_gate": "full make verify passed in isolated frozen-lock snapshot; subsequent changes are documentation only",
+          "hosted_ci": "owner-waived while Kvant is down",
+          "deployment": "not changed by this adoption"
+        },
+        {
+          "repository": "subculture-collective/dedhed",
+          "media": [
+            "audio"
+          ],
+          "head_revision": "921ec4ce13dd2595a15a90967ee0b6a76e2abcf1",
+          "adoption_ref": "feat/issue-audit-release",
+          "pull_request": "https://git.subcult.tv/subculture-collective/dedhed/pulls/35",
+          "viewer_version": "0.4.1",
+          "viewer_source": "14dd96bb216bb6e3a1331e65dbb3f6ebadbd4dff",
+          "viewer_sha256": "ef53c68743ed2ff19bcc7e971296911b66bd9dc697a2682e4304adef08e93ab2",
+          "core_version": "0.3.0",
+          "core_digest": "sha256:1a9b02ff15eee3483d14a16d859a44d5dad705510fb0bfede137696fe0c63100",
+          "reference_engine_version": null,
+          "frontend_ownership": "consumer",
+          "backend_ownership": "native; shared-core cutover unactivated",
+          "source_gate": "full make verify passed in isolated frozen-lock snapshot; subsequent changes are documentation only",
+          "hosted_ci": "owner-waived while Kvant is down",
+          "deployment": "not changed by this adoption"
+        },
+        {
+          "repository": "subculture-collective/arkhiv-anarchist",
+          "media": [
+            "print"
+          ],
+          "head_revision": "24ed720b31506ac0db8fb68e4cb2016f0d2a56a6",
+          "adoption_ref": "feat/viewer-feedback",
+          "pull_request": "https://git.subcult.tv/subculture-collective/arkhiv-anarchist/pulls/64",
+          "viewer_version": "0.4.1",
+          "viewer_source": "14dd96bb216bb6e3a1331e65dbb3f6ebadbd4dff",
+          "viewer_sha256": "ef53c68743ed2ff19bcc7e971296911b66bd9dc697a2682e4304adef08e93ab2",
+          "core_version": "0.3.0",
+          "core_digest": "sha256:1a9b02ff15eee3483d14a16d859a44d5dad705510fb0bfede137696fe0c63100",
+          "reference_engine_version": null,
+          "frontend_ownership": "consumer",
+          "backend_ownership": "native; shared-core cutover unactivated",
+          "source_gate": "full make verify passed in isolated frozen-lock snapshot; subsequent changes are documentation only",
+          "hosted_ci": "owner-waived while Kvant is down",
+          "deployment": "not changed by this adoption"
+        },
+        {
+          "repository": "subculture-collective/arkhiv-riot-grrrl",
+          "media": [
+            "print"
+          ],
+          "head_revision": "096c51898faa92a3b18987f9ffbc646611cbaccd",
+          "adoption_ref": "feat/viewer-feedback",
+          "pull_request": "https://git.subcult.tv/subculture-collective/arkhiv-riot-grrrl/pulls/15",
+          "viewer_version": "0.4.1",
+          "viewer_source": "14dd96bb216bb6e3a1331e65dbb3f6ebadbd4dff",
+          "viewer_sha256": "ef53c68743ed2ff19bcc7e971296911b66bd9dc697a2682e4304adef08e93ab2",
+          "core_version": "0.3.0",
+          "core_digest": "sha256:1a9b02ff15eee3483d14a16d859a44d5dad705510fb0bfede137696fe0c63100",
+          "reference_engine_version": null,
+          "frontend_ownership": "consumer",
+          "backend_ownership": "native; shared-core cutover unactivated",
+          "source_gate": "full make verify passed in isolated frozen-lock snapshot; subsequent changes are documentation only",
+          "hosted_ci": "owner-waived while Kvant is down",
+          "deployment": "not changed by this adoption"
+        }
+      ],
+      "engine_source": "39a49fb45005b001e14218823c22ed19c3de1177",
+      "reference_engine_digest": "sha256:5651c73c0f35d93b392f8ddea7660cb4d891043e124d67fc0e7fc3da1b5f905b",
+      "sdk_publication": "SDK-only patch; no new engine/core image",
+      "devices": "iOS unavailable without macOS/Xcode; Android unavailable without SDK; no physical-device claim",
+      "runtime": "native print/audio deployments retained; see dated migration and release reports"
+    }
+  ]
 }

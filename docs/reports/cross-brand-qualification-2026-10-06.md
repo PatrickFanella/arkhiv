@@ -20,3 +20,18 @@ Real retained print/audio conversion and independent restores are documented in 
 Hosted CI is explicitly owner-waived while Kvant is down. Device discovery found no iOS platform (macOS/Xcode unavailable) or Android platform (SDK unavailable), so physical/device qualification remains open. Synthetic fixture decoding cannot establish real source audiovisual fidelity. Browser pausing when muted media leaves view keeps suspension and two-viewer continuous drift qualification open under #108. No viewer control writes a shared schedule. Democracy Now! remains metadata-only/source-streaming.
 
 Issue #51 remains open for those unavailable/unfinished proof tiers; #98 owns the separately reviewed native backend cutover. Anarchist #56 owns measured backup capacity, deduplicated store/restore qualification and separate activation. The updated release support notes distinguish SDK-only updates from platform/core releases and retain current/previous immutable receipts.
+
+## Later SDK 0.4.2 and merged-adoption update
+
+All earlier adoption and bounded-backup PRs merged. SDK 0.4.2 was published from
+1619d86a615bf4bd69c7a601bf585ff5b3a6ef89 and its registry download matched
+6eaf356a37bfcde823227f61f0fe42a50385dde4502efdd35eab7ecd675bb04d.
+Root gates passed with 45 SDK tests. Six frozen-lock consumer gates passed;
+incoming native favorite-warning and bounded-backup changes were preserved
+and the affected native gates repeated successfully. Video SDK adoption reached
+the merged PRs; audio/print use ready follow-ups Dedhed #36, Anarchist #66 and
+Riot Grrrl #17. Library-proof follow-ups are Bill #15, Democracy Now #15 and
+template #14. Reports library-qualification-2026-10-06.md and
+channel-continuity-2026-10-06.md distinguish completed library acceptance from
+unqualified continuous two-viewer playback. The earlier source-head inventory
+is retained under release_qualification_history.
