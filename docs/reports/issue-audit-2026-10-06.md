@@ -101,3 +101,25 @@ Hosted CI remains owner-waived during the Kvant outage. These checks do not prov
 physical mobile devices, full-concert human listening, complete collection
 coverage, sustained operational soak, live backend cutover or public account/chat
 activation. Those issues stay open until their own required evidence exists.
+
+## Browser storage follow-up
+
+The video consumer audit found that grid/table choice reset on reload. All three
+consumer frontends now persist that choice per collection; frozen-lock full
+consumer verification passed. Browser checks confirmed Bill Nye table reload,
+Democracy Now! favorite reload, and template keyboard switching, empty results
+and recovery from an injected catalog-only outage.
+
+A rejected favorite write previously showed “saved” and could reload stale data
+on a hook remount. SDK 0.4.1 retains the newer page copy, warns that changes are
+temporary and recommends export before leaving. The warning clears after a
+successful write. The same hook serves print, audio and video consumers. Three
+regressions cover stale readable storage with rejected writes, pending edits,
+storage recovery, external updates and inaccessible storage.
+
+The template browser displayed the temporary-change warning while the stored
+favorite list stayed unchanged. Restoring writes and toggling the favorite
+cleared the warning. Full make verify passed with 42 SDK tests and packed ESM
+checks. The first combined command lacked uv in PATH; the curation gate was
+rerun through the Python 3.12/frozen-uv launcher and passed all 19 tests and
+format/lint/JavaScript checks. SDK 0.4.1 publication/adoption remains pending.
