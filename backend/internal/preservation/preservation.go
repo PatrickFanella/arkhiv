@@ -185,11 +185,11 @@ func (a *Acquirer) Acquire(ctx context.Context, c domain.Collection, e domain.En
 	if err = os.MkdirAll(filepath.Join(a.Root, "originals"), 0700); err != nil {
 		return receipt, err
 	}
-	target := filepath.Join("originals", m.SHA256+".mp4")
+	target := filepath.Join("originals", m.SHA256+strings.ToLower(filepath.Ext(m.File)))
 	expectedHash := m.SHA256
 	if expectedHash == "" && e.LocalSnapshot == m.Snapshot && e.LocalFile == m.File && e.LocalSHA256 != "" {
 		expectedHash = e.LocalSHA256
-		target = filepath.Join("originals", expectedHash+".mp4")
+		target = filepath.Join("originals", expectedHash+strings.ToLower(filepath.Ext(m.File)))
 	}
 	if expectedHash != "" {
 		if _, err = os.Stat(filepath.Join(a.Root, target)); err == nil {
@@ -358,7 +358,7 @@ func (a *Acquirer) Acquire(ctx context.Context, c domain.Collection, e domain.En
 	if bytes != m.Bytes || (m.SHA256 != "" && hash != m.SHA256) || (selected.MD5 != "" && !strings.EqualFold(md, selected.MD5)) || (selected.SHA1 != "" && !strings.EqualFold(one, selected.SHA1)) {
 		return receipt, fmt.Errorf("original checksum mismatch; partial retained")
 	}
-	target = filepath.Join("originals", hash+".mp4")
+	target = filepath.Join("originals", hash+strings.ToLower(filepath.Ext(m.File)))
 	// Link is exclusive: a verified original is immutable and never overwritten.
 	if err = os.Link(part, filepath.Join(a.Root, target)); err != nil {
 		if !os.IsExist(err) {

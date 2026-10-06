@@ -208,7 +208,7 @@ func TestPrivateProcessingOriginalUsesPinnedAcquisitionGuards(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if calls != 1 || receipt.SHA256 != m.SHA256 {
+	if calls != 1 || receipt.SHA256 != m.SHA256 || !strings.HasSuffix(receipt.Path, ".avi") {
 		t.Fatal("verified original receipt", receipt, calls)
 	}
 	if _, err = a.Acquire(context.Background(), c, e, m); err != nil || calls != 1 {
