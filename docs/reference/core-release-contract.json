@@ -2,9 +2,22 @@
   "contract_version": 1,
   "artifact_kind": "core",
   "configuration_version": 1,
-  "api_versions": ["1"],
-  "media": ["print", "audio", "video"],
-  "modules": {"catalog": "1", "print": "1", "audio": "1", "video": "1"},
+  "api_versions": [
+    "1"
+  ],
+  "media": [
+    "print",
+    "audio",
+    "video"
+  ],
+  "modules": {
+    "catalog": "1",
+    "print": "1",
+    "audio": "1",
+    "video": "1",
+    "personal": "1",
+    "chat": "1"
+  },
   "engine_repository": "git.subcult.tv/subculture-collective/archive-core",
   "schema_strategy": "checksum-locked-additive-migrations",
   "compatibility_window": "current and previous reviewed release",

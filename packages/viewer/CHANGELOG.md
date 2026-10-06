@@ -1,4 +1,17 @@
+## 0.3.0
+
+Add reviewed video artwork and metadata filters, persistent volume, explicit scheduled replay controls, and grid/table library composition. Add optional personal favorites and authenticated channel discussion hooks. Services remain disabled until configured by each consumer.
+
 # Shared viewer changes
+
+## Unreleased
+
+- Add reviewed source artwork with safe placeholders and explicit series labels.
+- Persist video volume and mute across player changes, with a memory fallback.
+- Distinguish channel replay, joining, paused and on-demand playback; provide
+  channel pause/resume and rejoin controls without viewer schedule seeking.
+- Add safe source/selected-file details and full-catalog metadata filters.
+- Keep branded interfaces and independent package adoption in consumer repositories.
 
 ## 0.2.3
 

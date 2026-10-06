@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"git.subcult.tv/subculture-collective/vhness/internal/catalog"
+	"git.subcult.tv/subculture-collective/vhness/internal/community"
 	"git.subcult.tv/subculture-collective/vhness/internal/domain"
 	"git.subcult.tv/subculture-collective/vhness/internal/preservation"
 	"github.com/jackc/pgx/v5"
@@ -23,6 +24,7 @@ type Server struct {
 	Compatibility     string
 	Revision          string
 	DB                *catalog.DB
+	Community         *community.Server
 	Clock             func() time.Time
 	Media             string
 	Derivatives       string
@@ -68,6 +70,13 @@ func write(w http.ResponseWriter, status int, v any) {
 }
 func (s *Server) Handler() http.Handler {
 	mux := http.NewServeMux()
+	if s.Community != nil {
+		s.Community.Allowed = s.allowsCollection
+		s.Community.Available = s.communityAvailable
+		s.Community.Current = s.communityCurrent
+		s.Community.Clock = s.Clock
+		s.Community.Register(mux)
+	}
 	mux.HandleFunc("GET /api/health", func(w http.ResponseWriter, r *http.Request) {
 		audience := "private"
 		if s.DB != nil && s.DB.PublicOnly {
@@ -184,6 +193,11 @@ func (s *Server) Handler() http.Handler {
 	})
 }
 func (s *Server) list(w http.ResponseWriter, r *http.Request) {
+	filters, err := parseVideoFilters(r.URL.Query())
+	if err != nil {
+		write(w, 400, map[string]string{"error": err.Error()})
+		return
+	}
 	entries, err := s.DB.Summaries(r.Context())
 	if err != nil {
 		write(w, 503, map[string]string{"error": "catalog unavailable"})
@@ -202,11 +216,14 @@ func (s *Server) list(w http.ResponseWriter, r *http.Request) {
 		if !e.Decision.Published {
 			continue
 		}
-		ep := e.Episode
+		ep := e.ViewerEpisode(e.SourceTitle)
 		if query != "" && !strings.Contains(strings.ToLower(ep.Title+" "+ep.Description), query) {
 			continue
 		}
 		if year != "" && !strings.HasPrefix(ep.Date, year) {
+			continue
+		}
+		if !filters.matches(ep) {
 			continue
 		}
 		ep.Files = nil
@@ -238,7 +255,14 @@ func (s *Server) episode(w http.ResponseWriter, r *http.Request) {
 		write(w, 404, map[string]string{"error": "episode unavailable"})
 		return
 	}
-	write(w, 200, e)
+	if s.DB.PublicOnly {
+		write(w, 200, map[string]any{"episode": e.ViewerEpisode(e.SourceTitle), "policy": e.Policy, "source_hash": e.SourceHash, "unavailable": e.Unavailable})
+	} else {
+		files := e.Episode.Files
+		e.Episode = e.ViewerEpisode(e.SourceTitle)
+		e.Episode.Files = files // Retain the existing private operator inventory contract.
+		write(w, 200, e)
+	}
 }
 func (s *Server) playback(w http.ResponseWriter, r *http.Request) {
 	e, err := s.DB.Entry(r.Context(), r.PathValue("id"))
@@ -291,7 +315,9 @@ func (s *Server) channel(w http.ResponseWriter, r *http.Request) {
 	if state.Episode != nil {
 		// Polling viewers need identity and attribution, not the parent item's
 		// entire file inventory. Complete inventories remain in the catalog.
-		state.Episode.Files = nil
+		e := entries[state.Episode.ID]
+		ep := e.ViewerEpisode(e.SourceTitle)
+		state.Episode = &ep
 	}
 	write(w, 200, state)
 }

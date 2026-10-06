@@ -21,6 +21,7 @@ import (
 	"git.subcult.tv/subculture-collective/vhness/internal/app"
 	audiomodule "git.subcult.tv/subculture-collective/vhness/internal/audio"
 	"git.subcult.tv/subculture-collective/vhness/internal/catalog"
+	"git.subcult.tv/subculture-collective/vhness/internal/community"
 	"git.subcult.tv/subculture-collective/vhness/internal/domain"
 	"git.subcult.tv/subculture-collective/vhness/internal/preservation"
 	printmodule "git.subcult.tv/subculture-collective/vhness/internal/print"
@@ -112,6 +113,12 @@ func run() error {
 	}
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
+	if cmd == "serve-session" {
+		return serveSession(ctx)
+	}
+	if strings.HasPrefix(cmd, "community-") {
+		return communityCommand(ctx, cmd, *file)
+	}
 	databaseURL := os.Getenv("DATABASE_URL")
 	if path := os.Getenv("DATABASE_URL_FILE"); path != "" {
 		secret, err := os.ReadFile(path)
@@ -655,6 +662,13 @@ func run() error {
 		}
 		return nil
 	case "serve":
+		personal, err := community.Load(ctx, os.Getenv("ARKHIV_COMMUNITY_CONFIG_FILE"))
+		if err != nil {
+			return err
+		}
+		if personal != nil {
+			defer personal.Pool.Close()
+		}
 		compatibility := os.Getenv("ARKHIV_COMPATIBILITY")
 		if compatibility != "" && compatibility != "print" && compatibility != "audio" {
 			return fmt.Errorf("ARKHIV_COMPATIBILITY must be print or audio")
@@ -662,7 +676,7 @@ func run() error {
 		if compatibility != "" && len(allowlist) != 1 {
 			return fmt.Errorf("compatibility API requires exactly one collection")
 		}
-		server := &http.Server{Addr: env("API_ADDR", "127.0.0.1:8080"), Handler: (&app.Server{DB: d, Compatibility: compatibility, Revision: os.Getenv("ARKHIV_REVISION"), Web: os.Getenv("VHNESS_WEB"), Media: os.Getenv("VHNESS_MEDIA"), Derivatives: os.Getenv("VHNESS_DERIVATIVES"), Collection: scope, Collections: allowlist}).Handler(), ReadHeaderTimeout: 5 * time.Second, IdleTimeout: 60 * time.Second}
+		server := &http.Server{Addr: env("API_ADDR", "127.0.0.1:8080"), Handler: (&app.Server{DB: d, Community: personal, Compatibility: compatibility, Revision: os.Getenv("ARKHIV_REVISION"), Web: os.Getenv("VHNESS_WEB"), Media: os.Getenv("VHNESS_MEDIA"), Derivatives: os.Getenv("VHNESS_DERIVATIVES"), Collection: scope, Collections: allowlist}).Handler(), ReadHeaderTimeout: 5 * time.Second, IdleTimeout: 60 * time.Second}
 		go func() {
 			<-ctx.Done()
 			shutdown, cancel := context.WithTimeout(context.Background(), 10*time.Second)

@@ -61,6 +61,7 @@ def main():
         'package_sha256': hashlib.sha256(args.package.read_bytes()).hexdigest(),
         'package_file': args.package.name,
         'engine_digest': args.engine_digest,
+        'optional_migrations': {str(p.relative_to(root / 'migrations')): hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted((root / 'migrations/community').glob('*.sql'))},
         'migrations': {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted((root / 'migrations').glob('*.sql'))},
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
