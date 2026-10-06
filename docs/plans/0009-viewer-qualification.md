@@ -73,3 +73,17 @@ Bill Nye browser checks confirmed the source logo loads with a 24-pixel top gap,
 A later collaborative browser snapshot failed with an explicit automation-client
 disconnection. Environment-port navigation returned state but did not produce
 inspectable rendering evidence. Further browser qualification remains blocked.
+
+## Temporary owner waiver for hosted CI
+
+The owner authorized skipping hosted CI while Kvant is down. This replaces the
+hosted-CI closure requirement during this outage. The passing local gates and
+independent restore evidence above remain applicable. Hosted checks are waived,
+not recorded as passing. Remaining browser qualification still applies.
+
+The four PR titles carry `[skip ci]` to suppress PR runs. Push commits during
+the outage must also carry `[skip ci]` in their commit messages. Workflow files
+and runner labels remain unchanged. The owner will cancel queued runs in the UI.
+When a compatible runner returns, remove the PR markers, stop using skip markers
+in new commits, and rerun verification and the curation workflow on the current
+heads. The waiver applies to these viewer PRs, not other repository work.
