@@ -7,15 +7,19 @@ import (
 )
 
 func (s *Server) moderationList(w http.ResponseWriter, r *http.Request) {
-	_, u := s.identity(w, r, "moderate")
+	claims, u := s.identity(w, r, "moderate")
 	if u == nil {
 		return
 	}
-	if !u.Moderator {
+	media, ok := requestMedia(w, r)
+	if !ok {
+		return
+	}
+	if !s.moderator(claims, media) {
 		fail(w, 403, "Moderator permission required.")
 		return
 	}
-	rows, err := s.Pool.Query(r.Context(), `SELECT r.id,r.message_id,r.reason,r.resolved,r.created_at,m.collection,m.body FROM chat_reports r JOIN chat_messages m ON m.id=r.message_id WHERE r.deployment=$1 AND r.created_at>$2 ORDER BY r.created_at DESC LIMIT 100`, s.Trust.Deployment, s.now().Add(-30*24*time.Hour))
+	rows, err := s.Pool.Query(r.Context(), `SELECT r.id,r.message_id,r.reason,r.resolved,r.created_at,m.collection,m.body,m.media FROM chat_reports r JOIN chat_messages m ON m.id=r.message_id WHERE r.deployment=$1 AND r.created_at>$2 AND m.media=$3 ORDER BY r.created_at DESC LIMIT 100`, s.Trust.Deployment, s.now().Add(-30*24*time.Hour), media)
 	if err != nil {
 		fail(w, 503, "Moderation unavailable.")
 		return
@@ -23,15 +27,15 @@ func (s *Server) moderationList(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 	out := []map[string]any{}
 	for rows.Next() {
-		var id, message, reason, collection, body string
+		var id, message, reason, collection, body, messageMedia string
 		var resolved bool
 		var at time.Time
-		if rows.Scan(&id, &message, &reason, &resolved, &at, &collection, &body) != nil {
+		if rows.Scan(&id, &message, &reason, &resolved, &at, &collection, &body, &messageMedia) != nil {
 			fail(w, 503, "Moderation unavailable.")
 			return
 		}
 		if s.Allowed(collection) {
-			out = append(out, map[string]any{"id": id, "message_id": message, "reason": reason, "resolved": resolved, "created_at": at, "collection": collection, "body": body})
+			out = append(out, map[string]any{"id": id, "message_id": message, "reason": reason, "resolved": resolved, "created_at": at, "collection": collection, "body": body, "media": messageMedia})
 		}
 	}
 	if rows.Err() != nil {
@@ -41,11 +45,15 @@ func (s *Server) moderationList(w http.ResponseWriter, r *http.Request) {
 	reply(w, 200, map[string]any{"reports": out})
 }
 func (s *Server) moderate(w http.ResponseWriter, r *http.Request) {
-	_, u := s.identity(w, r, "moderate")
+	claims, u := s.identity(w, r, "moderate")
 	if u == nil {
 		return
 	}
-	if !u.Moderator {
+	media, ok := requestMedia(w, r)
+	if !ok {
+		return
+	}
+	if !s.moderator(claims, media) {
 		fail(w, 403, "Moderator permission required.")
 		return
 	}
@@ -71,7 +79,7 @@ func (s *Server) moderate(w http.ResponseWriter, r *http.Request) {
 	switch v.Action {
 	case "hide":
 		var collection string
-		err = tx.QueryRow(r.Context(), `SELECT collection FROM chat_messages WHERE deployment=$1 AND id=$2 FOR UPDATE`, s.Trust.Deployment, v.Target).Scan(&collection)
+		err = tx.QueryRow(r.Context(), `SELECT collection FROM chat_messages WHERE deployment=$1 AND id=$2 AND media=$3 FOR UPDATE`, s.Trust.Deployment, v.Target, media).Scan(&collection)
 		if err != nil || !s.Allowed(collection) {
 			fail(w, 404, "Message unavailable.")
 			return
@@ -88,8 +96,14 @@ func (s *Server) moderate(w http.ResponseWriter, r *http.Request) {
 			fail(w, 404, "User unavailable.")
 			return
 		}
-		_, err = tx.Exec(r.Context(), `INSERT INTO chat_restrictions(deployment,user_id,until_at) VALUES($1,$2,$3) ON CONFLICT(deployment,user_id) DO UPDATE SET until_at=excluded.until_at`, s.Trust.Deployment, v.Target, s.now().Add(time.Duration(v.Hours)*time.Hour))
+		_, err = tx.Exec(r.Context(), `INSERT INTO chat_restrictions(deployment,user_id,until_at,media) VALUES($1,$2,$3,$4) ON CONFLICT(deployment,media,user_id) DO UPDATE SET until_at=excluded.until_at`, s.Trust.Deployment, v.Target, s.now().Add(time.Duration(v.Hours)*time.Hour), media)
 	case "resolve", "reopen":
+		var collection string
+		err = tx.QueryRow(r.Context(), `SELECT m.collection FROM chat_reports r JOIN chat_messages m ON m.id=r.message_id WHERE r.deployment=$1 AND r.id=$2 AND m.media=$3 FOR UPDATE OF r`, s.Trust.Deployment, v.Target, media).Scan(&collection)
+		if err != nil || !s.Allowed(collection) {
+			fail(w, 404, "Report unavailable.")
+			return
+		}
 		result, e := tx.Exec(r.Context(), `UPDATE chat_reports SET resolved=$3 WHERE deployment=$1 AND id=$2`, s.Trust.Deployment, v.Target, v.Action == "resolve")
 		err = e
 		if err == nil && result.RowsAffected() != 1 {
@@ -101,13 +115,13 @@ func (s *Server) moderate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err == nil {
-		_, err = tx.Exec(r.Context(), `INSERT INTO chat_moderation(id,deployment,actor,action,target,reason,created_at) VALUES($1,$2,$3,$4,$5,$6,$7)`, RandomID(), s.Trust.Deployment, u.ID, v.Action, v.Target, v.Reason, s.now())
+		_, err = tx.Exec(r.Context(), `INSERT INTO chat_moderation(id,deployment,actor,action,target,reason,created_at,media) VALUES($1,$2,$3,$4,$5,$6,$7,$8)`, RandomID(), s.Trust.Deployment, u.ID, v.Action, v.Target, v.Reason, s.now(), media)
 	}
 	if err == nil && v.Action == "hide" {
 		err = s.journal("hide", v.Target, time.Time{})
 	}
 	if err == nil && (v.Action == "mute" || v.Action == "ban") {
-		err = s.journal("restriction", v.Target, s.now().Add(time.Duration(v.Hours)*time.Hour))
+		err = s.journalMedia("restriction", v.Target, s.now().Add(time.Duration(v.Hours)*time.Hour), media)
 	}
 	if err == nil {
 		err = tx.Commit(r.Context())

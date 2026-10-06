@@ -16,28 +16,35 @@ import (
 )
 
 type Program struct {
-	Revision     string    `json:"revision"`
-	Start        time.Time `json:"start"`
-	Episode      string    `json:"episode"`
-	OriginalDate string    `json:"original_date"`
+	Media          string    `json:"media,omitempty"`
+	Item           string    `json:"item,omitempty"`
+	Representation string    `json:"representation,omitempty"`
+	Revision       string    `json:"revision"`
+	Start          time.Time `json:"start"`
+	Episode        string    `json:"episode"`
+	OriginalDate   string    `json:"original_date"`
 }
 type User struct {
-	ID        string `json:"id"`
-	Alias     string `json:"alias"`
-	Revision  int64  `json:"revision"`
-	Moderator bool   `json:"moderator"`
+	ID             string `json:"id"`
+	Alias          string `json:"alias"`
+	Revision       int64  `json:"revision"`
+	Moderator      bool   `json:"moderator"`
+	AudioModerator bool   `json:"audio_moderator"`
 }
 type Server struct {
-	Pool               *pgxpool.Pool
-	Trust              Trust
-	Clock              func() time.Time
-	Allowed            func(string) bool
-	Available          func(context.Context, string, string) bool
-	Current            func(context.Context, string) (*Program, error)
-	ChatRead, ChatPost bool
-	ModerationContact  string
-	RecoveryDirectory  string
-	Moderators         map[string]bool // Hash(provider + NUL + subject), explicitly configured.
+	Pool                         *pgxpool.Pool
+	Trust                        Trust
+	Clock                        func() time.Time
+	Allowed                      func(string) bool
+	Available                    func(context.Context, string, string) bool
+	Current                      func(context.Context, string) (*Program, error)
+	CurrentMedia                 func(context.Context, string, string) (*Program, error)
+	ChatRead, ChatPost           bool
+	AudioChatRead, AudioChatPost bool
+	ModerationContact            string
+	RecoveryDirectory            string
+	Moderators                   map[string]bool // Hash(provider + NUL + subject), explicitly configured.
+	AudioModerators              map[string]bool
 }
 
 func (s *Server) now() time.Time {
@@ -98,7 +105,8 @@ func (s *Server) identity(w http.ResponseWriter, r *http.Request, scope string) 
 		fail(w, 503, "Personal data unavailable.")
 		return nil, nil
 	}
-	u.Moderator = s.Moderators[Hash(claims.Provider+"\x00"+claims.Subject)]
+	u.Moderator = s.moderator(claims, "video")
+	u.AudioModerator = s.moderator(claims, "audio")
 	return claims, u
 }
 

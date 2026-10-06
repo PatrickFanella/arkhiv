@@ -108,3 +108,16 @@ consumer interfaces in
 [Democracy Now! #11](https://git.subcult.tv/subculture-collective/democracy-now-tv/issues/11)
 and [template #10](https://git.subcult.tv/subculture-collective/video-archive-template/issues/10).
 Implementation evidence and activation approval remain distinct.
+
+## Audio room contract follow-up, October 6
+
+[Issue #118](https://git.subcult.tv/subculture-collective/arkhiv/issues/118)
+adds an independent audio station lane under the same optional module. Room,
+message and moderation reads/writes use `media=audio`; omission remains video.
+Audio context binds catalog item/representation plus schedule revision/start.
+Audio cursor strings cannot be submitted to the video cursor lane. Independent
+`audio_chat_read`, `audio_chat_post` and `audio_moderators` configuration defaults
+to disabled; video moderator authorization does not grant audio permission.
+Audio posting requires current synchronized station playback. Print documents
+remain outside channel chat. See the [dated qualification report](../reports/issue-audit-2026-10-06.md)
+for checks, recovery compatibility and remaining activation boundaries.

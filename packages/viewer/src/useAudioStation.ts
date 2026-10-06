@@ -12,7 +12,7 @@ export type AudioStation = {
  next?: {item_id: string; representation_id: string; start: string; duration: number};
  playback?: AudioAsset;
 };
-export type StationSession = {asset: AudioAsset; station: {offset: number; receivedAt: number; latency: number; duration: number; programKey: string}};
+export type StationSession = {program?: {revision:string;start:string;item:string;representation:string};asset: AudioAsset; station: {offset: number; receivedAt: number; latency: number; duration: number; programKey: string}};
 
 // Polling reads schedule state; joining/rejoining changes only this listener.
 export function useAudioStation(collection: string, enabled = true) {
@@ -51,7 +51,7 @@ export function useAudioStation(collection: string, enabled = true) {
    audioURL(value.playback);
    if(new URL(value.playback.url,'https://consumer.invalid').searchParams.get('collection')!==collection)throw new Error('Station collection mismatch');
    const receivedAt=performance.now();
-   setListener({collection,session:{asset:value.playback,station:{offset:value.offset,receivedAt:Date.now(),latency:(receivedAt-sentAt)/2,duration:value.program.duration,programKey:`${value.revision}:${value.program.item_id}:${value.program.representation_id}:${value.program.start}:${++generation.current}`}}});
+   setListener({collection,session:{program:{revision:value.revision,start:value.program.start,item:value.program.item_id,representation:value.program.representation_id},asset:value.playback,station:{offset:value.offset,receivedAt:Date.now(),latency:(receivedAt-sentAt)/2,duration:value.program.duration,programKey:`${value.revision}:${value.program.item_id}:${value.program.representation_id}:${value.program.start}:${++generation.current}`}}});
   } catch {
    if (!current.signal.aborted) {setListener(null);setSnapshot({collection,error:'The station could not be joined. Please try again.'});}
   }

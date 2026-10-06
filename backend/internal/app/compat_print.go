@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/json"
+	"git.subcult.tv/subculture-collective/vhness/internal/catalog"
 	"git.subcult.tv/subculture-collective/vhness/internal/domain"
 	"git.subcult.tv/subculture-collective/vhness/internal/preservation"
 	"mime"
@@ -52,7 +53,12 @@ func (s *Server) legacyDocuments(w http.ResponseWriter, r *http.Request) {
 		write(w, 400, map[string]string{"error": "invalid document filter"})
 		return
 	}
-	docs, total, err := s.DB.LegacyPrintDocuments(r.Context(), s.configuredCollection(), r.PathValue("id"), q.Get("q"), q.Get("subject"), q.Get("language"), limit, offset)
+	filter := catalog.PrintBrowseFilters{Creator: q.Get("creator"), DateFrom: q.Get("date_from"), DateTo: q.Get("date_to")}
+	if err := filter.Validate(); err != nil {
+		write(w, 400, map[string]string{"error": err.Error()})
+		return
+	}
+	docs, total, err := s.DB.LegacyPrintDocuments(r.Context(), s.configuredCollection(), r.PathValue("id"), q.Get("q"), q.Get("subject"), q.Get("language"), limit, offset, filter)
 	if err != nil {
 		write(w, 503, map[string]string{"error": "catalog unavailable"})
 		return

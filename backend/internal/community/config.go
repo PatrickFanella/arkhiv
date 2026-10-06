@@ -21,6 +21,9 @@ type Config struct {
 	DatabaseURLFile   string   `json:"database_url_file"`
 	ChatRead          bool     `json:"chat_read"`
 	ChatPost          bool     `json:"chat_post"`
+	AudioChatRead     bool     `json:"audio_chat_read"`
+	AudioChatPost     bool     `json:"audio_chat_post"`
+	AudioModerators   []string `json:"audio_moderators"`
 	Moderators        []string `json:"moderators"`
 	ModerationContact string   `json:"moderation_contact"`
 	RecoveryDirectory string   `json:"recovery_directory"`
@@ -110,7 +113,7 @@ func Load(ctx context.Context, path string) (*Server, error) {
 	if err := ReadConfig(path, &c); err != nil {
 		return nil, err
 	}
-	if !validName(c.Deployment) || c.AssertionIssuer == "" || c.ChatPost && (!c.ChatRead || len(c.Moderators) == 0 || strings.TrimSpace(c.ModerationContact) == "") {
+	if !validName(c.Deployment) || c.AssertionIssuer == "" || c.ChatPost && (!c.ChatRead || len(c.Moderators) == 0 || strings.TrimSpace(c.ModerationContact) == "") || c.AudioChatPost && (!c.AudioChatRead || len(c.AudioModerators) == 0 || strings.TrimSpace(c.ModerationContact) == "") {
 		return nil, fmt.Errorf("invalid community configuration")
 	}
 	key, err := ReadPublicKey(c.PublicKeyFile)
@@ -129,9 +132,17 @@ func Load(ctx context.Context, path string) (*Server, error) {
 		}
 		moderators[id] = true
 	}
+	audioModerators := map[string]bool{}
+	for _, id := range c.AudioModerators {
+		if len(id) != 64 {
+			pool.Close()
+			return nil, fmt.Errorf("audio moderator roster requires opaque issuer/subject hashes")
+		}
+		audioModerators[id] = true
+	}
 	if !filepath.IsAbs(c.RecoveryDirectory) {
 		pool.Close()
 		return nil, fmt.Errorf("independent recovery journal directory required")
 	}
-	return &Server{Pool: pool, Trust: Trust{Key: key, Issuer: c.AssertionIssuer, Deployment: c.Deployment}, ChatRead: c.ChatRead, ChatPost: c.ChatPost, Moderators: moderators, ModerationContact: c.ModerationContact, RecoveryDirectory: c.RecoveryDirectory}, nil
+	return &Server{Pool: pool, Trust: Trust{Key: key, Issuer: c.AssertionIssuer, Deployment: c.Deployment}, ChatRead: c.ChatRead, ChatPost: c.ChatPost, AudioChatRead: c.AudioChatRead, AudioChatPost: c.AudioChatPost, AudioModerators: audioModerators, Moderators: moderators, ModerationContact: c.ModerationContact, RecoveryDirectory: c.RecoveryDirectory}, nil
 }

@@ -74,6 +74,7 @@ func (s *Server) Handler() http.Handler {
 		s.Community.Allowed = s.allowsCollection
 		s.Community.Available = s.communityAvailable
 		s.Community.Current = s.communityCurrent
+		s.Community.CurrentMedia = s.communityCurrentMedia
 		s.Community.Clock = s.Clock
 		s.Community.Register(mux)
 	}

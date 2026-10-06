@@ -30,6 +30,7 @@ func ReadCheckpoint(path string) (Checkpoint, error) {
 }
 
 type Restriction struct {
+	Media string    `json:"media,omitempty"`
 	User  string    `json:"opaque_user_id"`
 	Until time.Time `json:"until"`
 }
@@ -61,13 +62,13 @@ func RecoveryCheckpoint(ctx context.Context, pool *pgxpool.Pool, deployment stri
 	if err != nil {
 		return c, err
 	}
-	rows, err = pool.Query(ctx, `SELECT user_id,until_at FROM chat_restrictions WHERE deployment=$1 AND until_at>$2 ORDER BY user_id`, deployment, now)
+	rows, err = pool.Query(ctx, `SELECT user_id,until_at,media FROM chat_restrictions WHERE deployment=$1 AND until_at>$2 ORDER BY media,user_id`, deployment, now)
 	if err != nil {
 		return c, err
 	}
 	for rows.Next() {
 		var r Restriction
-		if err = rows.Scan(&r.User, &r.Until); err != nil {
+		if err = rows.Scan(&r.User, &r.Until, &r.Media); err != nil {
 			rows.Close()
 			return c, err
 		}
@@ -140,10 +141,10 @@ func ReapplyRecovery(ctx context.Context, pool *pgxpool.Pool, c Checkpoint, depl
 		}
 	}
 	for _, r := range c.Restrictions {
-		if len(r.User) != 64 || r.Until.After(c.At.Add(30*24*time.Hour)) {
+		if !validMedia(normalizedMedia(r.Media)) || len(r.User) != 64 || r.Until.After(c.At.Add(30*24*time.Hour)) {
 			return fmt.Errorf("invalid restriction checkpoint")
 		}
-		if _, err = tx.Exec(ctx, `INSERT INTO chat_restrictions(deployment,user_id,until_at) VALUES($1,$2,$3) ON CONFLICT(deployment,user_id) DO UPDATE SET until_at=greatest(chat_restrictions.until_at,excluded.until_at)`, deployment, r.User, r.Until); err != nil {
+		if _, err = tx.Exec(ctx, `INSERT INTO chat_restrictions(deployment,user_id,until_at,media) VALUES($1,$2,$3,$4) ON CONFLICT(deployment,media,user_id) DO UPDATE SET until_at=greatest(chat_restrictions.until_at,excluded.until_at)`, deployment, r.User, r.Until, normalizedMedia(r.Media)); err != nil {
 			return err
 		}
 	}

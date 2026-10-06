@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-export type PersonalUser = { id: string; alias: string; revision: number; moderator: boolean };
+export type PersonalUser = { id: string; alias: string; revision: number; moderator: boolean; audio_moderator?: boolean };
 export type Favorite = { collection: string; item: string; removed: boolean; revision: number; available: boolean };
 export type PendingFavorite = { item: string; remove: boolean; baseRevision: number };
 type BrowserSession = { authenticated: boolean; csrf?: string; deployment: string; reauthentication_required?: boolean };

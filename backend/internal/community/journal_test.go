@@ -40,3 +40,27 @@ func TestRecoveryJournalIndependentAndLatestRestriction(t *testing.T) {
 		t.Fatal("public journal accepted")
 	}
 }
+
+func TestRecoveryJournalKeepsMediaRestrictionsIndependent(t *testing.T) {
+	directory := t.TempDir()
+	if err := os.Chmod(directory, 0700); err != nil {
+		t.Fatal(err)
+	}
+	now := time.Now().UTC()
+	id := Hash("same-viewer")
+	checkpoint := Checkpoint{Version: 1, Deployment: "brand", At: now.Add(-time.Hour), Restrictions: []Restriction{{User: id, Until: now.Add(24 * time.Hour)}}}
+	if err := WriteRecoveryEvent(directory, RecoveryEvent{Version: 1, Deployment: "brand", At: now, Kind: "restriction", ID: id, Media: "audio", Until: now.Add(time.Hour)}); err != nil {
+		t.Fatal(err)
+	}
+	result, err := MergeRecoveryJournal(checkpoint, directory, now)
+	if err != nil || len(result.Restrictions) != 2 {
+		t.Fatalf("media restriction merge: %+v %v", result, err)
+	}
+	until := map[string]time.Time{}
+	for _, restriction := range result.Restrictions {
+		until[normalizedMedia(restriction.Media)] = restriction.Until
+	}
+	if !until["video"].Equal(now.Add(24*time.Hour)) || !until["audio"].Equal(now.Add(time.Hour)) {
+		t.Fatal("audio replaced video restriction")
+	}
+}
