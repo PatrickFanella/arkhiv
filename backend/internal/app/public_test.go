@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
@@ -63,7 +64,7 @@ func TestPublicPublicationIntegration(t *testing.T) {
 	}
 	rep := domain.Representation{ID: "pdf", Media: domain.PrintMedia, SourceItemID: "print-source", Snapshot: domain.Digest(raw), File: "original.pdf", Collections: []string{c.ID}, Extension: domain.MediaExtension{Print: &domain.PrintExtension{DocumentID: "print", Variant: "original", Pages: 1}}}
 	legacyEditorial := json.RawMessage(`{"legacy_document":{"published":true,"source_item":"print-source","source_key":"original","rights":"unknown-rights","review_note":"Private operator note","metadata":{"title":"Reviewed fixture print","creator":"Fixture author","language":"en","subjects":["print"],"private":"operator-only"},"overrides":{}}}`)
-	item := domain.CatalogItem{Editorial: legacyEditorial, ID: "print", Title: "Reviewed fixture print", Collections: []string{c.ID}, Representations: []domain.Representation{rep}}
+	item := domain.CatalogItem{Editorial: legacyEditorial, ID: "print", Title: "Reviewed fixture print", Creator: "Fixture author", Date: "2026-10-03", Collections: []string{c.ID}, Representations: []domain.Representation{rep}}
 	if err = operator.InsertCatalog(ctx, item, "Private mapping"); err != nil {
 		t.Fatal(err)
 	}
@@ -118,6 +119,14 @@ func TestPublicPublicationIntegration(t *testing.T) {
 		t.Fatal(err)
 	}
 	count(1)
+	if !server.communityAvailable(ctx, c.ID, "catalog:"+item.ID) || server.communityAvailable(ctx, videoCollection.ID, "catalog:"+item.ID) {
+		t.Fatal("catalog favorite bypassed collection/public availability")
+	}
+	for _, path := range []string{"/api/catalog/v1/items?date_from=2026-02-30", "/api/catalog/v1/items?date_from=2026-10-03&date_to=2026-01-01"} {
+		if w := get(path); w.Code != 400 {
+			t.Fatal("invalid mixed date accepted", w.Code)
+		}
+	}
 	if w := get(printPath + "/resolve?collection=" + c.ID); w.Code != 200 {
 		t.Fatal("approved print resolution", w.Code, w.Body.String())
 	}
@@ -246,4 +255,40 @@ func TestPublicPublicationIntegration(t *testing.T) {
 	if w := get("/api/playback/video?collection=" + videoCollection.ID); w.Code != 404 {
 		t.Fatal("public server accepted unrestricted scope", w.Code)
 	}
+	// Public filters must apply before pagination, without exposing partial dates or private rows.
+	server.Collections = domain.CollectionScope{c.ID}
+	for i := 0; i < 30; i++ {
+		next := domain.CatalogItem{ID: fmt.Sprintf("filter-%02d", i), Title: "Mixed needle", Creator: "Filter author", Date: "2026-10-03", Collections: []string{c.ID}}
+		if i == 27 {
+			next.Date = "2026"
+		}
+		if i == 28 {
+			next.Date = ""
+		}
+		if i == 29 {
+			next.Creator = "Different creator"
+		}
+		copyRep := rep
+		copyRep.Snapshot = domain.Digest(newRaw)
+		next.Representations = []domain.Representation{copyRep}
+		if err := operator.InsertCatalog(ctx, next, "Disposable filter fixture"); err != nil {
+			t.Fatal(err)
+		}
+		copyReview := review
+		copyReview.Snapshot = copyRep.Snapshot
+		copyApproval := approval
+		copyApproval.Snapshot = copyRep.Snapshot
+		if err := operator.ReviewPublicTransport(ctx, next.ID, copyRep.ID, c.ID, copyReview, copyApproval); err != nil {
+			t.Fatal(err)
+		}
+	}
+	w = get("/api/catalog/v1/items?collection=" + c.ID + "&media=print&q=needle&creator=filter&date_from=2026-10-03&date_to=2026-10-03&page=2")
+	var filtered catalog.CatalogPage
+	if err := json.Unmarshal(w.Body.Bytes(), &filtered); err != nil || w.Code != 200 || filtered.Total != 27 || len(filtered.Items) != 3 {
+		t.Fatal("combined mixed filters after pagination", w.Code, w.Body.String())
+	}
+	if server.communityAvailable(ctx, c.ID, "catalog:"+item.ID) {
+		t.Fatal("stale public item remained available for favorites")
+	}
+
 }

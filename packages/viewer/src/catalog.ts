@@ -10,7 +10,7 @@ export type CatalogRepresentation = {
 export type CatalogItem = { id: string; title: string; description: string; date: string; creator: string; collections: string[]; representations: CatalogRepresentation[] };
 export type CatalogPage = { items: CatalogItem[]; total: number; page: number; search_coverage: string[] };
 export type CatalogCollection = { id: string; title: string; policy: string; items: number; media: CatalogMedia[] };
-export type CatalogFilter = { collection: string; media: CatalogMedia | ''; query: string; page: number };
+export type CatalogFilter = { collection: string; media: CatalogMedia | ''; query: string; page: number; creator?:string; dateFrom?:string; dateTo?:string };
 export type RepresentationTransport = {media:CatalogMedia;policy:string;url:string;source_url:string;file:string};
 
 export function representationURL(asset: RepresentationTransport, action: 'read' | 'play' | 'download' = asset.media === 'print' ? 'read' : 'play'): string {
@@ -29,6 +29,9 @@ export function catalogURL(filter: CatalogFilter): string {
   if (filter.collection) params.set('collection',filter.collection);
   if (filter.media) params.set('media',filter.media);
   if (filter.query) params.set('q',filter.query);
+  if(filter.creator)params.set('creator',filter.creator);
+  if(filter.dateFrom)params.set('date_from',filter.dateFrom);
+  if(filter.dateTo)params.set('date_to',filter.dateTo);
   return `/api/catalog/v1/items?${params}`;
 }
 export async function catalogRequest<T>(url: string, signal: AbortSignal, timeoutMs = 10000): Promise<T> {
@@ -61,4 +64,10 @@ export function useCatalog(filter: CatalogFilter) {
   },[url,attempt]);
   const current = result?.url === url ? result : undefined;
   return {page: current?.page, error: current?.error, pending: !current, retry: () => {setResult(undefined);setAttempt(value=>value+1);} };
+}
+
+// Bookmarks name the logical item; access to a representation is resolved later.
+export function catalogFavoriteID(item:string):string { return `catalog:${item}`; }
+export function catalogSelectionURL(base:string, collection:string, item:string, representation:string):string {
+ const url=new URL(base);url.searchParams.set('collection',collection);url.searchParams.set('item',item);url.searchParams.set('representation',representation);url.hash='';return url.toString();
 }

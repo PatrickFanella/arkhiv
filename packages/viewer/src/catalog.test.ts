@@ -1,5 +1,5 @@
 import { afterEach, expect, test, vi } from 'vitest';
-import { catalogRequest, catalogURL, representationURL, type RepresentationTransport } from './catalog.js';
+import { catalogFavoriteID, catalogSelectionURL, catalogRequest, catalogURL, representationURL, type RepresentationTransport } from './catalog.js';
 
 test('metadata queries preserve collection scope and escape user text',()=> {
   const url = new URL(catalogURL({collection:'mixed',media:'print',query:'&collection=other',page:2}),'https://test.invalid');
@@ -41,4 +41,12 @@ test('a deadline reports a retryable error but caller cancellation stays cancell
   const caller = new AbortController();caller.abort();
   await expect(catalogRequest('/resolve',caller.signal)).rejects.toThrow('signal timed out');
   await expect(catalogRequest('/resolve',caller.signal,60001)).rejects.toThrow('Invalid request timeout');
+});
+
+test('mixed-media filters and share links preserve collection and exact logical identity',()=>{
+ const url=new URL(catalogURL({collection:'print',media:'print',query:'',page:2,creator:'A & B',dateFrom:'2026-01-01',dateTo:'2026-10-03'}),'https://test.invalid');
+ expect(url.searchParams.get('creator')).toBe('A & B');expect(url.searchParams.get('date_to')).toBe('2026-10-03');
+ const shared=new URL(catalogSelectionURL('https://test.invalid/?item=old#catalog','print','print:item','scan:pdf'));
+ expect(shared.searchParams.get('item')).toBe('print:item');expect(shared.searchParams.get('representation')).toBe('scan:pdf');expect(shared.hash).toBe('');
+ expect(catalogFavoriteID('print:item')).toBe('catalog:print:item');
 });

@@ -39,6 +39,7 @@ export function useAudioStation(collection: string, enabled = true) {
  },[collection,enabled]);
  useEffect(() => () => {listenerController.current?.abort();},[collection]);
  const join = useCallback(async () => {
+  if(!enabled)return;
   listenerController.current?.abort();
   const current = new AbortController(); listenerController.current=current;
   const sentAt=performance.now();
@@ -48,12 +49,13 @@ export function useAudioStation(collection: string, enabled = true) {
    setSnapshot({collection,value});
    if (value.state !== 'playing' || !value.playback || !value.program || !value.revision || value.offset === undefined || !Number.isFinite(value.offset) || value.offset < 0 || !Number.isFinite(value.program.duration) || value.program.duration <= 0 || value.offset >= value.program.duration) throw new Error('Station unavailable');
    audioURL(value.playback);
+   if(new URL(value.playback.url,'https://consumer.invalid').searchParams.get('collection')!==collection)throw new Error('Station collection mismatch');
    const receivedAt=performance.now();
    setListener({collection,session:{asset:value.playback,station:{offset:value.offset,receivedAt:Date.now(),latency:(receivedAt-sentAt)/2,duration:value.program.duration,programKey:`${value.revision}:${value.program.item_id}:${value.program.representation_id}:${value.program.start}:${++generation.current}`}}});
   } catch {
    if (!current.signal.aborted) {setListener(null);setSnapshot({collection,error:'The station could not be joined. Please try again.'});}
   }
- },[collection]);
+ },[collection,enabled]);
  const leave = useCallback(() => {listenerController.current?.abort();setListener(null);},[]);
- return {station:enabled && snapshot.collection === collection ? snapshot.value : undefined,error:snapshot.collection === collection ? snapshot.error || '' : '',session:listener?.collection === collection ? listener.session : null,join,rejoin:join,leave};
+ return {station:enabled && snapshot.collection === collection ? snapshot.value : undefined,error:snapshot.collection === collection ? snapshot.error || '' : '',session:enabled && listener?.collection === collection ? listener.session : null,join,rejoin:join,leave};
 }
