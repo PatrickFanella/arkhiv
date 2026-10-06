@@ -53,9 +53,13 @@ The isolated shared `make verify && make verify-curation` passed with disposable
 public-boundary, canonical-favorite and combined-filter integration checks.
 The SDK checks include station controls, measured playback states and encoded
 mixed-media filter/share identities. New package/core versions are 0.3.1/0.2.1.
-Publication and consumer pin adoption are recorded in the qualification log.
+Publication and consumer pin adoption are recorded in the
+[qualification report](../reports/cross-media-viewer-2026-10-05.md).
 Hosted CI is temporarily owner-waived while Kvant is down.
 
-The collaborative preview still returns an automation execution error on
-snapshot, including after reopening the inline preview. Browser evidence for
-these additions is incomplete. Issues remain open until that evidence exists.
+Native browser evaluation and screenshots now work. Generated audio and print
+fixtures qualify the reference interactions, preferences and station rejoin.
+A private generated OIDC provider qualifies optional catalog sync and the
+template's unchanged account/chat controls. These fixtures establish neither
+real source audiovisual fidelity nor a live provider or public deployment.
+Print/audio brands retain separate interface adoption and qualification work.
