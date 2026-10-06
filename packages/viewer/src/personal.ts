@@ -11,7 +11,9 @@ export async function personalRequest<T>(path: string, csrf = '', method = 'GET'
   if (csrf) headers['X-CSRF-Token'] = csrf;
   if (revision !== undefined) headers['If-Match'] = String(revision);
   const response = await fetch(path, { method, headers, credentials: 'same-origin', cache: 'no-store', signal: AbortSignal.timeout(10_000), body: body === undefined ? undefined : JSON.stringify(body) });
-  const value = await response.json() as T & { error?: string };
+  if (!response.headers.get('Content-Type')?.toLowerCase().startsWith('application/json')) throw new PersonalError(response.status === 404 ? 'Personal service is not enabled.' : 'Personal service unavailable.', response.status);
+  let value: T & { error?: string };
+  try { value = await response.json() as T & { error?: string }; } catch { throw new PersonalError('Personal service unavailable.', response.status); }
   if (!response.ok) throw new PersonalError(value.error || 'Personal service unavailable.', response.status);
   return value;
 }
@@ -60,7 +62,7 @@ export function usePersonal(collection: string) {
       const key = `archive.favorite.pending.v1:${user.deployment}:${user.user.id}:${collection}`;
       const saved = readStored<unknown>(key, []);
       setPending(Array.isArray(saved) ? saved.filter((v): v is PendingFavorite => { if (typeof v !== 'object' || v === null) return false; const value = v as Partial<PendingFavorite>; return safeID(value.item) && typeof value.remove === 'boolean' && Number.isSafeInteger(value.baseRevision) && value.baseRevision! >= 0; }).slice(0, 10_000) : []);
-    } catch (reason) { if (token === epoch.current) { if (reason instanceof PersonalError && reason.status === 404) { setEnabled(false); setSession(null); setProfile(null); } else setError(errorMessage(reason)); } }
+    } catch (reason) { if (token === epoch.current) { if (reason instanceof PersonalError && reason.status === 404) { setEnabled(false); setSession(null); setProfile(null); setError(''); } else setError(errorMessage(reason)); } }
   }, [collection]);
   useEffect(() => { void refresh(); return () => { epoch.current++; }; }, [collection, refresh]);
   const savePending = (values: PendingFavorite[]) => { setPending(values); if (pendingKey) store(pendingKey, values); };

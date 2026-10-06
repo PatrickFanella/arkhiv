@@ -8,7 +8,7 @@ it('retains bounded stable IDs without private metadata and tolerates blocked st
   expect(readLocalFavorites({ getItem: () => { throw Error('blocked'); } }, 'brand', ['page-copy'])).toEqual(['page-copy']);
 });
 it('sends CSRF and revision checks without browser bearer tokens', async () => {
-  const fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ revision: 4 }) });
+  const fetch = vi.fn().mockResolvedValue({ ok: true, headers: new Headers({ 'Content-Type': 'application/json' }), json: async () => ({ revision: 4 }) });
   vi.stubGlobal('fetch', fetch);
   await personalRequest('/api/personal/v1/favorites/collection/episode', 'csrf', 'PUT', undefined, 3);
   const options = fetch.mock.calls[0][1] as RequestInit;
@@ -16,6 +16,16 @@ it('sends CSRF and revision checks without browser bearer tokens', async () => {
   expect(options.headers).toEqual({ 'Content-Type': 'application/json', 'X-CSRF-Token': 'csrf', 'If-Match': '3' });
 });
 it('preserves explicit conflicts for caller review', async () => {
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 409, json: async () => ({ error: 'Favorites changed.' }) }));
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 409, headers: new Headers({ 'Content-Type': 'application/json' }), json: async () => ({ error: 'Favorites changed.' }) }));
   await expect(personalRequest('/api/personal/v1/favorites')).rejects.toEqual(new PersonalError('Favorites changed.', 409));
+});
+
+it('treats an absent optional route as disabled and hides malformed gateway responses', async () => {
+  const original = globalThis.fetch;
+  try {
+    globalThis.fetch = async () => new Response('404 page not found', { status: 404, headers: { 'Content-Type': 'text/plain' } });
+    await expect(personalRequest('/api/account/v1/session')).rejects.toMatchObject({ status: 404, message: 'Personal service is not enabled.' });
+    globalThis.fetch = async () => new Response('<html>gateway details</html>', { status: 503, headers: { 'Content-Type': 'text/html' } });
+    await expect(personalRequest('/api/account/v1/session')).rejects.toMatchObject({ status: 503, message: 'Personal service unavailable.' });
+  } finally { globalThis.fetch = original; }
 });
