@@ -112,6 +112,13 @@ func (s *Server) oauth(p *oidc.Provider) oauth2.Config {
 }
 func (s *Server) Handler() http.Handler {
 	mux := http.NewServeMux()
+	mux.HandleFunc("GET /api/ready", func(w http.ResponseWriter, r *http.Request) {
+		if s.Pool == nil || s.Pool.Ping(r.Context()) != nil {
+			write(w, 503, map[string]string{"error": "Personal database unavailable."})
+			return
+		}
+		write(w, 200, map[string]string{"status": "ready"})
+	})
 	mux.HandleFunc("GET /api/account/v1/session", s.status)
 	mux.HandleFunc("POST /api/account/v1/login", s.login)
 	mux.HandleFunc("GET /api/account/v1/callback", s.callback)

@@ -18,7 +18,7 @@ keep-id mapping; no host container socket is mounted into tests. The local
 wrapper supplies frozen uv 0.12.22 and Python 3.12 for curation.
 
 The latest `make verify && make verify-curation` passed for the 0.3.0 source.
-It ran Go vet, race tests including disposable database integration, 33 SDK
+It ran Go vet, race tests including disposable database integration, 34 SDK
 tests, packed ESM consumer installation, 49 Python checks, four reference
 frontend tests, frontend builds and 19 curation tests plus lint/format checks.
 The independent restore test is explicitly separate from this gate.
@@ -59,3 +59,7 @@ queued. Read-only runner discovery found the `kvant` and `kuznya` runners with
 or host labels. Do not relabel or borrow those to force a pass. Hosted CI and the
 curation container workflow remain outstanding. Issues stay open until their
 required evidence exists.
+
+The independent curation verify container passed its 19 tests and lint/format checks. Its runtime image passed health with worker_alive=true under a read-only filesystem, no network, dropped capabilities and bounded temporary storage. Podman does not accept Docker's tmpfs uid/gid options here, so the private task container used bounded sticky temporary mounts instead. The hosted curation workflow remains unverified.
+
+Bill Nye browser checks confirmed the source logo loads with a 24-pixel top gap, the power control uses centered grid alignment, and theater mode expands to one column and hides the sidebar. Escape exits theater mode. Subsequent mobile preview navigation failed with connection refusal despite the local readiness endpoint returning 200. Mobile and further interaction evidence remains outstanding.

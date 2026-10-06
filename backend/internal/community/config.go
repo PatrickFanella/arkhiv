@@ -94,7 +94,7 @@ func OpenPersonal(ctx context.Context, path string) (*pgxpool.Pool, error) {
 		return nil, fmt.Errorf("invalid personal database configuration")
 	}
 	var unsafe bool
-	err = pool.QueryRow(ctx, `SELECT (SELECT rolsuper OR rolcreatedb OR rolcreaterole OR rolreplication OR rolbypassrls FROM pg_roles WHERE rolname=current_user) OR EXISTS(SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE c.relkind IN ('r','p') AND n.nspname NOT IN ('pg_catalog','information_schema') AND (c.relowner=(SELECT oid FROM pg_roles WHERE rolname=current_user) OR (c.relname NOT LIKE 'personal_%' AND c.relname NOT LIKE 'chat_%' AND has_table_privilege(current_user,c.oid,'INSERT,UPDATE,DELETE,TRUNCATE'))))`).Scan(&unsafe)
+	err = pool.QueryRow(ctx, `SELECT (SELECT rolsuper OR rolcreatedb OR rolcreaterole OR rolreplication OR rolbypassrls FROM pg_roles WHERE rolname=current_user) OR has_database_privilege(current_user,current_database(),'CREATE') OR EXISTS(SELECT 1 FROM pg_namespace n WHERE n.nspname NOT IN ('pg_catalog','information_schema') AND n.nspname NOT LIKE 'pg_%' AND has_schema_privilege(current_user,n.oid,'CREATE')) OR EXISTS(SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE c.relkind IN ('r','p') AND n.nspname NOT IN ('pg_catalog','information_schema') AND (pg_has_role(current_user,c.relowner,'USAGE') OR (c.relname NOT LIKE 'personal_%' AND c.relname NOT LIKE 'chat_%' AND has_table_privilege(current_user,c.oid,'INSERT,UPDATE,DELETE,TRUNCATE'))))`).Scan(&unsafe)
 	if err != nil || unsafe {
 		pool.Close()
 		return nil, fmt.Errorf("personal serving role must be a nonowner without archive write privileges")
