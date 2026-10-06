@@ -86,8 +86,14 @@ are not counted as product readiness or successful browser evidence.
 
 ## Remaining boundaries
 
-SDK 0.4.0 and core 0.3.0 are release candidates until immutable artifacts are
-published and adoption is recorded. Native Dedhed #34, Anarchist #64 and Riot
+SDK 0.4.0 and core 0.3.0 were published from source
+`39a49fb45005b001e14218823c22ed19c3de1177`. An independent registry download
+matched SDK SHA-256 `45ab98970b6f246e370ae26fbd7abb31b0077519b90878f353d0ae74f05ec501`.
+Immutable core digest is `sha256:1a9b02ff15eee3483d14a16d859a44d5dad705510fb0bfede137696fe0c63100`;
+combined reference-engine digest is
+`sha256:5651c73c0f35d93b392f8ddea7660cb4d891043e124d67fc0e7fc3da1b5f905b`.
+Versioned receipts are in `docs/releases/`. Publication does not adopt or deploy
+these artifacts for a consumer. Native Dedhed #34, Anarchist #64 and Riot
 Grrrl #15 contain the separately qualified product-owned feedback interfaces;
 those consumers retain their independent backend pins.
 
