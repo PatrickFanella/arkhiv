@@ -32,11 +32,19 @@ suppressed deleted accounts, favorites and bodies, revoked sessions, retained
 withdrawals and reapplied posting restrictions. Only its owned disposable
 databases were removed. This does not prove off-host storage recovery.
 
-The consumer source qualification copied each frontend into the isolated
-snapshot and installed the packed SDK tarball. All three passed typecheck,
-lint, tests and build. Their committed pins and release receipts still require
-the qualified registry release; provisional tarball installation is not adoption
-or a substitute for each repository's `make verify`.
+The SDK 0.3.0 and core 0.2.0 artifacts were published from clean commit
+`929401fdd693ece1ae5d38c8c4c035bcb3712dd8`. An independent authenticated registry
+download matched the package SHA-256 in the release receipt. The core image
+passed its health check against the task-owned preview database, then its
+qualification container was removed.
+
+All three consumers now pin the published SDK, registry lockfile, immutable
+combined engine digest and matching receipt together, with a separate immutable
+core pin and receipt. Each consumer's full `make verify` passed in an isolated
+snapshot: pin checks, frozen installation, typecheck, lint, tests and production
+build. Bill Nye ran two tests, Democracy Now! one, and the template two. The
+optional community Compose overlays rendered successfully without starting any
+services. This validates configuration structure, not live OIDC activation.
 
 Earlier generated H.264/AAC browser fixtures decoded in the collaborative
 preview. Volume and mute survived on-demand/channel switches and a program
@@ -48,12 +56,10 @@ was not downloaded for Democracy Now! metadata work.
 ## Outstanding evidence
 
 Complete real browser checks of the branded controls, reviewed artwork,
-filters, sharing, favorites and optional account/chat behavior. Qualify the new
-registry package and immutable engine/core images, upgrade consumer pins and
-receipts together, and run each consumer's required gate. Record source-program
+filters, sharing, favorites and optional account/chat behavior. Record source-program
 fidelity and collection coverage separately where the issue requires them.
 
-Hosted verification runs 13451–13454 for the initial source commit remained
+Hosted verification runs 13476–13479 for the published source commit remained
 queued. Read-only runner discovery found the `kvant` and `kuznya` runners with
 `ubuntu-latest` labels offline. Other online runners carry unrelated production
 or host labels. Do not relabel or borrow those to force a pass. Hosted CI and the
@@ -63,3 +69,7 @@ required evidence exists.
 The independent curation verify container passed its 19 tests and lint/format checks. Its runtime image passed health with worker_alive=true under a read-only filesystem, no network, dropped capabilities and bounded temporary storage. Podman does not accept Docker's tmpfs uid/gid options here, so the private task container used bounded sticky temporary mounts instead. The hosted curation workflow remains unverified.
 
 Bill Nye browser checks confirmed the source logo loads with a 24-pixel top gap, the power control uses centered grid alignment, and theater mode expands to one column and hides the sidebar. Escape exits theater mode. Subsequent mobile preview navigation failed with connection refusal despite the local readiness endpoint returning 200. Mobile and further interaction evidence remains outstanding.
+
+A later collaborative browser snapshot failed with an explicit automation-client
+disconnection. Environment-port navigation returned state but did not produce
+inspectable rendering evidence. Further browser qualification remains blocked.
