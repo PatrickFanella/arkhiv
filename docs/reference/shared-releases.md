@@ -35,3 +35,9 @@ Retain the current and previous reviewed release during staged adoption. Review
 breaking APIs/configuration and coordinate engine/migration/client order. Rollback
 must use a compatible schema or an independently restored checkpoint. Public
 release and collection approvals remain independent of package publication.
+
+## Independent SDK patches
+
+Viewer 0.4.1 is an SDK-only patch with `docs/releases/viewer-release-0.4.1.json`. It changes no core or reference-engine image. Keep the consumer's reviewed core and engine receipts separately; validate the exact frontend tarball/source/checksum against its SDK receipt. Do not replace the reference-engine digest with a nonexistent 0.4.1 image or label the retained engine as a 0.4.1 release. The six consumers now verify SDK provenance independently of their core/reference-engine provenance. The existing full-platform upgrade command expects a combined platform receipt; this audit's SDK-only adoption uses independently reviewed consumer patches rather than passing the SDK-only receipt into that command. Existing scripts continue to support their documented combined/core receipt formats.
+
+No artifact is withdrawn by this patch. Keep current and prior qualified SDK/core/engine receipts during staged review. Breaking releases still require compatibility/order and independent checkpoint recovery; product frontends and optional community-provider/public activation remain separately owned. See the [October 6 qualification matrix](../reports/cross-brand-qualification-2026-10-06.md).
