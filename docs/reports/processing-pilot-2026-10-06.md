@@ -2,8 +2,9 @@
 
 The owner approved the exact scope in docs/plans/0010-processing-qualification.md.
 A separate `bill-nye-processing-qualification` collection in an isolated
-PostgreSQL 17 database retains the selected `01 Flight.avi` original. All
-publication, playback, channel and public decisions remain false. The existing
+PostgreSQL 17 database retains the selected `01 Flight.avi` original. At the initial acquisition checkpoint, all publication, playback, channel and
+public decisions remained false. The later private derivative review is recorded
+below. The existing
 100-MP4 collection and Democracy Now source-streaming policy are unchanged.
 
 Refreshed complete metadata SHA-256 remained
@@ -88,3 +89,64 @@ uses generated test patterns and tones; it does not claim
 human audiovisual qualification of the Bill Nye original. The real pilot
 original, derivative and independently restored evidence remain unchanged.
 See the [operator instructions](../reference/private-video-processing.md).
+
+## Private registration and restored playback follow-up
+
+The October 6 follow-up registered the exact previously qualified derivative in
+the isolated pilot database. `register-video` verified the immutable original,
+processing receipt and independently recovered original/derivative hashes, then
+compared real probes under bounded resources. Source files and raw responses
+remain unchanged. The original stays acquisition-only; a separate nested review
+approves private derivative publication, on-demand playback and channel use.
+Public approval is refused. No branded interface, live collection or shared
+production schedule changed.
+
+A private two-program schedule uses the processed file on the pilot collection
+only. Desktop on-demand playback decoded 474 frames with zero dropped frames
+and 263,038 audio bytes in the recorded sample. Desktop channel playback reached
+2,101 decoded frames and 1,062,169 audio bytes, with six dropped frames in the
+later sample. Both report the actual 512 × 368 dimensions and approximately
+1,380.781-second container duration. The player distinguishes on-demand access
+from scheduled replay and displays the unknown original broadcast date.
+
+Android 15 Chrome on the isolated qualification emulator decoded 2,014 frames
+and 1,105,053 audio bytes during on-demand playback. Its scheduled sample
+decoded 2,223 frames and 1,299,190 audio bytes. These samples dropped 102 and
+129 frames respectively. They establish browser decoding, not smooth playback
+on a physical device. Recorded resource entries in desktop/Android checks
+contained no external requests. The pilot exposes zero caption tracks because
+its complete source inventory has no reviewed caption source.
+
+The registration, recovery binding and schedule were backed up as a new small
+read-only addition beside the existing independent NUC copy. The combined
+independent store measured 434,367,918 bytes with more than 16 GiB free. The
+new catalog dump SHA-256 is
+`02c50e128a113f67cff53c50de946fc0c3f53b45ca62acf0c192c435920fb935`.
+Old snapshots and receipts remain unchanged. Restoring that independently copied
+dump into a new empty PostgreSQL 17 database retained one snapshot, two decision
+history entries, one preservation history entry and one schedule. All transferred
+files matched; the original and derivative were reverified against the earlier
+independent restore. Combined recovered data measured 434,371,647 bytes, below
+the 1.5 GiB restore allowance, with more than 16 GiB free.
+
+The recovered browser decoded 376 on-demand frames and 208,050 audio bytes with
+zero dropped frames. Scheduled recovery also decoded advancing video/audio;
+its sample reached 545 frames and 364,016 audio bytes, with two dropped frames,
+then reported buffering. A later sample resumed scheduled replay at ready state
+4 with 877 decoded frames and 1,314,703 audio bytes. This is a successful recovery and browser decode check,
+not a sustained playback qualification. Human picture/audio synchronization and
+perceptual review remain outstanding.
+
+Source WebVTT handling has separate domain, integrity and disposable PostgreSQL
+API tests. They cover source checksum binding, labels/language, quota, independent
+receipt binding, actual track responses, corruption before cached responses,
+revocation and public refusal. These synthetic fixtures do not claim a recovered
+real caption track or authorize additional acquisition.
+
+The final `make verify` and `make verify-curation` passed through the shared
+`vhness` profile with its disposable PostgreSQL database, Go race/vet/format
+checks, 45 SDK tests, 63 Python tests, frontend build and 19 frozen-lock curation
+tests. The profile tooling and owned Unix API socket were recovered after the
+T3 restart. Hosted CI remains owner-waived during the Kvant outage. Issue #34
+remains open for perceptual review, sustained qualification and real caption
+recovery evidence when a separately approved caption source exists.

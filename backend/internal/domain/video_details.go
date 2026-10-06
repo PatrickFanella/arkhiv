@@ -49,6 +49,7 @@ type Artwork struct {
 }
 
 type VideoDetails struct {
+	Processed   bool    `json:"processed,omitempty"`
 	SourceTitle string  `json:"source_title"`
 	TitleOrigin string  `json:"title_origin"`
 	SourceURL   string  `json:"source_url"`
@@ -123,6 +124,7 @@ func (e Entry) ViewerEpisode(sourceTitle string) Episode {
 		origin = "editorial"
 	}
 	ep.Video = &VideoDetails{SourceTitle: sourceTitle, TitleOrigin: origin, SourceURL: "https://archive.org/details/" + url.PathEscape(ep.SourceID()), Snapshot: e.SourceHash}
+	ep.Video.Processed = e.Decision.ProcessedVideo != nil
 	if f, ok := e.Selected(); ok {
 		ep.Video.File = f.Name
 		ep.Video.Format = f.Format

@@ -17,6 +17,7 @@ import (
 	"git.subcult.tv/subculture-collective/vhness/internal/community"
 	"git.subcult.tv/subculture-collective/vhness/internal/domain"
 	"git.subcult.tv/subculture-collective/vhness/internal/preservation"
+	"git.subcult.tv/subculture-collective/vhness/internal/video"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -28,6 +29,8 @@ type Server struct {
 	Clock             func() time.Time
 	Media             string
 	Derivatives       string
+	VideoDerivatives  string
+	VideoReceipts     string
 	Web               string
 	Collection        string
 	Collections       domain.CollectionScope
@@ -154,6 +157,7 @@ func (s *Server) Handler() http.Handler {
 	}
 	mux.HandleFunc("GET /api/episodes/{id}", s.episode)
 	mux.HandleFunc("GET /api/playback/{id}", s.playback)
+	mux.HandleFunc("GET /api/video-captions/{id}/{index}", s.videoCaption)
 	mux.HandleFunc("GET /api/channel", s.channel)
 	mux.HandleFunc("GET /api/media/{id}", s.media)
 	mux.HandleFunc("GET /api/status", s.status)
@@ -214,7 +218,7 @@ func (s *Server) list(w http.ResponseWriter, r *http.Request) {
 		if selected := r.URL.Query().Get("collection"); selected != "" && e.Episode.CollectionID != selected {
 			continue
 		}
-		if !e.Decision.Published {
+		if !e.Published() {
 			continue
 		}
 		ep := e.ViewerEpisode(e.SourceTitle)
@@ -252,7 +256,7 @@ func (s *Server) episode(w http.ResponseWriter, r *http.Request) {
 		write(w, 503, map[string]string{"error": "catalog unavailable"})
 		return
 	}
-	if err != nil || !e.Decision.Published || !s.allowsRequestCollection(r, e.Episode.CollectionID) {
+	if err != nil || !e.Published() || !s.allowsRequestCollection(r, e.Episode.CollectionID) {
 		write(w, 404, map[string]string{"error": "episode unavailable"})
 		return
 	}
@@ -386,10 +390,17 @@ func (s *Server) media(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	selected, _ := e.Selected()
-	f, err := preservation.Verify(s.Media, e.LocalPath, e.LocalSHA256, selected.Bytes)
+	hash := e.LocalSHA256
+	var f *os.File
+	if e.Decision.ProcessedVideo != nil {
+		f, err = video.Verify(s.Media, s.VideoDerivatives, s.VideoReceipts, e)
+		hash = e.Decision.ProcessedVideo.SHA256
+	} else {
+		f, err = preservation.Verify(s.Media, e.LocalPath, e.LocalSHA256, selected.Bytes)
+	}
 	if err != nil {
-		s.failure(r, "local original failed integrity check")
-		write(w, 503, map[string]string{"error": "local original failed integrity check"})
+		s.failure(r, "local video or receipt failed integrity check")
+		write(w, 503, map[string]string{"error": "local video or receipt failed integrity check"})
 		return
 	}
 	defer f.Close()
@@ -401,6 +412,44 @@ func (s *Server) media(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "video/mp4")
 	w.Header().Set("Cache-Control", "private, no-cache")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
-	w.Header().Set("ETag", `"sha256-`+e.LocalSHA256+`"`)
+	w.Header().Set("ETag", `"sha256-`+hash+`"`)
 	http.ServeContent(w, r, selected.Name, info.ModTime(), f)
+}
+
+func (s *Server) videoCaption(w http.ResponseWriter, r *http.Request) {
+	e, err := s.DB.Entry(r.Context(), r.PathValue("id"))
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		write(w, 503, map[string]string{"error": "catalog unavailable"})
+		return
+	}
+	index, parseErr := strconv.Atoi(r.PathValue("index"))
+	if err != nil || parseErr != nil || !e.Watchable() || e.Decision.ProcessedVideo == nil || index < 0 || index >= len(e.Decision.ProcessedVideo.Captions) || !s.allowsRequestCollection(r, e.Episode.CollectionID) {
+		write(w, 404, map[string]string{"error": "caption unavailable"})
+		return
+	}
+	// Check the whole media/receipt binding before honoring a caption cache or
+	// Range request. A caption cannot outlive revoked or corrupted source media.
+	asset, err := video.Verify(s.Media, s.VideoDerivatives, s.VideoReceipts, e)
+	if err != nil {
+		write(w, 503, map[string]string{"error": "local video or caption failed integrity check"})
+		return
+	}
+	asset.Close()
+	f, err := video.VerifyCaption(s.Media, e, index)
+	if err != nil {
+		write(w, 503, map[string]string{"error": "local caption failed integrity check"})
+		return
+	}
+	defer f.Close()
+	info, err := f.Stat()
+	if err != nil {
+		write(w, 503, map[string]string{"error": "local caption unavailable"})
+		return
+	}
+	c := e.Decision.ProcessedVideo.Captions[index]
+	w.Header().Set("Content-Type", "text/vtt; charset=utf-8")
+	w.Header().Set("Cache-Control", "private, no-cache")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.Header().Set("ETag", `"sha256-`+c.SHA256+`"`)
+	http.ServeContent(w, r, c.File, info.ModTime(), f)
 }

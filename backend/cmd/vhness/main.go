@@ -26,6 +26,7 @@ import (
 	"git.subcult.tv/subculture-collective/vhness/internal/preservation"
 	printmodule "git.subcult.tv/subculture-collective/vhness/internal/print"
 	"git.subcult.tv/subculture-collective/vhness/internal/source"
+	"git.subcult.tv/subculture-collective/vhness/internal/video"
 	"git.subcult.tv/subculture-collective/vhness/internal/worker"
 	"github.com/jackc/pgx/v5"
 )
@@ -45,7 +46,7 @@ func load(p string, v any) error {
 }
 func run() error {
 	if len(os.Args) < 2 {
-		return fmt.Errorf("usage: vhness migrate|collection|review-budget|review-public-video|review-library|plan-replay|import|import-item|import-source|import-catalog|prepare-curation|retain-legacy|review-transport|index-print|restore-print-index|register-audio|schedule-audio|renew-public-audio|fetch|inspect|acquire|audit|review|schedule|discover|refresh|report|seed|serve|healthcheck")
+		return fmt.Errorf("usage: vhness migrate|collection|review-budget|review-public-video|review-library|plan-replay|import|import-item|import-source|import-catalog|prepare-curation|retain-legacy|review-transport|index-print|restore-print-index|register-audio|register-video|schedule-audio|renew-public-audio|fetch|inspect|acquire|audit|review|schedule|discover|refresh|report|seed|serve|healthcheck")
 	}
 	cmd := os.Args[1]
 	if cmd == "healthcheck" {
@@ -133,7 +134,7 @@ func run() error {
 	}
 	defer d.Pool.Close()
 	d.PublicOnly = publicValue == "1"
-	if allowlist != nil && (cmd == "review" || cmd == "review-public-video" || cmd == "inspect") {
+	if allowlist != nil && (cmd == "review" || cmd == "review-public-video" || cmd == "register-video" || cmd == "inspect") {
 		entry, err := d.Entry(ctx, *id)
 		if err != nil || !allowlist.Allows(entry.Episode.CollectionID) {
 			return fmt.Errorf("episode outside configured instance scope")
@@ -575,6 +576,12 @@ func run() error {
 			return err
 		}
 		return d.Decide(ctx, *id, decision)
+	case "register-video":
+		var review domain.ProcessedVideoReview
+		if err := load(*file, &review); err != nil {
+			return err
+		}
+		return video.Register(ctx, d, os.Getenv("VHNESS_MEDIA"), os.Getenv("VHNESS_VIDEO_DERIVATIVES"), os.Getenv("VHNESS_VIDEO_RECEIPTS"), *id, review)
 	case "schedule":
 		var s domain.Schedule
 		if err := load(*file, &s); err != nil {
@@ -676,7 +683,7 @@ func run() error {
 		if compatibility != "" && len(allowlist) != 1 {
 			return fmt.Errorf("compatibility API requires exactly one collection")
 		}
-		server := &http.Server{Addr: env("API_ADDR", "127.0.0.1:8080"), Handler: (&app.Server{DB: d, Community: personal, Compatibility: compatibility, Revision: os.Getenv("ARKHIV_REVISION"), Web: os.Getenv("VHNESS_WEB"), Media: os.Getenv("VHNESS_MEDIA"), Derivatives: os.Getenv("VHNESS_DERIVATIVES"), Collection: scope, Collections: allowlist}).Handler(), ReadHeaderTimeout: 5 * time.Second, IdleTimeout: 60 * time.Second}
+		server := &http.Server{Addr: env("API_ADDR", "127.0.0.1:8080"), Handler: (&app.Server{DB: d, Community: personal, Compatibility: compatibility, Revision: os.Getenv("ARKHIV_REVISION"), Web: os.Getenv("VHNESS_WEB"), Media: os.Getenv("VHNESS_MEDIA"), Derivatives: os.Getenv("VHNESS_DERIVATIVES"), VideoDerivatives: os.Getenv("VHNESS_VIDEO_DERIVATIVES"), VideoReceipts: os.Getenv("VHNESS_VIDEO_RECEIPTS"), Collection: scope, Collections: allowlist}).Handler(), ReadHeaderTimeout: 5 * time.Second, IdleTimeout: 60 * time.Second}
 		go func() {
 			<-ctx.Done()
 			shutdown, cancel := context.WithTimeout(context.Background(), 10*time.Second)

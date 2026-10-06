@@ -36,3 +36,13 @@ The continuation completed on October 6. It restored the second Go CLI deduplica
 The actual restored reader checked all 23 published documents. All 23 download requests succeeded and all 23 PDFs painted in the browser probe. Source networking was blocked and the probe made zero source requests. This was desktop reader proof; the `narrow` result was false and no narrow-device result is claimed. The isolated operator image was `sha256:1fd09f9f1373bdfb5fcf8dcb4ecbb545f8f8b553d6540db512811bc581956720`, with retained frontend `riot-grrrl-web:d126446`.
 
 After successful teardown, an exact Compose-project-label lookup returned no containers. The prior failed attempt and partial restore remain retained. The continuation's 7,200-second qualification budget does not change the native 1,800-second configuration or erase the earlier timeout. Anarchist's larger full recovery remains in progress.
+
+## Restart reconciliation
+
+After the T3 restart, the Anarchist experiment has no active container mounted
+from its exact qualification project and no completion proof. Its last retained
+phase is `restored-audit`. Completed backup directories and the partial restore
+remain preserved. The earlier "in progress" observation is historical; this
+attempt is interrupted or otherwise incomplete, not qualified. A new bounded
+continuation must produce the full restore/audit/reader receipt before #56 can
+close. Live backup activation still requires its separate owner decision.
