@@ -70,3 +70,20 @@ approval path, including policy/refusal tests, real disposable PostgreSQL tests,
 45 SDK tests, 56 Python tests and 19 frozen-lock curation tests. Hosted CI is
 owner-waived during the Kvant outage. No live service, backup schedule, provider
 or public access was activated.
+
+## Reusable processing operator qualification
+
+The reusable `scripts/process_video.py` operator passed a separate three-second
+generated MPEG-4/MP3 AVI conversion using the retained tools image. Its actual
+Podman run had no network, mounted the original read-only, enforced the processing
+limits, and produced a 216,642-byte H.264/AAC MP4. Both complete decode checks
+passed. The derivative SHA-256 was
+`12c9b93c26f7182cd8c36676bf1aa99849cf3314e51b9b530325d9f866a8d55b`.
+
+Six operator tests cover source/policy/checksum refusals, compatible-codec remux
+selection, source collection relabelling, capacity and reserve checks, failed
+output retention, altered display proportions/timing, and unpreserved caption
+streams. The fixture uses generated test patterns and tones; it does not claim
+human audiovisual qualification of the Bill Nye original. The real pilot
+original, derivative and independently restored evidence remain unchanged.
+See the [operator instructions](../reference/private-video-processing.md).
