@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"slices"
-	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -28,28 +27,36 @@ type Message struct {
 
 func (s *Server) room(w http.ResponseWriter, r *http.Request) {
 	collection := r.PathValue("collection")
+	media, ok := requestMedia(w, r)
+	if !ok {
+		return
+	}
 	if !s.Allowed(collection) {
 		fail(w, 404, "Room unavailable.")
 		return
 	}
-	program, err := s.Current(r.Context(), collection)
+	program, err := s.current(r.Context(), collection, media)
 	if err != nil {
 		fail(w, 503, "Channel unavailable.")
 		return
 	}
-	reply(w, 200, map[string]any{"collection": collection, "current": program, "read": s.ChatRead, "post": s.ChatRead && s.ChatPost, "retention_days": 30, "poll_seconds": 10, "moderation_contact": s.ModerationContact})
+	reply(w, 200, map[string]any{"collection": collection, "media": media, "current": program, "read": s.readable(media), "post": s.postable(media), "retention_days": 30, "poll_seconds": 10, "moderation_contact": s.ModerationContact})
 }
 
-const messageColumns = `seq,id,user_id,alias,body,collection,revision,program_start,episode,original_date,created_at`
+const messageColumns = `seq,id,user_id,alias,body,collection,revision,program_start,episode,original_date,created_at,media,item,representation`
 
 func scanMessage(row interface{ Scan(...any) error }) (Message, error) {
 	var m Message
-	err := row.Scan(&m.Seq, &m.ID, &m.UserID, &m.Alias, &m.Body, &m.Collection, &m.Revision, &m.Start, &m.Episode, &m.OriginalDate, &m.CreatedAt)
+	err := row.Scan(&m.Seq, &m.ID, &m.UserID, &m.Alias, &m.Body, &m.Collection, &m.Revision, &m.Start, &m.Episode, &m.OriginalDate, &m.CreatedAt, &m.Media, &m.Item, &m.Representation)
 	return m, err
 }
 func (s *Server) messages(w http.ResponseWriter, r *http.Request) {
 	collection := r.PathValue("collection")
-	if !s.ChatRead {
+	media, ok := requestMedia(w, r)
+	if !ok {
+		return
+	}
+	if !s.readable(media) {
 		fail(w, 403, "Chat is disabled.")
 		return
 	}
@@ -57,14 +64,14 @@ func (s *Server) messages(w http.ResponseWriter, r *http.Request) {
 		fail(w, 404, "Room unavailable.")
 		return
 	}
-	cursor, err := parseCursor(r)
+	cursor, err := roomCursor(r.URL.Query().Get("after"), media)
 	if err != nil {
 		fail(w, 400, "Invalid cursor.")
 		return
 	}
 	before := int64(0)
 	if value := r.URL.Query().Get("before"); value != "" {
-		before, err = strconv.ParseInt(value, 10, 64)
+		before, err = roomCursor(value, media)
 		if err != nil || before <= 0 || cursor != 0 {
 			fail(w, 400, "Invalid history cursor.")
 			return
@@ -82,7 +89,7 @@ func (s *Server) messages(w http.ResponseWriter, r *http.Request) {
 	if cursor > 0 {
 		order = "ASC"
 	}
-	rows, err := s.Pool.Query(r.Context(), `SELECT `+messageColumns+` FROM chat_messages WHERE deployment=$1 AND collection=$2 AND seq>$3 AND ($6::bigint=0 OR seq<$6) AND NOT hidden AND created_at>$4 AND NOT EXISTS(SELECT 1 FROM chat_blocks b WHERE b.user_id=$5 AND b.blocked_id=chat_messages.user_id) ORDER BY seq `+order+` LIMIT 50`, s.Trust.Deployment, collection, cursor, s.now().Add(-30*24*time.Hour), user, before)
+	rows, err := s.Pool.Query(r.Context(), `SELECT `+messageColumns+` FROM chat_messages WHERE deployment=$1 AND collection=$2 AND media=$7 AND seq>$3 AND ($6::bigint=0 OR seq<$6) AND NOT hidden AND created_at>$4 AND NOT EXISTS(SELECT 1 FROM chat_blocks b WHERE b.user_id=$5 AND b.blocked_id=chat_messages.user_id) ORDER BY seq `+order+` LIMIT 50`, s.Trust.Deployment, collection, cursor, s.now().Add(-30*24*time.Hour), user, before, media)
 	if err != nil {
 		fail(w, 503, "Chat unavailable.")
 		return
@@ -111,7 +118,7 @@ func (s *Server) messages(w http.ResponseWriter, r *http.Request) {
 	if len(out) > 0 {
 		oldest = out[0].Seq
 	}
-	reply(w, 200, map[string]any{"messages": out, "after": cursor, "before": oldest, "replace": r.URL.Query().Get("after") == ""})
+	reply(w, 200, map[string]any{"messages": out, "after": encodeRoomCursor(cursor, media), "before": encodeRoomCursor(oldest, media), "replace": r.URL.Query().Get("after") == ""})
 }
 
 type Submission struct {
@@ -122,9 +129,9 @@ type Submission struct {
 	Paused bool   `json:"paused"`
 }
 
-func (s *Server) programMatches(ctx context.Context, collection string, v Submission) bool {
-	p, err := s.Current(ctx, collection)
-	return err == nil && p != nil && v.Mode == "channel" && !v.Paused && v.Revision == p.Revision && v.Start.Equal(p.Start) && v.Episode == p.Episode
+func (s *Server) programMatches(ctx context.Context, collection, media string, v Submission) bool {
+	p, err := s.current(ctx, collection, media)
+	return err == nil && p != nil && normalizedMedia(v.Media) == media && v.Mode == "channel" && !v.Paused && v.Revision == p.Revision && v.Start.Equal(p.Start) && v.Episode == p.Episode && v.Item == p.Item && v.Representation == p.Representation
 }
 func rate(ctx context.Context, tx pgx.Tx, deployment, key string, now time.Time, window time.Duration, limit int) error {
 	bucket := now.Unix() / int64(window.Seconds())
@@ -144,7 +151,11 @@ func (s *Server) post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	collection := r.PathValue("collection")
-	if !s.ChatRead || !s.ChatPost {
+	media, ok := requestMedia(w, r)
+	if !ok {
+		return
+	}
+	if !s.postable(media) {
 		fail(w, 403, "Posting is disabled.")
 		return
 	}
@@ -156,15 +167,27 @@ func (s *Server) post(w http.ResponseWriter, r *http.Request) {
 	if !decode(w, r, &v) {
 		return
 	}
+	if normalizedMedia(v.Media) != media {
+		fail(w, 409, "Message context belongs to another media room.")
+		return
+	}
 	if !utf8.ValidString(v.Body) || utf8.RuneCountInString(v.Body) > 1000 || len(v.Body) > 4096 || strings.TrimSpace(v.Body) == "" || strings.ContainsRune(v.Body, '\x00') || !validName(v.Key) || len(v.Key) > 128 {
 		fail(w, 400, "Use 1–1,000 characters, at most 4 KiB, and a valid retry key.")
 		return
 	}
 	encoded, _ := json.Marshal(struct {
-		Body, Collection, Revision, Episode string
-		Start                               time.Time
-	}{v.Body, collection, v.Revision, v.Episode, v.Start})
+		Body, Collection, Revision, Episode, Media, Item, Representation string
+		Start                                                            time.Time
+	}{v.Body, collection, v.Revision, v.Episode, media, v.Item, v.Representation, v.Start})
 	digest := Hash(string(encoded))
+	// Preserve retry receipts written by existing video clients before this extension.
+	if media == "video" {
+		encoded, _ = json.Marshal(struct {
+			Body, Collection, Revision, Episode string
+			Start                               time.Time
+		}{v.Body, collection, v.Revision, v.Episode, v.Start})
+		digest = Hash(string(encoded))
+	}
 	tx, err := s.Pool.Begin(r.Context())
 	if err != nil {
 		fail(w, 503, "Chat unavailable.")
@@ -178,7 +201,7 @@ func (s *Server) post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var previousID, previousDigest string
-	err = tx.QueryRow(r.Context(), `SELECT message_id,digest FROM chat_requests WHERE deployment=$1 AND user_id=$2 AND key=$3`, s.Trust.Deployment, u.ID, v.Key).Scan(&previousID, &previousDigest)
+	err = tx.QueryRow(r.Context(), `SELECT message_id,digest FROM chat_requests WHERE deployment=$1 AND user_id=$2 AND key=$3 AND media=$4`, s.Trust.Deployment, u.ID, v.Key, media).Scan(&previousID, &previousDigest)
 	if err == nil {
 		if previousDigest != digest {
 			fail(w, 409, "Retry key already used for another message.")
@@ -196,12 +219,12 @@ func (s *Server) post(w http.ResponseWriter, r *http.Request) {
 		fail(w, 503, "Chat unavailable.")
 		return
 	}
-	if !s.programMatches(r.Context(), collection, v) {
+	if !s.programMatches(r.Context(), collection, media, v) {
 		fail(w, 409, "The channel changed. Rejoin and review your message before sending.")
 		return
 	}
 	var restricted bool
-	err = tx.QueryRow(r.Context(), `SELECT EXISTS(SELECT 1 FROM chat_restrictions WHERE deployment=$1 AND user_id=$2 AND until_at>$3)`, s.Trust.Deployment, u.ID, s.now()).Scan(&restricted)
+	err = tx.QueryRow(r.Context(), `SELECT EXISTS(SELECT 1 FROM chat_restrictions WHERE deployment=$1 AND user_id=$2 AND until_at>$3 AND media=$4)`, s.Trust.Deployment, u.ID, s.now(), media).Scan(&restricted)
 	if err != nil {
 		fail(w, 503, "Chat unavailable.")
 		return
@@ -210,19 +233,19 @@ func (s *Server) post(w http.ResponseWriter, r *http.Request) {
 		fail(w, 403, "Posting is restricted.")
 		return
 	}
-	if rate(r.Context(), tx, s.Trust.Deployment, "post:"+u.ID, s.now(), time.Minute, 5) != nil || rate(r.Context(), tx, s.Trust.Deployment, "room:"+collection, s.now(), time.Minute, 100) != nil {
+	if rate(r.Context(), tx, s.Trust.Deployment, "post:"+media+":"+u.ID, s.now(), time.Minute, 5) != nil || rate(r.Context(), tx, s.Trust.Deployment, "room:"+media+":"+Hash(collection), s.now(), time.Minute, 100) != nil {
 		fail(w, 429, "Posting limit reached. Try again later.")
 		return
 	}
-	p, _ := s.Current(r.Context(), collection)
-	if p == nil || !s.programMatches(r.Context(), collection, v) {
+	p, _ := s.current(r.Context(), collection, media)
+	if p == nil || !s.programMatches(r.Context(), collection, media, v) {
 		fail(w, 409, "The channel changed. Rejoin before sending.")
 		return
 	}
 	id := RandomID()
-	m, err := scanMessage(tx.QueryRow(r.Context(), `INSERT INTO chat_messages(id,deployment,collection,user_id,alias,body,revision,program_start,episode,original_date,idempotency_key,created_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING `+messageColumns, id, s.Trust.Deployment, collection, u.ID, u.Alias, v.Body, p.Revision, p.Start, p.Episode, p.OriginalDate, v.Key, s.now()))
+	m, err := scanMessage(tx.QueryRow(r.Context(), `INSERT INTO chat_messages(id,deployment,collection,user_id,alias,body,revision,program_start,episode,original_date,idempotency_key,created_at,media,item,representation) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) RETURNING `+messageColumns, id, s.Trust.Deployment, collection, u.ID, u.Alias, v.Body, p.Revision, p.Start, p.Episode, p.OriginalDate, v.Key, s.now(), media, p.Item, p.Representation))
 	if err == nil {
-		_, err = tx.Exec(r.Context(), `INSERT INTO chat_requests(deployment,user_id,key,message_id,digest,created_at) VALUES($1,$2,$3,$4,$5,$6)`, s.Trust.Deployment, u.ID, v.Key, id, digest, s.now())
+		_, err = tx.Exec(r.Context(), `INSERT INTO chat_requests(deployment,user_id,key,message_id,digest,created_at,media) VALUES($1,$2,$3,$4,$5,$6,$7)`, s.Trust.Deployment, u.ID, v.Key, id, digest, s.now(), media)
 	}
 	if err == nil {
 		err = tx.Commit(r.Context())

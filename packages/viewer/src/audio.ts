@@ -7,3 +7,5 @@ export type { AudioStation, StationSession } from './useAudioStation.js';
 export { useAudioControls } from './useAudioControls.js';
 
 export { useMediaPreferences, readVideoPreferences as readMediaPreferences, saveVideoPreferences as saveMediaPreferences } from './videoPreferences.js';
+
+export { useAudioChannelChat } from './chat.js';

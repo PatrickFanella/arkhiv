@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { PersonalBrowserStorage } from './personal-storage.js';
 
-export type PersonalUser = { id: string; alias: string; revision: number; moderator: boolean };
+export type PersonalUser = { id: string; alias: string; revision: number; moderator: boolean; audio_moderator?: boolean };
 export type Favorite = { collection: string; item: string; removed: boolean; revision: number; available: boolean };
 export type PendingFavorite = { item: string; remove: boolean; baseRevision: number };
 type BrowserSession = { authenticated: boolean; csrf?: string; deployment: string; reauthentication_required?: boolean };
@@ -17,13 +18,13 @@ export async function personalRequest<T>(path: string, csrf = '', method = 'GET'
   if (!response.ok) throw new PersonalError(value.error || 'Personal service unavailable.', response.status);
   return value;
 }
-const memory = new Map<string, unknown>();
+const browserStorage = new PersonalBrowserStorage(() => localStorage);
 const safeID = (id: unknown): id is string => typeof id === 'string' && id.length > 0 && id.length <= 512 && !/[/\\\0]/.test(id);
 export function readLocalFavorites(storage: Pick<Storage, 'getItem'>, key: string, fallback: string[] = []): string[] {
   try { const value: unknown = JSON.parse(storage.getItem(key) || '[]'); if (!Array.isArray(value)) return fallback; return [...new Set(value.filter(safeID))].slice(0, 10_000); } catch { return fallback; }
 }
-function readStored<T>(key: string, fallback: T): T { try { return JSON.parse(localStorage.getItem(key) || 'null') as T ?? memory.get(key) as T ?? fallback; } catch { return memory.get(key) as T ?? fallback; } }
-function store(key: string, value: unknown) { memory.set(key, value); try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* Page-local fallback; never prevent viewing. */ } }
+const readStored = <T,>(key: string, fallback: T): T => browserStorage.read(key, fallback);
+const store = (key: string, value: unknown) => browserStorage.write(key, value);
 const errorMessage = (reason: unknown) => reason instanceof Error ? reason.message : 'Personal service unavailable.';
 
 export function usePersonal(collection: string) {
@@ -35,6 +36,7 @@ export function usePersonal(collection: string) {
   const [revision, setRevision] = useState(0);
   const [pending, setPending] = useState<PendingFavorite[]>([]);
   const [error, setError] = useState('');
+  const [storageWarning, setStorageWarning] = useState('');
   const [busy, setBusy] = useState(false);
   const [enabled, setEnabled] = useState(false);
   const [loadedCollection,setLoadedCollection]=useState(collection);
@@ -43,12 +45,13 @@ export function usePersonal(collection: string) {
   const epoch = useRef(0);
   const actionInFlight = useRef(false);
   const pendingKey = profile ? `archive.favorite.pending.v1:${profile.deployment}:${profile.user.id}:${collection}` : '';
+  const warnStorage = () => setStorageWarning(browserStorage.temporary(localKey) || (pendingKey && browserStorage.temporary(pendingKey)) ? 'Browser storage is unavailable. Changes are kept only on this page; export them before leaving.' : '');
   const identity = `${collection}:${profile?.deployment || ''}:${profile?.user.id || ''}`;
   const activeIdentity = useRef(identity);
   useEffect(() => { activeIdentity.current = identity; }, [identity]);
   useEffect(() => {
-    const read = () => { let values: string[]; const fallback = memory.get(localKey) as string[] || []; try { values = readLocalFavorites(localStorage, localKey, fallback); } catch { values = fallback; } setLocal(values); };
-    read(); const changed = (event: StorageEvent) => { if (event.key === localKey) read(); };
+    const read = () => { const values = readStored<unknown>(localKey, []); setLocal(Array.isArray(values) ? [...new Set(values.filter(safeID))].slice(0, 10_000) : []); setStorageWarning(browserStorage.temporary(localKey) ? 'Browser storage is unavailable. Changes are kept only on this page; export them before leaving.' : ''); };
+    read(); const changed = (event: StorageEvent) => { if (event.key === localKey) { browserStorage.changed(localKey); read(); } };
     window.addEventListener('storage', changed); return () => window.removeEventListener('storage', changed);
   }, [localKey]);
   const refresh = useCallback(async () => {
@@ -64,11 +67,12 @@ export function usePersonal(collection: string) {
       setProfile(user); setFavorites(list.favorites); setRevision(list.revision); setError('');
       const key = `archive.favorite.pending.v1:${user.deployment}:${user.user.id}:${collection}`;
       const saved = readStored<unknown>(key, []);
+      setStorageWarning(browserStorage.temporary(localKey) || browserStorage.temporary(key) ? 'Browser storage is unavailable. Changes are kept only on this page; export them before leaving.' : '');
       setPending(Array.isArray(saved) ? saved.filter((v): v is PendingFavorite => { if (typeof v !== 'object' || v === null) return false; const value = v as Partial<PendingFavorite>; return safeID(value.item) && typeof value.remove === 'boolean' && Number.isSafeInteger(value.baseRevision) && value.baseRevision! >= 0; }).slice(0, 10_000) : []);
     } catch (reason) { if (token === epoch.current) { if (reason instanceof PersonalError && reason.status === 404) { setEnabled(false); setSession(null); setProfile(null); setError(''); } else setError(errorMessage(reason)); } }
   }, [collection]);
   useEffect(() => { void refresh(); return () => { epoch.current++; }; }, [collection, refresh]);
-  const savePending = (values: PendingFavorite[]) => { setPending(values); if (pendingKey) store(pendingKey, values); };
+  const savePending = (values: PendingFavorite[]) => { setPending(values); if (pendingKey) store(pendingKey, values); warnStorage(); };
   const applyOne = async (change: PendingFavorite, expectedIdentity: string) => {
     if (activeIdentity.current !== expectedIdentity || !profile || !session?.csrf) throw new Error('Sign in again before synchronizing.');
     const value = await personalRequest<{ revision: number; removed: boolean }>(`/api/personal/v1/favorites/${encodeURIComponent(collection)}/${encodeURIComponent(change.item)}`, session.csrf, change.remove ? 'DELETE' : 'PUT', undefined, change.baseRevision);
@@ -78,7 +82,7 @@ export function usePersonal(collection: string) {
   };
   const toggle = async (item: string) => {
     if (!scopeMatches || !safeID(item) || actionInFlight.current) return;
-    if (!profile) { const values = local.includes(item) ? local.filter(id => id !== item) : [...local, item]; store(localKey, values); setLocal(values); return; }
+    if (!profile) { const values = local.includes(item) ? local.filter(id => id !== item) : [...local, item]; store(localKey, values); setLocal(values); warnStorage(); return; }
     const existing = pending.find(p => p.item === item);
     const saved = favorites.some(f => f.collection === collection && f.item === item && !f.removed);
     const change = { item, remove: existing ? !existing.remove : saved, baseRevision: revision };
@@ -107,6 +111,6 @@ export function usePersonal(collection: string) {
   const exportData = async () => { const account = profile ? await personalRequest<unknown>('/api/personal/v1/export') : null; return JSON.stringify({ version: 1, collection, account, browser_local_favorites: local, pending_changes: pending }, null, 2); };
   const selected = new Set(profile ? favorites.filter(f => f.collection === collection && !f.removed).map(f => f.item) : local);
   for (const change of pending) { if (change.remove) selected.delete(change.item); else selected.add(change.item); }
-  return { enabled, user: scopeMatches ? profile?.user || null : null, deployment: profile?.deployment || session?.deployment || '', csrf: session?.csrf || '', reauthenticationRequired: session?.reauthentication_required || false, chatRead: profile?.chat_read || false, chatPost: profile?.chat_post || false, localFavorites: scopeMatches ? local : [], favorites: scopeMatches ? favorites : [], favoriteIDs: scopeMatches ? [...selected] : [], pending: scopeMatches ? pending : [], error, busy, refresh, toggle, synchronize, importLocal, signIn, signOut, removeAccount, updateAlias, exportData };
+  return { enabled, user: scopeMatches ? profile?.user || null : null, deployment: profile?.deployment || session?.deployment || '', csrf: session?.csrf || '', reauthenticationRequired: session?.reauthentication_required || false, chatRead: profile?.chat_read || false, chatPost: profile?.chat_post || false, localFavorites: scopeMatches ? local : [], favorites: scopeMatches ? favorites : [], favoriteIDs: scopeMatches ? [...selected] : [], pending: scopeMatches ? pending : [], error: [error, storageWarning].filter(Boolean).join(' '), busy, refresh, toggle, synchronize, importLocal, signIn, signOut, removeAccount, updateAlias, exportData };
 }
 export type Personal = ReturnType<typeof usePersonal>;

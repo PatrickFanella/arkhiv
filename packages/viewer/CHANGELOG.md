@@ -1,3 +1,13 @@
+## 0.4.1
+
+Warn when browser storage rejects favorite or pending-sync changes. Retain the
+newer page copy across hook remounts instead of reading stale persisted values.
+Export remains available, and a successful later write clears the warning.
+
+## 0.4.0
+
+Add opt-in audio replay discussion with separate media rooms, exact recording/representation context and measured playback state. Preserve existing video behavior and keep audio read/post switches and moderators independent. Personal restore upgrades additive module migrations before reapplying current deletion and scoped moderation evidence.
+
 ## 0.3.1
 
 Apply volume and mute preferences to audio and native mixed-media players. Shared audio stations expose measured replay states and fresh resume/rejoin, with seeking retained for on-demand recordings. Add mixed-catalog creator/date filters, stable item links and canonical favorite references.

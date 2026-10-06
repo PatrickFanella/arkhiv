@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"sort"
 	"strconv"
 	"strings"
@@ -85,19 +86,52 @@ func (s *Server) legacyRecordings(w http.ResponseWriter, r *http.Request) {
 		write(w, 200, e)
 		return
 	}
-	q, year := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("q"))), r.URL.Query().Get("year")
-	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
+	items, total, page, err := legacyRecordingPage(entries, r.URL.Query())
+	if err != nil {
+		write(w, 400, map[string]string{"error": err.Error()})
+		return
+	}
+	write(w, 200, map[string]any{"items": items, "total": total, "page": page})
+}
+
+func legacyRecordingPage(entries map[string]music.Entry, query url.Values) ([]music.Entry, int, int, error) {
+	q := strings.ToLower(strings.TrimSpace(query.Get("q")))
+	year := query.Get("year")
+	venue := strings.ToLower(strings.TrimSpace(query.Get("venue")))
+	from, to := query.Get("date_from"), query.Get("date_to")
+	if len(q) > 200 || len(venue) > 200 || year != "" && (len(year) != 4 || strings.Trim(year, "0123456789") != "") {
+		return nil, 0, 0, fmt.Errorf("use a four-digit year and at most 200 search characters")
+	}
+	for _, value := range []string{from, to} {
+		if value != "" {
+			if _, err := time.Parse("2006-01-02", value); err != nil {
+				return nil, 0, 0, fmt.Errorf("use complete YYYY-MM-DD date bounds")
+			}
+		}
+	}
+	if from != "" && to != "" && from > to {
+		return nil, 0, 0, fmt.Errorf("the original-date range is reversed")
+	}
+	page, _ := strconv.Atoi(query.Get("page"))
 	if page < 1 {
 		page = 1
 	}
 	if page > 10000 {
-		write(w, 400, map[string]string{"error": "That page is past the end of the shelf."})
-		return
+		return nil, 0, 0, fmt.Errorf("that page is past the end of the shelf")
 	}
 	items := []music.Entry{}
 	for _, e := range entries {
 		m := e.Recording
-		if (q == "" || strings.Contains(strings.ToLower(m.Title+" "+m.Venue+" "+m.Location+" "+m.Date), q)) && (year == "" || strings.HasPrefix(m.Date, year)) {
+		completeDate := len(m.Date) == 10
+		if completeDate {
+			_, err := time.Parse("2006-01-02", m.Date)
+			completeDate = err == nil
+		}
+		text := m.Title + " " + m.Venue + " " + m.Location + " " + m.Date + " " + m.Artist + " " + m.Source + " " + m.Taper + " " + m.Transferer
+		for _, track := range m.Tracks {
+			text += " " + track.Title
+		}
+		if (q == "" || strings.Contains(strings.ToLower(text), q)) && (year == "" || strings.HasPrefix(m.Date, year)) && (venue == "" || strings.Contains(strings.ToLower(m.Venue), venue)) && (from == "" || completeDate && m.Date >= from) && (to == "" || completeDate && m.Date <= to) {
 			items = append(items, e)
 		}
 	}
@@ -117,7 +151,7 @@ func (s *Server) legacyRecordings(w http.ResponseWriter, r *http.Request) {
 	if end > total {
 		end = total
 	}
-	write(w, 200, map[string]any{"items": items[start:end], "total": total, "page": page})
+	return items[start:end], total, page, nil
 }
 func (s *Server) legacyAudioMapping(r *http.Request, id string) (string, string, error) {
 	c, err := s.audioCollection(r)

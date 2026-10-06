@@ -268,6 +268,7 @@ func TestPublicPublicationIntegration(t *testing.T) {
 		if i == 29 {
 			next.Creator = "Different creator"
 		}
+		next.Editorial, _ = json.Marshal(map[string]any{"legacy_document": map[string]any{"published": true, "metadata": map[string]any{"title": next.Title, "creator": next.Creator, "date": next.Date}, "overrides": map[string]any{"date": "1900-01-01"}}})
 		copyRep := rep
 		copyRep.Snapshot = domain.Digest(newRaw)
 		next.Representations = []domain.Representation{copyRep}
@@ -286,6 +287,34 @@ func TestPublicPublicationIntegration(t *testing.T) {
 	var filtered catalog.CatalogPage
 	if err := json.Unmarshal(w.Body.Bytes(), &filtered); err != nil || w.Code != 200 || filtered.Total != 27 || len(filtered.Items) != 3 {
 		t.Fatal("combined mixed filters after pagination", w.Code, w.Body.String())
+	}
+	server.Compatibility = "print"
+	for _, path := range []string{"/api/documents?date_from=2026-02-30", "/api/documents?date_from=2026-10-03&date_to=2026-01-01"} {
+		if w := get(path); w.Code != 400 {
+			t.Fatal("invalid legacy print date accepted", w.Code, w.Body.String())
+		}
+	}
+	w = get("/api/documents?creator=filter&date_from=2026-10-03&date_to=2026-10-03&limit=20&offset=20")
+	var documents struct {
+		Total     int `json:"total"`
+		Documents []struct {
+			OriginalDate string `json:"original_date"`
+			Metadata     struct {
+				Date string `json:"date"`
+			} `json:"metadata"`
+		} `json:"documents"`
+	}
+	if err := json.Unmarshal(w.Body.Bytes(), &documents); err != nil || w.Code != 200 || documents.Total != 27 || len(documents.Documents) != 7 {
+		t.Fatal("legacy filters after pagination", w.Code, w.Body.String())
+	}
+	for _, document := range documents.Documents {
+		if document.OriginalDate != "2026-10-03" || document.Metadata.Date != "1900-01-01" {
+			t.Fatal("source original date conflated with editorial date", document)
+		}
+	}
+	w = get("/api/documents?creator=filter")
+	if err := json.Unmarshal(w.Body.Bytes(), &documents); err != nil || documents.Total != 29 {
+		t.Fatal("unbounded legacy partial dates excluded", w.Body.String())
 	}
 	if server.communityAvailable(ctx, c.ID, "catalog:"+item.ID) {
 		t.Fatal("stale public item remained available for favorites")

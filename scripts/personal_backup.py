@@ -122,6 +122,9 @@ def restore(args):
         raise ValueError('Personal backup checksum mismatch')
     # No --clean, drop, reset, or archive restore is permitted.
     subprocess.run(['pg_restore', '--exit-on-error', '--no-owner', '--no-acl', '--dbname', env['PGDATABASE'], str(dump)], env=env, check=True)
+    # Upgrade an older personal-only checkpoint before replaying current media scopes.
+    # The target was required to be empty; archive databases are never migrated here.
+    subprocess.run([args.binary, 'community-migrate'], env=env, check=True)
     subprocess.run([args.binary, 'community-recover', '--file', str(args.checkpoint)], env=env, check=True)
     print('Personal restore complete; sessions revoked and current deletions/moderation reapplied. Keep serving disabled until independently verified.')
 

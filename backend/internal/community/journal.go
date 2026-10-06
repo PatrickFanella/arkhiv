@@ -12,6 +12,7 @@ import (
 // RecoveryEvent contains only opaque IDs and bounded moderation state. The
 // independently retained directory is outside the personal backup rotation.
 type RecoveryEvent struct {
+	Media      string    `json:"media,omitempty"`
 	Version    int       `json:"version"`
 	Deployment string    `json:"deployment"`
 	At         time.Time `json:"at"`
@@ -62,7 +63,10 @@ func WriteRecoveryEvent(directory string, event RecoveryEvent) error {
 	return dir.Sync()
 }
 func (s *Server) journal(kind, id string, until time.Time) error {
-	return WriteRecoveryEvent(s.RecoveryDirectory, RecoveryEvent{Version: 1, Deployment: s.Trust.Deployment, At: s.now(), Kind: kind, ID: id, Until: until})
+	return s.journalMedia(kind, id, until, "")
+}
+func (s *Server) journalMedia(kind, id string, until time.Time, media string) error {
+	return WriteRecoveryEvent(s.RecoveryDirectory, RecoveryEvent{Version: 1, Deployment: s.Trust.Deployment, At: s.now(), Kind: kind, ID: id, Until: until, Media: media})
 }
 func MergeRecoveryJournal(c Checkpoint, directory string, now time.Time) (Checkpoint, error) {
 	if !filepath.IsAbs(directory) {
@@ -109,9 +113,13 @@ func MergeRecoveryJournal(c Checkpoint, directory string, now time.Time) (Checkp
 		case "hide":
 			c.Withdrawals = append(c.Withdrawals, event.ID)
 		case "restriction":
-			previous, ok := restrictions[event.ID]
+			if !validMedia(normalizedMedia(event.Media)) {
+				return c, fmt.Errorf("invalid restriction media")
+			}
+			key := normalizedMedia(event.Media) + ":" + event.ID
+			previous, ok := restrictions[key]
 			if !ok || previous.At.Before(event.At) {
-				restrictions[event.ID] = event
+				restrictions[key] = event
 			}
 		default:
 			return c, fmt.Errorf("unknown recovery event")
@@ -119,14 +127,14 @@ func MergeRecoveryJournal(c Checkpoint, directory string, now time.Time) (Checkp
 	}
 	filtered := c.Restrictions[:0]
 	for _, restriction := range c.Restrictions {
-		if _, superseded := restrictions[restriction.User]; !superseded {
+		if _, superseded := restrictions[normalizedMedia(restriction.Media)+":"+restriction.User]; !superseded {
 			filtered = append(filtered, restriction)
 		}
 	}
 	c.Restrictions = filtered
 	for _, event := range restrictions {
 		if event.Until.After(now) {
-			c.Restrictions = append(c.Restrictions, Restriction{User: event.ID, Until: event.Until})
+			c.Restrictions = append(c.Restrictions, Restriction{User: event.ID, Until: event.Until, Media: normalizedMedia(event.Media)})
 		}
 	}
 	return c, nil
