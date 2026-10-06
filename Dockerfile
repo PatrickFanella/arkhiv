@@ -36,7 +36,7 @@ RUN apt-get update && apt-get install --yes --no-install-recommends libavfilter8
 RUN apt-get update && apt-get install --yes --no-install-recommends ffmpeg && rm -rf /var/lib/apt/lists/*
 COPY --from=backend /out/vhness /usr/local/bin/vhness
 COPY migrations/ /app/migrations/
-ENV API_ADDR=0.0.0.0:8080 VHNESS_MIGRATIONS=/app/migrations VHNESS_MEDIA=/media
+ENV API_ADDR=0.0.0.0:8080 VHNESS_MIGRATIONS=/app/migrations ARKHIV_COMMUNITY_MIGRATIONS=/app/migrations/community VHNESS_MEDIA=/media
 USER 1000:1000
 EXPOSE 8080
 HEALTHCHECK --interval=20s --timeout=5s --start-period=20s --retries=3 CMD ["vhness", "healthcheck"]

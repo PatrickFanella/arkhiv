@@ -74,3 +74,5 @@ play/pause state, volume, teardown and completion callbacks for consumer-owned
 markup. Supply the audio element ref and reviewed start/end positions. Source
 resolution, access decisions, schedule lookup, metadata and visual layout remain
 the consumer's responsibility. `AudioPlayer` uses the same hook.
+
+Optional personal favorites and channel discussion hooks are exported from the root entry. Consumers own the interface and same-origin session service. See [community configuration](../../docs/reference/community.md) for the trust, database and recovery contract.

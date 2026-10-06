@@ -7,3 +7,5 @@ export * from './Artwork.js';
 export * from './videoPreferences.js';
 export * from './videoState.js';
 export * from './videoCatalog.js';
+export { usePersonal, personalRequest, PersonalError, readLocalFavorites, type Personal, type PersonalUser, type Favorite, type PendingFavorite } from './personal.js';
+export { useChannelChat, type ChannelChat, type ChatMessage, type ChatProgram, type ChatReport } from './chat.js';

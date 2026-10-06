@@ -57,6 +57,7 @@ def manifest(root, digest):
         raise ValueError('Expected a stable core version')
     return {**contract, 'version': version, 'engine_digest': digest,
             'source_revision': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip(),
+            'optional_migrations': {str(p.relative_to(root / 'migrations')): hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted((root / 'migrations/community').glob('*.sql'))},
             'migrations': {p.name: hashlib.sha256(p.read_bytes()).hexdigest()
                            for p in sorted((root / 'migrations').glob('*.sql'))}}
 

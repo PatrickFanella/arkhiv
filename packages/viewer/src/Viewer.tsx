@@ -48,7 +48,7 @@ export function ChannelPanel({ viewer }: { viewer: Viewer }) {
   </aside>;
 }
 
-export function Library({ viewer, heading = 'Episode library', mark = 'TV', yearFilter = true, metadataFilters = false }: { viewer: Viewer; heading?: string; mark?: string; yearFilter?: boolean; metadataFilters?: boolean }) {
+export function Library({ viewer, heading = 'Episode library', mark = 'TV', yearFilter = true, metadataFilters = false, layout = 'grid', renderActions }: { viewer: Viewer; heading?: string; mark?: string; yearFilter?: boolean; metadataFilters?: boolean; layout?: 'grid' | 'table'; renderActions?: (episode: Episode) => React.ReactNode }) {
   const v = viewer;
   return <section className="shelf" id="library" aria-label={heading} aria-busy={!v.catalog && !v.error}>
     <div className="shelf-heading"><h2>{heading}</h2><div className="filters">
@@ -66,10 +66,10 @@ export function Library({ viewer, heading = 'Episode library', mark = 'TV', year
     {v.error && <p role="alert">{v.error}</p>}{!v.catalog && !v.error && <p role="status">Loading episodes…</p>}
     {v.catalog && <><p className="count" role="status">{v.catalog.total} cataloged {v.catalog.total === 1 ? 'episode' : 'episodes'}</p>
       {v.catalog.episodes.length === 0 && <p>No episodes match this search.</p>}
-      <div className="episodes">{v.catalog.episodes.map(episode => <article key={episode.id}>
+      {layout === 'table' ? <div className="episode-table-wrap"><table className="episode-table"><caption>{heading}</caption><thead><tr><th scope="col">Original date</th><th scope="col">Program</th><th scope="col">Available source metadata</th><th scope="col">Actions</th></tr></thead><tbody>{v.catalog.episodes.map(episode => <tr key={episode.id}><td><time dateTime={episode.date}>{episode.date || 'Date unknown'}</time></td><th scope="row"><button className="text-button" onClick={() => { void v.watch(episode); }}>{episode.title}</button></th><td>{episode.subjects?.join(', ') || 'Topics unavailable'} · {episode.languages?.join(', ') || 'Language unavailable'}{episode.video?.duration ? ` · ${Math.round(episode.video.duration)} seconds` : ''}</td><td><button onClick={() => { void v.watch(episode); }}>Watch</button>{renderActions?.(episode)}</td></tr>)}</tbody></table></div> : <div className="episodes">{v.catalog.episodes.map(episode => <article key={episode.id}>
         <button className="episode-art" aria-label={`Watch ${episode.title}`} onClick={() => { void v.watch(episode); }}><EpisodeArtwork episode={episode} fallback={mark} /><time dateTime={episode.date}>{episode.date || 'Date unknown'}</time></button>
-        <div className="episode-copy">{episode.synthetic && <p className="fixture">SYNTHETIC DEVELOPMENT FIXTURE</p>}<h3><button className="text-button" onClick={() => { void v.watch(episode); }}>{episode.title}</button></h3><p>{episode.description}</p></div>
-      </article>)}</div>
+        <div className="episode-copy">{episode.synthetic && <p className="fixture">SYNTHETIC DEVELOPMENT FIXTURE</p>}<h3><button className="text-button" onClick={() => { void v.watch(episode); }}>{episode.title}</button></h3><p>{episode.description}</p>{renderActions?.(episode)}</div>
+      </article>)}</div>}
       <nav aria-label="Catalog pages"><button disabled={v.page === 1} onClick={() => v.setPage(v.page - 1)}>Previous</button><span>Page {v.page}</span><button disabled={v.page * 24 >= v.catalog.total} onClick={() => v.setPage(v.page + 1)}>Next</button></nav></>}
   </section>;
 }

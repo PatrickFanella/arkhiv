@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"git.subcult.tv/subculture-collective/vhness/internal/catalog"
+	"git.subcult.tv/subculture-collective/vhness/internal/community"
 	"git.subcult.tv/subculture-collective/vhness/internal/domain"
 	"git.subcult.tv/subculture-collective/vhness/internal/preservation"
 	"github.com/jackc/pgx/v5"
@@ -23,6 +24,7 @@ type Server struct {
 	Compatibility     string
 	Revision          string
 	DB                *catalog.DB
+	Community         *community.Server
 	Clock             func() time.Time
 	Media             string
 	Derivatives       string
@@ -68,6 +70,13 @@ func write(w http.ResponseWriter, status int, v any) {
 }
 func (s *Server) Handler() http.Handler {
 	mux := http.NewServeMux()
+	if s.Community != nil {
+		s.Community.Allowed = s.allowsCollection
+		s.Community.Available = s.communityAvailable
+		s.Community.Current = s.communityCurrent
+		s.Community.Clock = s.Clock
+		s.Community.Register(mux)
+	}
 	mux.HandleFunc("GET /api/health", func(w http.ResponseWriter, r *http.Request) {
 		audience := "private"
 		if s.DB != nil && s.DB.PublicOnly {

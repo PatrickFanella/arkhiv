@@ -19,7 +19,9 @@
     "catalog": "1",
     "print": "1",
     "audio": "1",
-    "video": "1"
+    "video": "1",
+    "personal": "1",
+    "chat": "1"
   },
   "package_entries": [
     ".",

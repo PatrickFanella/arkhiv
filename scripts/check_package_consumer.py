@@ -41,7 +41,7 @@ def main():
 import assert from 'node:assert/strict';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { Screen, playbackURL, useViewer } from '@subcult/archive-viewer';
+import { Screen, playbackURL, useViewer, usePersonal, useChannelChat } from '@subcult/archive-viewer';
 import { AudioPlayer, radioOffset } from '@subcult/archive-viewer/audio';
 import { PrintReader, initialPrintPage } from '@subcult/archive-viewer/print';
 import { useCatalog, catalogURL } from '@subcult/archive-viewer/catalog';
@@ -50,6 +50,8 @@ assert.ok(catalogURL({collection:'mixed',media:'print',query:'',page:1}).include
 assert.equal(typeof AudioPlayer, 'function');
 assert.equal(radioOffset(1,1000,0,10,2000),2);
 assert.equal(typeof useViewer, 'function');
+assert.equal(typeof usePersonal, 'function');
+assert.equal(typeof useChannelChat, 'function');
 assert.equal(initialPrintPage(999, 2), 2);
 const print = renderToStaticMarkup(React.createElement(PrintReader, { title: 'Consumer document', url: '/private.pdf', backend: { open() { throw new Error('Server rendering must not open a document'); } } }));
 assert.ok(print.includes('Document reader'));

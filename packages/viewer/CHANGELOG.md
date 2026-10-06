@@ -1,3 +1,7 @@
+## 0.3.0
+
+Add reviewed video artwork and metadata filters, persistent volume, explicit scheduled replay controls, and grid/table library composition. Add optional personal favorites and authenticated channel discussion hooks. Services remain disabled until configured by each consumer.
+
 # Shared viewer changes
 
 ## Unreleased
