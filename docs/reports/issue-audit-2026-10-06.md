@@ -122,4 +122,6 @@ favorite list stayed unchanged. Restoring writes and toggling the favorite
 cleared the warning. Full make verify passed with 42 SDK tests and packed ESM
 checks. The first combined command lacked uv in PATH; the curation gate was
 rerun through the Python 3.12/frozen-uv launcher and passed all 19 tests and
-format/lint/JavaScript checks. SDK 0.4.1 publication/adoption remains pending.
+format/lint/JavaScript checks. SDK 0.4.1 was published from 14dd96bb216bb6e3a1331e65dbb3f6ebadbd4dff;
+its SDK-only receipt is docs/releases/viewer-release-0.4.1.json. Consumer
+frozen-lock adoption qualification remains in progress.
