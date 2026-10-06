@@ -42,3 +42,24 @@ Raw measurements and SDK setup receipts stay outside Git in the private issue
 intake workspace. Branded account/mobile controls and the approved real AVI pilot
 have their own qualification work; setup and this generated trial do not prove
 their completion.
+
+## Bill Nye account checks on independent devices
+
+Both Android Chrome instances separately completed optional private fixture OIDC
+sign-in through the Bill Nye SDK 0.4.2 bundle and displayed the same account alias.
+Device A retained one anonymous browser-local favorite. Device B saved and removed
+a second account favorite. An identical stale add on A was safely idempotent;
+a subsequent stale change to the other item produced the actual conflict message
+and retained the pending removal rather than overwriting B's changes.
+
+Reloading A preserved the pending item. Its visible `Refresh and apply these
+changes` control rebased and applied the removal, then cleared the pending list.
+Reloading B displayed both account favorites as removed. `Sign out all devices`
+on A returned A to anonymous viewing; reloading B also returned its independent
+session to anonymous viewing. Browser-local favorites remain separate from these
+account changes. UI actions used each device's own T3 config/session flags.
+
+These checks use a private fixture provider and deployment. They do not establish
+live cross-product deployment isolation, provider outage/recovery, iOS behavior,
+mobile exports/deletion or the other brands' independent device acceptance.
+Bill Nye #10 and the corresponding product issues remain open for those gaps.
