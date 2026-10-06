@@ -91,3 +91,11 @@ heads. The waiver applies to these viewer PRs, not other repository work.
 ## Current follow-up, October 6
 
 Source and consumer branches have advanced since the historical entries above. Published viewer 0.4.1 now has an independent SDK-only receipt; core 0.3.0 and reference engine 0.4.0 keep separate immutable receipts. Six consumers passed frozen-lock gates and root make verify plus make verify-curation passed with 42 SDK checks and 19 curation checks. Current heads and proof boundaries are in docs/reference/platform-consumers.json current_release_qualification and the October 6 cross-brand matrix. Actual browser volume, artwork and curation receipts now qualify #107, #106 and the copied curation workbench. #108 and product-wide playback/browsing/account/chat proofs retain their own outstanding requirements. Android SDK license/setup approval is requested to make emulator coverage available; iOS still needs a Mac/Xcode. These updates preserve the earlier failures as historical observations rather than current blockers.
+
+## October 6 follow-up
+
+Library acceptance is complete in Bill Nye #8, Democracy Now! #9 and the video template #8. The [library qualification report](../reports/library-qualification-2026-10-06.md) records independent consumer builds and desktop/narrow-browser results, backed by scoped pagination integration. SDK 0.4.2 fixes unreadable HTTP responses across video, print and audio. Compatible core pins and consumer-owned interfaces remain independent.
+
+The [channel continuity report](../reports/channel-continuity-2026-10-06.md) records an unsuccessful two-viewer playback trial. Issue #108 remains open. The [native backup report](../reports/native-backup-qualification-2026-10-06.md) records complete-corpus deduplicated transport and the restore-timeout cleanup correction. Recovery and live activation remain separate checks.
+
+Optional processing has a concrete [one-AVI proposal](0010-processing-qualification.md), pending the authorization explicitly required by #34. Android setup remains pending acceptance of Google's SDK terms. Account/chat design approval is retained, but does not supply independent-device qualification or live provider activation.

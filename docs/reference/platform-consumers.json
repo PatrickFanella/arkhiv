@@ -339,7 +339,7 @@
         "media": [
           "video"
         ],
-        "head_revision": "aa3a73c599ce910803978d663532278ec1bfd2a2",
+        "head_revision": "85c3ffec78734d0f3aef93f14f966e7a94043d16",
         "adoption_ref": "feat/issue-audit-release",
         "pull_request": "https://git.subcult.tv/subculture-collective/bill-nye-tv/pulls/14",
         "viewer_version": "0.4.2",
@@ -350,19 +350,20 @@
         "reference_engine_version": "0.4.0",
         "frontend_ownership": "consumer",
         "backend_ownership": "independent headless pin",
-        "source_gate": "make verify passed with frozen registry lock and disposable database; incoming merged favorite-warning and backup changes preserved and reverified",
+        "source_gate": "make verify passed with frozen registry lock; subsequent library qualification branch adds documentation only",
         "hosted_ci": "owner-waived while Kvant is down",
         "deployment": "not changed by this adoption",
         "adoption_state": "merged",
         "qualification_ref": "docs/library-qualification",
-        "qualification_pull_request": "https://git.subcult.tv/subculture-collective/bill-nye-tv/pulls/15"
+        "qualification_pull_request": "https://git.subcult.tv/subculture-collective/bill-nye-tv/pulls/15",
+        "qualification_head_revision": "aa3a73c599ce910803978d663532278ec1bfd2a2"
       },
       {
         "repository": "subculture-collective/democracy-now-tv",
         "media": [
           "video"
         ],
-        "head_revision": "0fdc94d54e9f008f2edb7ad088f74f3a921ea19b",
+        "head_revision": "c05562b18634f56783adb9b29c23143d11bbe030",
         "adoption_ref": "feat/issue-audit-release",
         "pull_request": "https://git.subcult.tv/subculture-collective/democracy-now-tv/pulls/14",
         "viewer_version": "0.4.2",
@@ -373,19 +374,20 @@
         "reference_engine_version": "0.4.0",
         "frontend_ownership": "consumer",
         "backend_ownership": "independent headless pin",
-        "source_gate": "make verify passed with frozen registry lock and disposable database; incoming merged favorite-warning and backup changes preserved and reverified",
+        "source_gate": "make verify passed with frozen registry lock; subsequent library qualification branch adds documentation only",
         "hosted_ci": "owner-waived while Kvant is down",
         "deployment": "not changed by this adoption",
         "adoption_state": "merged",
         "qualification_ref": "docs/library-qualification",
-        "qualification_pull_request": "https://git.subcult.tv/subculture-collective/democracy-now-tv/pulls/15"
+        "qualification_pull_request": "https://git.subcult.tv/subculture-collective/democracy-now-tv/pulls/15",
+        "qualification_head_revision": "0fdc94d54e9f008f2edb7ad088f74f3a921ea19b"
       },
       {
         "repository": "subculture-collective/video-archive-template",
         "media": [
           "video"
         ],
-        "head_revision": "ab1ba7be3c9aaf748918bc978316073cc6afd406",
+        "head_revision": "f03ce8b1e031c61880dcbc5e004c0086867a4506",
         "adoption_ref": "feat/issue-audit-release",
         "pull_request": "https://git.subcult.tv/subculture-collective/video-archive-template/pulls/13",
         "viewer_version": "0.4.2",
@@ -396,12 +398,13 @@
         "reference_engine_version": "0.4.0",
         "frontend_ownership": "consumer",
         "backend_ownership": "independent headless pin",
-        "source_gate": "make verify passed with frozen registry lock and disposable database; incoming merged favorite-warning and backup changes preserved and reverified",
+        "source_gate": "make verify passed with frozen registry lock; subsequent library qualification branch adds documentation only",
         "hosted_ci": "owner-waived while Kvant is down",
         "deployment": "not changed by this adoption",
         "adoption_state": "merged",
         "qualification_ref": "docs/library-qualification",
-        "qualification_pull_request": "https://git.subcult.tv/subculture-collective/video-archive-template/pulls/14"
+        "qualification_pull_request": "https://git.subcult.tv/subculture-collective/video-archive-template/pulls/14",
+        "qualification_head_revision": "ab1ba7be3c9aaf748918bc978316073cc6afd406"
       },
       {
         "repository": "subculture-collective/dedhed",
