@@ -159,17 +159,18 @@ func (e Episode) Validate() error {
 }
 
 type Decision struct {
-	ProcessingOriginal bool            `json:"processing_original,omitempty"`
-	Acquisition        bool            `json:"acquisition"`
-	Published          bool            `json:"published"`
-	Playback           bool            `json:"playback"`
-	Channel            bool            `json:"channel"`
-	Public             bool            `json:"public"`
-	File               string          `json:"file"`
-	Title              string          `json:"title,omitempty"`
-	Notes              string          `json:"notes"`
-	Captions           []CaptionReview `json:"captions,omitempty"`
-	Artwork            *ArtworkReview  `json:"artwork,omitempty"`
+	ProcessedVideo     *ProcessedVideoReview `json:"processed_video,omitempty"`
+	ProcessingOriginal bool                  `json:"processing_original,omitempty"`
+	Acquisition        bool                  `json:"acquisition"`
+	Published          bool                  `json:"published"`
+	Playback           bool                  `json:"playback"`
+	Channel            bool                  `json:"channel"`
+	Public             bool                  `json:"public"`
+	File               string                `json:"file"`
+	Title              string                `json:"title,omitempty"`
+	Notes              string                `json:"notes"`
+	Captions           []CaptionReview       `json:"captions,omitempty"`
+	Artwork            *ArtworkReview        `json:"artwork,omitempty"`
 }
 
 // CaptionReview records a browser-qualified source WebVTT file. Discovery never
@@ -213,6 +214,7 @@ func (e Entry) reviewedCaptions(d Decision) ([]Caption, error) {
 }
 
 type Entry struct {
+	Budget        int64    `json:"-"`
 	SourceTitle   string   `json:"-"`
 	Episode       Episode  `json:"episode"`
 	Decision      Decision `json:"decision"`
@@ -226,6 +228,15 @@ type Entry struct {
 }
 
 func (e Entry) Selected() (File, bool) {
+	if e.Decision.ProcessedVideo != nil {
+		if e.ValidateProcessedVideo(*e.Decision.ProcessedVideo) != nil {
+			return File{}, false
+		}
+		return e.Decision.ProcessedVideo.File(), true
+	}
+	return e.selectedSource()
+}
+func (e Entry) selectedSource() (File, bool) {
 	if e.Episode.SourceFile != "" && e.Decision.File != e.Episode.SourceFile {
 		return File{}, false
 	}
@@ -240,7 +251,7 @@ func (e Entry) Selected() (File, bool) {
 // SelectedOriginal requires a distinct processing decision for an AVI original.
 // Selected remains limited to browser candidates, including after local binding.
 func (e Entry) SelectedOriginal() (File, bool) {
-	if f, ok := e.Selected(); ok {
+	if f, ok := e.selectedSource(); ok {
 		return f, true
 	}
 	if e.Policy != Local || e.Episode.DemocracySource() || !e.Decision.Acquisition || !e.Decision.ProcessingOriginal || e.Decision.Playback || e.Decision.Published || e.Decision.Channel || e.Decision.Public || (e.Episode.SourceFile != "" && e.Decision.File != e.Episode.SourceFile) {
@@ -254,6 +265,10 @@ func (e Entry) SelectedOriginal() (File, bool) {
 	return File{}, false
 }
 func (e Entry) Watchable() bool {
+	if e.Decision.ProcessedVideo != nil {
+		r := e.Decision.ProcessedVideo
+		return e.ValidateProcessedVideo(*r) == nil && r.Published && r.Playback && !e.Unavailable
+	}
 	_, ok := e.Selected()
 	return ok && e.Decision.Published && e.Decision.Playback && !e.Unavailable && (e.Policy == Stream || (e.LocalPath != "" && e.LocalSHA256 != "" && e.LocalFile == e.Decision.File && e.LocalSnapshot == e.SourceHash))
 }
@@ -269,6 +284,11 @@ func (e Entry) ValidateDecision(d Decision) error {
 	}
 	copy := e
 	copy.Decision = d
+	if d.ProcessedVideo != nil {
+		if err := copy.ValidateProcessedVideo(*d.ProcessedVideo); err != nil {
+			return err
+		}
+	}
 	if d.ProcessingOriginal && (e.Policy != Local || e.Episode.DemocracySource() || !d.Acquisition || d.Playback || d.Published || d.Channel || d.Public) {
 		return fmt.Errorf("processing-original approval requires private acquisition only")
 	}
@@ -295,6 +315,7 @@ func (e Entry) ValidateDecision(d Decision) error {
 }
 
 type Playback struct {
+	Processed bool      `json:"processed,omitempty"`
 	ID        string    `json:"id"`
 	Policy    Policy    `json:"policy"`
 	URL       string    `json:"url"`
@@ -305,7 +326,7 @@ type Playback struct {
 }
 
 func Resolve(e Entry, channel bool) (Playback, error) {
-	if !e.Watchable() || (channel && !e.Decision.Channel) {
+	if !e.Watchable() || (channel && !e.ChannelApproved()) {
 		return Playback{}, fmt.Errorf("episode unavailable or not approved for this viewing mode")
 	}
 	f, _ := e.Selected()
@@ -313,11 +334,17 @@ func Resolve(e Entry, channel bool) (Playback, error) {
 	if err != nil {
 		return Playback{}, err
 	}
+	if e.Decision.ProcessedVideo != nil {
+		for index, caption := range e.Decision.ProcessedVideo.Captions {
+			tracks = append(tracks, Caption{CaptionReview: caption.CaptionReview, URL: "/api/video-captions/" + url.PathEscape(e.Episode.ID) + "/" + strconv.Itoa(index)})
+		}
+	}
 	sourceID := e.Episode.ID
 	if e.Episode.SourceItemID != "" {
 		sourceID = e.Episode.SourceItemID
 	}
 	p := Playback{ID: e.Episode.ID, Policy: e.Policy, SourceURL: "https://archive.org/details/" + url.PathEscape(sourceID), File: f, Snapshot: e.SourceHash, Captions: tracks}
+	p.Processed = e.Decision.ProcessedVideo != nil
 	if e.Policy == Stream {
 		p.URL = "https://archive.org/download/" + url.PathEscape(sourceID) + "/" + url.PathEscape(f.Name)
 	} else {

@@ -192,9 +192,9 @@ func (d *DB) Snapshot(ctx context.Context, item string, raw []byte, status int, 
 func (d *DB) entries(ctx context.Context, ids []string, summaries bool) (map[string]domain.Entry, error) {
 	source := "e.source"
 	if summaries {
-		source = `(e.source-'files') || jsonb_build_object('files',COALESCE((SELECT jsonb_agg(f) FROM jsonb_array_elements(CASE WHEN jsonb_typeof(e.source->'files')='array' THEN e.source->'files' ELSE '[]'::jsonb END) f WHERE f->>'name'=e.decision->>'file' OR f->>'name'=e.decision->'artwork'->>'file'),'[]'::jsonb))`
+		source = `(e.source-'files') || jsonb_build_object('files',COALESCE((SELECT jsonb_agg(f) FROM jsonb_array_elements(CASE WHEN jsonb_typeof(e.source->'files')='array' THEN e.source->'files' ELSE '[]'::jsonb END) f WHERE f->>'name'=e.decision->>'file' OR f->>'name'=e.decision->'artwork'->>'file' OR f->>'name' IN (SELECT caption->>'file' FROM jsonb_array_elements(CASE WHEN jsonb_typeof(e.decision->'processed_video'->'captions')='array' THEN e.decision->'processed_video'->'captions' ELSE '[]'::jsonb END) caption)),'[]'::jsonb))`
 	}
-	rows, err := d.Pool.Query(ctx, `SELECT `+source+`,e.decision,c.policy,e.source_hash,e.unavailable,e.local_path,e.local_sha256,e.local_file,e.local_snapshot,COALESCE(s.parsed->'metadata'->'subject','null'::jsonb),COALESCE(s.parsed->'metadata'->'language','null'::jsonb) FROM episodes e JOIN collections c ON c.id=e.collection_id JOIN snapshots s ON s.sha256=e.source_hash WHERE ($1::text[] IS NULL OR e.id=ANY($1)) AND (NOT $2::boolean OR e.decision->>'published'='true') AND (NOT $3 OR EXISTS(SELECT 1 FROM episode_public_reviews p WHERE p.episode_id=e.id AND p.approved AND p.source_hash=e.source_hash AND p.file=e.decision->>'file'))`, ids, summaries, d.PublicOnly)
+	rows, err := d.Pool.Query(ctx, `SELECT `+source+`,e.decision,c.policy,e.source_hash,e.unavailable,e.local_path,e.local_sha256,e.local_file,e.local_snapshot,c.budget,COALESCE(s.parsed->'metadata'->'subject','null'::jsonb),COALESCE(s.parsed->'metadata'->'language','null'::jsonb) FROM episodes e JOIN collections c ON c.id=e.collection_id JOIN snapshots s ON s.sha256=e.source_hash WHERE ($1::text[] IS NULL OR e.id=ANY($1)) AND (NOT $2::boolean OR e.decision->>'published'='true' OR e.decision->'processed_video'->>'published'='true') AND (NOT $3 OR (e.decision->'processed_video' IS NULL AND EXISTS(SELECT 1 FROM episode_public_reviews p WHERE p.episode_id=e.id AND p.approved AND p.source_hash=e.source_hash AND p.file=e.decision->>'file')))`, ids, summaries, d.PublicOnly)
 	if err != nil {
 		return nil, err
 	}
@@ -203,7 +203,7 @@ func (d *DB) entries(ctx context.Context, ids []string, summaries bool) (map[str
 	for rows.Next() {
 		var e domain.Entry
 		var s, b, subjects, languages []byte
-		if err = rows.Scan(&s, &b, &e.Policy, &e.SourceHash, &e.Unavailable, &e.LocalPath, &e.LocalSHA256, &e.LocalFile, &e.LocalSnapshot, &subjects, &languages); err != nil {
+		if err = rows.Scan(&s, &b, &e.Policy, &e.SourceHash, &e.Unavailable, &e.LocalPath, &e.LocalSHA256, &e.LocalFile, &e.LocalSnapshot, &e.Budget, &subjects, &languages); err != nil {
 			return nil, err
 		}
 		if err = json.Unmarshal(s, &e.Episode); err != nil {
@@ -273,21 +273,37 @@ func (d *DB) ScheduleWithinScope(ctx context.Context, s domain.Schedule, scope d
 	return !foreign, err
 }
 func (d *DB) Decide(ctx context.Context, id string, decision domain.Decision) error {
+	if decision.ProcessedVideo != nil {
+		return fmt.Errorf("processed video requires verified private registration")
+	}
+	return d.decideVideo(ctx, id, decision, nil)
+}
+
+// ReviewProcessedVideo is called after the operator verifies original,
+// derivative and receipts. Binding and original permissions are checked again
+// under the episode lock, preserving every earlier decision in history.
+func (d *DB) ReviewProcessedVideo(ctx context.Context, id string, review domain.ProcessedVideoReview) error {
+	return d.decideVideo(ctx, id, domain.Decision{}, &review)
+}
+
+func (d *DB) decideVideo(ctx context.Context, id string, decision domain.Decision, processed *domain.ProcessedVideoReview) error {
 	tx, err := d.Pool.Begin(ctx)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback(ctx)
-	var source []byte
-	var policy domain.Policy
-	var sourceHash string
-	err = tx.QueryRow(ctx, `SELECT e.source,c.policy,e.source_hash FROM episodes e JOIN collections c ON c.id=e.collection_id WHERE e.id=$1 FOR UPDATE OF e`, id).Scan(&source, &policy, &sourceHash)
+	var source, priorDecision []byte
+	var e domain.Entry
+	err = tx.QueryRow(ctx, `SELECT e.source,e.decision,c.policy,e.source_hash,c.budget,e.local_path,e.local_sha256,e.local_file,e.local_snapshot FROM episodes e JOIN collections c ON c.id=e.collection_id WHERE e.id=$1 FOR UPDATE OF e`, id).Scan(&source, &priorDecision, &e.Policy, &e.SourceHash, &e.Budget, &e.LocalPath, &e.LocalSHA256, &e.LocalFile, &e.LocalSnapshot)
 	if err != nil {
 		return err
 	}
-	var e domain.Entry
-	e.Policy = policy
-	e.SourceHash = sourceHash
+	if processed != nil {
+		if err = json.Unmarshal(priorDecision, &decision); err != nil {
+			return err
+		}
+		decision.ProcessedVideo = processed
+	}
 	if err = json.Unmarshal(source, &e.Episode); err != nil {
 		return err
 	}
@@ -317,7 +333,7 @@ func (d *DB) SaveSchedule(ctx context.Context, s domain.Schedule) error {
 	for _, p := range s.Programs {
 		e, ok := entries[p.EpisodeID]
 		f, eligible := e.Selected()
-		if !ok || !eligible || !e.Watchable() || !e.Decision.Channel || f.Name != p.File || p.Policy != e.Policy || p.Duration > f.Duration+0.1 {
+		if !ok || !eligible || !e.Watchable() || !e.ChannelApproved() || f.Name != p.File || p.Policy != e.Policy || p.Duration > f.Duration+0.1 {
 			return fmt.Errorf("schedule references ineligible asset")
 		}
 	}
@@ -533,7 +549,7 @@ type Inventory struct {
 
 func (d *DB) Inventory(ctx context.Context, id string) (Inventory, error) {
 	var n Inventory
-	err := d.Pool.QueryRow(ctx, `SELECT count(*),COALESCE(sum(jsonb_array_length(source->'files')),0),count(*) FILTER (WHERE decision->>'published'='true'),count(*) FILTER (WHERE unavailable) FROM episodes WHERE collection_id=$1`, id).Scan(&n.Episodes, &n.Files, &n.Published, &n.Unavailable)
+	err := d.Pool.QueryRow(ctx, `SELECT count(*),COALESCE(sum(jsonb_array_length(source->'files')),0),count(*) FILTER (WHERE decision->>'published'='true' OR decision->'processed_video'->>'published'='true'),count(*) FILTER (WHERE unavailable) FROM episodes WHERE collection_id=$1`, id).Scan(&n.Episodes, &n.Files, &n.Published, &n.Unavailable)
 	if err != nil {
 		return n, err
 	}
@@ -617,7 +633,7 @@ type CollectionSummary struct {
 }
 
 func (d *DB) Collections(ctx context.Context) ([]CollectionSummary, error) {
-	rows, err := d.Pool.Query(ctx, `SELECT c.id,c.policy,count(e.id),COALESCE((SELECT parsed->'metadata'->>'title' FROM snapshots WHERE item_id=COALESCE(NULLIF(c.source_item,''),c.id) AND parsed->'metadata'->>'title' IS NOT NULL ORDER BY created_at DESC LIMIT 1),c.id),COALESCE(NULLIF(c.source_item,''),c.id) FROM collections c JOIN episodes e ON e.collection_id=c.id AND e.decision->>'published'='true' AND (NOT $1 OR EXISTS(SELECT 1 FROM episode_public_reviews p WHERE p.episode_id=e.id AND p.approved AND p.source_hash=e.source_hash AND p.file=e.decision->>'file')) GROUP BY c.id ORDER BY c.id`, d.PublicOnly)
+	rows, err := d.Pool.Query(ctx, `SELECT c.id,c.policy,count(e.id),COALESCE((SELECT parsed->'metadata'->>'title' FROM snapshots WHERE item_id=COALESCE(NULLIF(c.source_item,''),c.id) AND parsed->'metadata'->>'title' IS NOT NULL ORDER BY created_at DESC LIMIT 1),c.id),COALESCE(NULLIF(c.source_item,''),c.id) FROM collections c JOIN episodes e ON e.collection_id=c.id AND (e.decision->>'published'='true' OR e.decision->'processed_video'->>'published'='true') AND (NOT $1 OR (e.decision->'processed_video' IS NULL AND EXISTS(SELECT 1 FROM episode_public_reviews p WHERE p.episode_id=e.id AND p.approved AND p.source_hash=e.source_hash AND p.file=e.decision->>'file'))) GROUP BY c.id ORDER BY c.id`, d.PublicOnly)
 	if err != nil {
 		return nil, err
 	}

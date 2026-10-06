@@ -67,7 +67,7 @@ func (s *Server) communityAvailable(ctx context.Context, collection, id string) 
 		return err == nil && len(page.Items) == 1
 	}
 	entry, err := s.DB.Entry(ctx, id)
-	if err != nil || entry.Episode.CollectionID != collection || !entry.Decision.Published || entry.Unavailable {
+	if err != nil || entry.Episode.CollectionID != collection || !entry.Published() || entry.Unavailable {
 		return false
 	}
 	_, err = domain.Resolve(entry, false)

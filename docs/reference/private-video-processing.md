@@ -77,3 +77,61 @@ audiovisual review remain separate checks.
 The already qualified pilot derivative remains untouched. Running this operator
 again beside that original and derivative would exceed its conservative working
 preflight. No additional storage or second real-media conversion was authorized.
+
+## Registering a private derivative
+
+`vhness register-video --id EPISODE_ID --file /absolute/review.json` registers
+one verified derivative against the current acquisition-only original. Generic
+`review` cannot grant this access. Set `VHNESS_MEDIA`,
+`VHNESS_VIDEO_DERIVATIVES` and `VHNESS_VIDEO_RECEIPTS` to three existing absolute,
+non-overlapping roots. Keep all stores outside Git and the web asset directory.
+
+The review pins `snapshot_sha256`, `original_file`, `original_sha256` and
+`original_bytes`, then `path`, `sha256`, `bytes`, `duration`, `width` and `height`
+for the derivative. Receipt fields are `processing_receipt_path`,
+`processing_receipt_sha256`, `processing_receipt_bytes`,
+`recovery_receipt_path`, `recovery_receipt_sha256` and `recovery_receipt_bytes`.
+Paths are relative to their configured store. Supply explicit `published`,
+`playback`, `channel`, `public` and `notes` fields. This pilot requires
+`public: false`. Publication and channel use require playback approval.
+Original publication/playback/channel/public flags remain false.
+
+The processing receipt must bind the exact original and derivative hashes and
+byte counts, successful full decodes and tool/image identity. The independent
+recovery receipt must record `independent_host`, `fresh_restore_root`,
+`fresh_database`, `all_hashes_match`, `original_immutable`,
+`derivative_and_processing_receipts_restored`, `public: false`,
+`original_sha256`, `derivative_sha256`, `processing_receipt_sha256` and an
+ordered `caption_sha256` array when captions exist. The receipt records actual
+completed recovery. It is not a substitute for performing recovery.
+
+Registration rehashes each asset and receipt, probes both original and derived
+streams under time/memory/output limits, checks storage/reserve allowances, then
+revalidates the current source binding while locking the episode row. A changed
+source, original approval or local preservation binding refuses registration.
+Catalog and decision history retain the original AVI inventory. Playback
+responses identify the processed MP4 separately with `processed: true`.
+The pilot is excluded from public catalog projections and public approval.
+
+Serving rehashes the original, derivative, receipts and any captions before
+Range or conditional responses. A corrupt asset returns unavailable even when
+a client supplies a previously valid ETag. Channel revocation does not revoke
+on-demand access; playback or original acquisition revocation removes playback.
+Viewer controls do not change schedules.
+
+## Already preserved source captions
+
+An optional `captions` array contains `file`, `label`, `language`, `path`,
+`sha256` and `bytes` per sidecar. The file must be a non-private WebVTT entry in
+the current complete source snapshot, with a pinned source MD5 or SHA-1. Its
+actual preserved bytes must match those source checksums and the local SHA-256.
+Each UTF-8 WebVTT file is limited to 1 MiB, with at most 16 tracks, and counts
+against both the collection and working allowances. Every caption also needs
+an exact hash in the independent recovery receipt.
+
+Private playback exposes verified tracks through
+`/api/video-captions/EPISODE_ID/INDEX`. The endpoint checks the complete media
+review before serving a track, including conditional requests. These controls
+do not acquire, convert or invent captions. A new sidecar acquisition requires
+its own explicit manifest and storage decision. The approved Flight pilot has
+no reviewed caption source and keeps an empty track list.

@@ -34,6 +34,9 @@ func (d *DB) ReviewPublicVideo(ctx context.Context, id string, approved bool, no
 		return err
 	}
 	if approved {
+		if e.Decision.ProcessedVideo != nil {
+			return fmt.Errorf("processed-video pilot has no public activation approval")
+		}
 		if _, err = domain.Resolve(e, false); err != nil {
 			return fmt.Errorf("publication needs reviewed playable video: %w", err)
 		}
