@@ -1,3 +1,5 @@
+import { readJSON } from './http.js';
+
 export type SourceFile = { name: string; duration: number; width: number; height: number; bytes: number };
 export type Artwork = { file: string; episode_file?: string; url: string; snapshot_sha256: string; source_item_id: string; scope: 'episode' | 'series' };
 export type VideoDetails = { source_title: string; title_origin: 'source' | 'editorial'; source_url: string; snapshot_sha256: string; file?: string; format?: string; duration?: number; width?: number; height?: number; bytes?: number };
@@ -44,8 +46,8 @@ export async function request<T>(path: string, signal?: AbortSignal): Promise<T>
   const deadline = AbortSignal.timeout(10_000);
   try {
     const response = await fetch(path, { signal: signal ? AbortSignal.any([signal, deadline]) : deadline });
-    const data = await response.json() as T & { error?: string };
-    if (!response.ok) throw new Error(data.error || 'The request could not be completed.');
+    const data = await readJSON<T & { error?: string }>(response);
+    if (!response.ok) throw new Error(typeof data?.error === 'string' && data.error.trim() ? data.error : 'The request could not be completed.');
     return data;
   } catch (reason) {
     if (deadline.aborted && !signal?.aborted) throw new Error('The archive took too long to respond. Please try again.');
