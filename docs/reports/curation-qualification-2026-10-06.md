@@ -42,3 +42,7 @@ curation Docker verify target also passed all 19 tests, lint and formatting
 with its frozen lock and Python 3.13 image. The build-cache verification target
 was not published or deployed. Membership,
 transport approval and public activation remain separate operator decisions.
+
+## Browser validation follow-up
+
+Browser console inspection found the collection input pattern used an unescaped hyphen rejected by Chromium's HTML pattern `v` grammar. The JS template now emits the escaped hyphen. Root `make verify` and `make verify-curation` passed again, including 19 frozen Python tests and JS syntax validation. Native browser validity checking of the actual served pattern accepts `vhness-local-fixture` and rejects `unsafe/path`; server-side collection validation remains authoritative.
