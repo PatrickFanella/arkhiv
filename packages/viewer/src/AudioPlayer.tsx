@@ -1,7 +1,8 @@
 // Continuous recording controls adapted from the pinned GPL Dedhed player.
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAudioControls } from './useAudioControls.js';
-import { audioURL, clock, currentTrack, radioOffset, setBounds, type AudioAsset, type SetList } from './audioModel.js';
+import { channelSeekTarget } from './channelSync.js';
+import { audioURL, audioPlaybackState, clock, currentTrack, radioOffset, setBounds, type AudioAsset, type SetList } from './audioModel.js';
 
 export type AudioPlayerProps = {
  asset: AudioAsset;
@@ -26,7 +27,21 @@ function AudioSession({asset,set,initialOffset,autoPlay,station,onRejoin,onEnded
   if (station) { start = 0; end = Math.min(end,station.duration); radioOffset(station.offset,station.receivedAt,station.latency,end,Date.now()); }
   if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) throw new Error('Invalid audio bounds');
  } catch { url = ''; }
- const {position,playing,pending,error,volume,seek,toggle,changeVolume,events,setPending,setError}=useAudioControls({audio,start,end,onEnded});
+ const {position,playing,pending,error,volume,muted,seek,toggle,changeVolume,changeMuted,events,setPending,setError}=useAudioControls({audio,start,end,onEnded});
+ const [playbackState,setPlaybackState]=useState('loading');
+ useEffect(()=>{
+  const element=audio.current;if(!element)return;
+  const update=()=>{
+   if(station && !element.paused && !element.ended){
+    const target=channelSeekTarget(element,radioOffset(station.offset,station.receivedAt,station.latency,end,Date.now()));
+    if(target!==null)element.currentTime=target;
+   }
+   setPlaybackState(audioPlaybackState(element,station));
+  };
+  const names=['playing','pause','waiting','seeked','loadedmetadata','ended'];names.forEach(name=>element.addEventListener(name,update));
+  const timer=setInterval(update,1000);
+  return()=>{clearInterval(timer);names.forEach(name=>element.removeEventListener(name,update));};
+ },[station,end]);
  function metadataReady() {
   const offset = station ? radioOffset(station.offset,station.receivedAt,station.latency,end,Date.now()) : initialOffset ?? start;
   seek(offset); setPending(false);
@@ -36,15 +51,16 @@ function AudioSession({asset,set,initialOffset,autoPlay,station,onRejoin,onEnded
  const track = currentTrack(asset.recording,position);
  return <section className="audio-player" aria-label="Audio player" aria-busy={pending}>
   <audio ref={audio} src={url} preload="metadata" onLoadedMetadata={metadataReady} {...events} />
-  <p>{station ? 'Shared station' : set?.title || 'Full recording'} · {asset.recording.title}</p>
-  <button onClick={() => {void toggle();}}>{playing ? 'Pause' : 'Play'}</button>
+  <p role="status">{station ? playbackState==='synchronized' ? 'On the station · Scheduled replay' : playbackState==='paused' ? 'Paused · Station continues' : `Scheduled replay · ${error ? 'blocked or unavailable' : playbackState}` : `On demand · ${set?.title || 'Full recording'}`}</p><p>{asset.recording.title} · Original date: <time>{asset.recording.date || 'Unknown'}</time></p>
+  <button disabled={Boolean(station && !playing && !onRejoin)} onClick={() => {if(station && !playing)onRejoin?.();else void toggle();}}>{playing ? 'Pause' : station ? 'Resume at current program' : 'Play'}</button>
   {station && onRejoin && <button onClick={onRejoin}>Rejoin current program</button>}
-  <label>Recording position <input type="range" min={start} max={end} step="0.1" value={Math.max(start,Math.min(end,position))} onChange={event => seek(Number(event.target.value))} /></label>
+  {!station && <label>Recording position <input type="range" min={start} max={end} step="0.1" value={Math.max(start,Math.min(end,position))} onChange={event => seek(Number(event.target.value))} /></label>}
   <p><time>{clock(position)}</time> / <time>{clock(end)}</time> · {track?.title || 'Track information unavailable'}</p>
   <label>Volume <input type="range" min={0} max={1} step="0.05" value={volume} onChange={event => changeVolume(Number(event.target.value))} /></label>
+  <button aria-pressed={muted} onClick={()=>changeMuted(!muted)}>{muted ? 'Unmute' : 'Mute'}</button>
   {pending && <p role="status">Loading audio…</p>}{error && <p role="alert">{error}</p>}
-  <ol className="tracks">{asset.recording.tracks.map(t => <li key={t.position}><button disabled={t.start < start || t.start >= end} aria-current={track?.position === t.position ? 'true' : undefined} onClick={() => seek(t.start)}>{t.title || `Track ${t.position+1}`}</button> <time>{clock(t.duration)}</time></li>)}</ol>
-  <dl>{[['Source',asset.recording.source],['Taper',asset.recording.taper],['Transfer',asset.recording.transferer]].filter(([,value])=>value).map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
+  <ol className="tracks">{asset.recording.tracks.map(t => <li key={t.position}><button disabled={Boolean(station) || t.start < start || t.start >= end} aria-current={track?.position === t.position ? 'true' : undefined} onClick={() => seek(t.start)}>{t.title || `Track ${t.position+1}`}</button> <time>{clock(t.duration)}</time></li>)}</ol>
+  <dl>{[['Artist',asset.recording.artist],['Venue',asset.recording.venue],['Location',asset.recording.location],['Source',asset.recording.source],['Taper',asset.recording.taper],['Transfer',asset.recording.transferer]].filter(([,value])=>value).map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
   {(asset.recording.warnings || []).map((warning,index)=><p key={index}>{warning}</p>)}
   <a href={asset.source_url} target="_blank" rel="noreferrer">Source recording at Internet Archive</a>
  </section>;

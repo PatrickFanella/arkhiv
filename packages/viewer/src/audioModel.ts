@@ -32,3 +32,13 @@ export function radioOffset(offset: number, receivedAt: number, latency: number,
 export function currentTrack(r: Recording, position: number): Track {
   return r.tracks.find(t => position >= t.start && position < t.start + t.duration) ?? r.tracks[r.tracks.length - 1];
 }
+
+export type StationClock = {offset:number;receivedAt:number;latency:number;duration:number;programKey:string};
+export function audioPlaybackState(media: Pick<HTMLMediaElement,'paused'|'ended'|'seeking'|'readyState'|'currentTime'>, station?:StationClock, now=Date.now()) {
+  if (media.readyState===0) return 'loading';
+  if (media.ended) return 'ended';
+  if (media.paused) return 'paused';
+  if (media.readyState<3) return 'buffering';
+  if (!station) return 'playing';
+  return !media.seeking && Math.abs(media.currentTime-radioOffset(station.offset,station.receivedAt,station.latency,station.duration,now))<=3 ? 'synchronized' : 'joining';
+}

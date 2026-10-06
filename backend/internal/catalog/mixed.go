@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"git.subcult.tv/subculture-collective/vhness/internal/domain"
 )
@@ -101,6 +102,9 @@ type CatalogQuery struct {
 	Search     string
 	ID         string
 	Page       int
+	Creator    string
+	DateFrom   string
+	DateTo     string
 }
 type CatalogPage struct {
 	Items          []domain.CatalogItem `json:"items"`
@@ -134,10 +138,30 @@ func (d *DB) CatalogCollections(ctx context.Context, scope domain.CollectionScop
 	return out, rows.Err()
 }
 
+func ValidateCatalogFilters(creator, from, to string) error {
+	if len(creator) > 200 {
+		return fmt.Errorf("invalid creator filter")
+	}
+	for _, value := range []string{from, to} {
+		if value != "" {
+			if _, err := time.Parse("2006-01-02", value); err != nil {
+				return fmt.Errorf("invalid date filter")
+			}
+		}
+	}
+	if from != "" && to != "" && from > to {
+		return fmt.Errorf("invalid date range")
+	}
+	return nil
+}
+
 func (d *DB) Catalog(ctx context.Context, q CatalogQuery) (CatalogPage, error) {
 	p := CatalogPage{Items: []domain.CatalogItem{}, Page: q.Page, SearchCoverage: []string{"metadata"}}
 	if q.Page < 1 || q.Page > 100000 || (q.Media != "" && !q.Media.Valid()) || len(q.Search) > 1000 {
 		return p, fmt.Errorf("invalid catalog query")
+	}
+	if err := ValidateCatalogFilters(q.Creator, q.DateFrom, q.DateTo); err != nil {
+		return p, err
 	}
 	var raw []byte
 	err := d.Pool.QueryRow(ctx, `
@@ -147,6 +171,8 @@ func (d *DB) Catalog(ctx context.Context, q CatalogQuery) (CatalogPage, error) {
  AND ($2='' OR collection_id=$2) AND ($3='' OR media=$3)
  AND ($4='' OR position(lower($4) in lower(title||' '||description))>0)
  AND ($5='' OR item_id=$5)
+ AND ($7='' OR position(lower($7) in lower(creator))>0)
+ AND (($8='' AND $9='') OR (date ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' AND ($8='' OR date>=$8) AND ($9='' OR date<=$9)))
  ), keys AS (
  SELECT item_id,title,description,date,creator FROM filtered GROUP BY item_id,title,description,date,creator
  ), selected AS (
@@ -156,7 +182,7 @@ func (d *DB) Catalog(ctx context.Context, q CatalogQuery) (CatalogPage, error) {
  (SELECT jsonb_agg(jsonb_build_object('id',r.representation_id,'media',r.media,'source_item_id',r.source_item_id,'snapshot_sha256',r.source_hash,'file',r.file,'extension',r.extension,'legacy_episode_id',r.legacy_episode_id,'collections',r.collections,'search_coverage',jsonb_build_array('metadata')) ORDER BY r.media,r.representation_id)
  FROM (SELECT representation_id,media,source_item_id,source_hash,file,extension,legacy_episode_id,jsonb_agg(DISTINCT collection_id ORDER BY collection_id) AS collections FROM filtered f WHERE f.item_id=s.item_id GROUP BY representation_id,media,source_item_id,source_hash,file,extension,legacy_episode_id) r) AS representations
  FROM selected s
- ) SELECT (SELECT count(*) FROM keys),COALESCE(jsonb_agg(jsonb_build_object('id',item_id,'title',title,'description',description,'date',date,'creator',creator,'collections',collections,'representations',representations) ORDER BY date DESC,item_id),'[]'::jsonb) FROM result`, q.Scope, q.Collection, string(q.Media), q.Search, q.ID, (q.Page-1)*24).Scan(&p.Total, &raw)
+ ) SELECT (SELECT count(*) FROM keys),COALESCE(jsonb_agg(jsonb_build_object('id',item_id,'title',title,'description',description,'date',date,'creator',creator,'collections',collections,'representations',representations) ORDER BY date DESC,item_id),'[]'::jsonb) FROM result`, q.Scope, q.Collection, string(q.Media), q.Search, q.ID, (q.Page-1)*24, q.Creator, q.DateFrom, q.DateTo).Scan(&p.Total, &raw)
 	if err != nil {
 		return p, err
 	}

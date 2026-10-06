@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"git.subcult.tv/subculture-collective/vhness/internal/catalog"
+	"strings"
 	"time"
 
 	"git.subcult.tv/subculture-collective/vhness/internal/community"
@@ -14,6 +16,10 @@ import (
 func (s *Server) communityAvailable(ctx context.Context, collection, id string) bool {
 	if !s.allowsCollection(collection) {
 		return false
+	}
+	if strings.HasPrefix(id, "catalog:") {
+		page, err := s.DB.Catalog(ctx, catalog.CatalogQuery{Scope: []string{collection}, Collection: collection, ID: strings.TrimPrefix(id, "catalog:"), Page: 1})
+		return err == nil && len(page.Items) == 1
 	}
 	entry, err := s.DB.Entry(ctx, id)
 	if err != nil || entry.Episode.CollectionID != collection || !entry.Decision.Published || entry.Unavailable {

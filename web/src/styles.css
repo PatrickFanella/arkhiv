@@ -90,3 +90,13 @@ footer { display:flex; justify-content:space-between; gap:2rem; border-top:1px s
 .canvas-wrap canvas { display:block; }
 .catalog-selection details p { white-space:pre-wrap; }
 @media(max-width:600px) { .catalog-intro { padding-top:1.5rem; } .mixed-archive header { flex-wrap:wrap; gap:1rem; } }
+
+.catalog-table-wrap { overflow-x:auto; }
+.catalog-table-wrap table { width:100%; border-collapse:collapse; }
+.catalog-table-wrap th,.catalog-table-wrap td { text-align:left; padding:.75rem; border-bottom:1px solid var(--border); vertical-align:top; }
+.catalog-table-wrap td:last-child { min-width:12rem; }
+.catalog-share a { margin-right:1rem; }
+.catalog-personal { padding:1.5rem 0; border-top:1px solid var(--border); overflow-wrap:anywhere; }
+.catalog-personal button { margin:.25rem; }
+.reading-focus > header,.reading-focus > .catalog-intro,.reading-focus > #catalog,.reading-focus > .catalog-personal,.reading-focus > details,.reading-focus > footer { display:none; }
+.reading-focus { max-width:1600px; }

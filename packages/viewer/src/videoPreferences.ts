@@ -20,14 +20,15 @@ export function saveVideoPreferences(storage: Pick<Storage, 'setItem'>, value: V
   try { storage.setItem(videoPreferencesKey, JSON.stringify(value)); } catch { /* Playback works without storage. */ }
 }
 
-export function useVideoPreferences(video: RefObject<HTMLVideoElement | null>) {
-  const [preferences, setPreferences] = useState(defaults);
-  const fallback = useRef(memoryPreferences);
+// Retain the existing key so a viewer upgrade preserves browser preferences.
+export function useMediaPreferences(video: RefObject<HTMLMediaElement | null>, initial: VideoPreferences = defaults) {
+  const [preferences, setPreferences] = useState(initial);
+  const fallback = useRef(initial);
   useEffect(() => {
     const element = video.current;
     if (!element) return;
-    let stored = fallback.current;
-    try { stored = readVideoPreferences(window.localStorage, memoryPreferences); } catch { /* Storage can be disabled. */ }
+    let stored = memoryPreferences === defaults ? fallback.current : memoryPreferences;
+    try { stored = readVideoPreferences(window.localStorage, stored); } catch { /* Storage can be disabled. */ }
     element.volume = stored.volume;
     element.muted = stored.muted;
     setPreferences(stored);
@@ -43,3 +44,4 @@ export function useVideoPreferences(video: RefObject<HTMLVideoElement | null>) {
   }, [video]);
   return preferences;
 }
+export const useVideoPreferences = useMediaPreferences;

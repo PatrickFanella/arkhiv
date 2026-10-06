@@ -37,6 +37,9 @@ export function usePersonal(collection: string) {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [enabled, setEnabled] = useState(false);
+  const [loadedCollection,setLoadedCollection]=useState(collection);
+  const scopeMatches=loadedCollection===collection;
+  useEffect(()=>{setLoadedCollection(collection);setProfile(null);setFavorites([]);setPending([]);setLocal([]);setError('');},[collection]);
   const epoch = useRef(0);
   const actionInFlight = useRef(false);
   const pendingKey = profile ? `archive.favorite.pending.v1:${profile.deployment}:${profile.user.id}:${collection}` : '';
@@ -74,7 +77,7 @@ export function usePersonal(collection: string) {
     return value.revision;
   };
   const toggle = async (item: string) => {
-    if (!safeID(item) || actionInFlight.current) return;
+    if (!scopeMatches || !safeID(item) || actionInFlight.current) return;
     if (!profile) { const values = local.includes(item) ? local.filter(id => id !== item) : [...local, item]; store(localKey, values); setLocal(values); return; }
     const existing = pending.find(p => p.item === item);
     const saved = favorites.some(f => f.collection === collection && f.item === item && !f.removed);
@@ -86,7 +89,7 @@ export function usePersonal(collection: string) {
     finally { actionInFlight.current = false; setBusy(false); }
   };
   const synchronize = async (rebase = false) => {
-    if (!profile || actionInFlight.current || !pending.length) return;
+    if (!scopeMatches || !profile || actionInFlight.current || !pending.length) return;
     actionInFlight.current = true; setBusy(true); let queue = [...pending];
     try {
       let current = revision;
@@ -96,7 +99,7 @@ export function usePersonal(collection: string) {
     } catch (reason) { setError(`${errorMessage(reason)} Review pending changes before retrying.`); }
     finally { actionInFlight.current = false; setBusy(false); }
   };
-  const importLocal = async () => { if (!profile || busy) return; const queue = [...pending]; for (const item of local) if (!queue.some(p => p.item === item) && !favorites.some(f => f.collection === collection && f.item === item && !f.removed)) queue.push({ item, remove: false, baseRevision: revision }); savePending(queue); setError('Import prepared. Review and apply pending changes. The browser copy is retained.'); };
+  const importLocal = async () => { if (!scopeMatches || !profile || busy) return; const queue = [...pending]; for (const item of local) if (!queue.some(p => p.item === item) && !favorites.some(f => f.collection === collection && f.item === item && !f.removed)) queue.push({ item, remove: false, baseRevision: revision }); savePending(queue); setError('Import prepared. Review and apply pending changes. The browser copy is retained.'); };
   const signIn = async () => { try { const result = await personalRequest<{ url: string }>('/api/account/v1/login', '', 'POST'); location.assign(result.url); } catch (reason) { setError(errorMessage(reason)); } };
   const signOut = async (all = false) => { if (!session?.csrf) return; try { await personalRequest('/api/account/v1/'+(all ? 'logout-all' : 'logout'), session.csrf, 'POST'); await refresh(); } catch (reason) { setError(errorMessage(reason)); } };
   const removeAccount = async () => { if (!session?.csrf) return; try { await personalRequest('/api/personal/v1/me', session.csrf, 'DELETE'); if (pendingKey) store(pendingKey, []); await refresh(); } catch (reason) { setError(errorMessage(reason)); } };
@@ -104,6 +107,6 @@ export function usePersonal(collection: string) {
   const exportData = async () => { const account = profile ? await personalRequest<unknown>('/api/personal/v1/export') : null; return JSON.stringify({ version: 1, collection, account, browser_local_favorites: local, pending_changes: pending }, null, 2); };
   const selected = new Set(profile ? favorites.filter(f => f.collection === collection && !f.removed).map(f => f.item) : local);
   for (const change of pending) { if (change.remove) selected.delete(change.item); else selected.add(change.item); }
-  return { enabled, user: profile?.user || null, deployment: profile?.deployment || session?.deployment || '', csrf: session?.csrf || '', reauthenticationRequired: session?.reauthentication_required || false, chatRead: profile?.chat_read || false, chatPost: profile?.chat_post || false, localFavorites: local, favorites, favoriteIDs: [...selected], pending, error, busy, refresh, toggle, synchronize, importLocal, signIn, signOut, removeAccount, updateAlias, exportData };
+  return { enabled, user: scopeMatches ? profile?.user || null : null, deployment: profile?.deployment || session?.deployment || '', csrf: session?.csrf || '', reauthenticationRequired: session?.reauthentication_required || false, chatRead: profile?.chat_read || false, chatPost: profile?.chat_post || false, localFavorites: scopeMatches ? local : [], favorites: scopeMatches ? favorites : [], favoriteIDs: scopeMatches ? [...selected] : [], pending: scopeMatches ? pending : [], error, busy, refresh, toggle, synchronize, importLocal, signIn, signOut, removeAccount, updateAlias, exportData };
 }
 export type Personal = ReturnType<typeof usePersonal>;
