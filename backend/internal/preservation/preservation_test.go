@@ -201,6 +201,11 @@ func TestPrivateProcessingOriginalUsesPinnedAcquisitionGuards(t *testing.T) {
 	e.Episode.Files[0].MD5 = md
 	unapproved := e
 	unapproved.Decision.ProcessingOriginal = false
+	malformed := e
+	malformed.Decision.Playback = true
+	if _, err := a.Acquire(context.Background(), c, malformed, m); err == nil || calls != 0 {
+		t.Fatal("malformed processing approval made request", err, calls)
+	}
 	if _, err := a.Acquire(context.Background(), c, unapproved, m); err == nil || calls != 0 {
 		t.Fatal("unapproved request", err, calls)
 	}

@@ -243,7 +243,7 @@ func (e Entry) SelectedOriginal() (File, bool) {
 	if f, ok := e.Selected(); ok {
 		return f, true
 	}
-	if e.Policy != Local || e.Episode.DemocracySource() || !e.Decision.Acquisition || !e.Decision.ProcessingOriginal || (e.Episode.SourceFile != "" && e.Decision.File != e.Episode.SourceFile) {
+	if e.Policy != Local || e.Episode.DemocracySource() || !e.Decision.Acquisition || !e.Decision.ProcessingOriginal || e.Decision.Playback || e.Decision.Published || e.Decision.Channel || e.Decision.Public || (e.Episode.SourceFile != "" && e.Decision.File != e.Episode.SourceFile) {
 		return File{}, false
 	}
 	for _, f := range e.Episode.Files {
