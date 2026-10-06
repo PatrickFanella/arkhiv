@@ -39,3 +39,22 @@ func TestConfiguredMultiFileSource(t *testing.T) {
 		t.Fatal("Democracy item bypass accepted")
 	}
 }
+
+func TestAVIImportPreservesSourceWithoutPlaybackApproval(t *testing.T) {
+	raw := []byte(`{"metadata":{"identifier":"series","mediatype":"movies","title":"Series","date":"1993-09-10"},"files":[{"name":"01 Flight.avi","source":"original","size":"234848256","length":"1380.75","md5":"91b3b5e772b76c3a03b5238103ff114a"},{"name":"source.xml","size":"2"}]}`)
+	c := domain.Collection{ID: "private-processing", Policy: domain.Local, Budget: 768 << 20, Reserve: 16 << 30, SourceItem: "series"}
+	e, err := ItemFile(c, "series", "01 Flight.avi", raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(e.Files) != 2 || e.Date != "" || e.SourceFile != "01 Flight.avi" {
+		t.Fatal("source lineage changed", e)
+	}
+	entry := domain.Entry{Episode: e, Policy: domain.Local}
+	if entry.ValidateDecision(domain.Decision{Acquisition: true, File: e.SourceFile, Notes: "Implicit"}) == nil {
+		t.Fatal("AVI implicitly acquired")
+	}
+	if entry.ValidateDecision(domain.Decision{Acquisition: true, ProcessingOriginal: true, File: e.SourceFile, Notes: "Explicit private pilot"}) != nil {
+		t.Fatal("approved original refused")
+	}
+}

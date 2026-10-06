@@ -12,6 +12,7 @@ import urllib.parse
 import urllib.request
 
 from upgrade_consumer import prepare, validate, select_consumer
+from viewer_release import retained_core
 
 
 def api(path, method='GET', payload=None):
@@ -55,10 +56,12 @@ def proposal(release, consumer, clone, artifact, request=api, base_ref=None):
     metadata = request(base)
     target = base_ref or metadata['default_branch']
     api_only = consumer.get('mode') == 'api'
-    branch = ('archive-core-upgrade/v' if api_only else 'archive-upgrade/v') + release['version'] + '-' + release['source_revision']
+    viewer_only = consumer.get('mode') == 'viewer'
+    branch = ('archive-core-upgrade/v' if api_only else 'archive-viewer-upgrade/v' if viewer_only else 'archive-upgrade/v') + release['version'] + '-' + release['source_revision']
     # Validate the base consumer before consulting or creating a proposal.
     current = json.loads((clone / consumer['release_file']).read_text())
-    validate(release, consumer, current, artifact)
+    core = retained_core(clone, consumer)[0] if viewer_only else None
+    validate(release, consumer, current, artifact, core)
     if current == release:
         return None
     existing = existing_proposal(base, target, branch, consumer, release, request)
@@ -70,15 +73,18 @@ def proposal(release, consumer, clone, artifact, request=api, base_ref=None):
     if consumer.get('mode', 'platform') == 'platform':
         files.append(consumer['engine_file'])
     subprocess.run(['git', 'add', '--', *files], cwd=clone, check=True)
+    title = 'Upgrade shared archive ' + ('viewer' if viewer_only else 'platform') + ' to ' + release['version']
     subprocess.run(['git', '-c', 'user.name=SUBCULT Agent', '-c', 'user.email=info@subcult.tv', '-c', 'commit.gpgsign=false',
-                    'commit', '-m', 'Upgrade shared archive platform to ' + release['version']], cwd=clone, check=True)
+                    'commit', '-m', title], cwd=clone, check=True)
     subprocess.run(['git', 'push', 'origin', branch], cwd=clone, check=True)
     try:
         result = request(base + '/pulls', 'POST', {
             'base': target, 'head': branch,
-            'title': 'Upgrade shared archive platform to ' + release['version'],
+            'title': title,
             'body': ('Updates only the immutable headless core pin and compatibility receipt. The consumer owns its entire frontend; no frontend package is required.\n\n'
                      if api_only else
+                     'Updates only the independent viewer package, lockfile and SDK receipt. The reviewed core receipt, immutable image pin and consumer-owned interface remain unchanged.\n\n'
+                     if viewer_only else
                      'Updates the frontend package, lockfile and release provenance receipt; the consumer-owned backend remains unchanged.\n\n'
                      if consumer.get('mode', 'platform') == 'components' else
                      'Updates the frontend lock, immutable engine digest and compatibility receipt together.\n\n') +

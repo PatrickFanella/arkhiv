@@ -7,19 +7,25 @@ from pathlib import Path
 import re
 import subprocess
 from core_release import validate_core
+from viewer_release import retained_core, validate_viewer
 
 
 def select_consumer(registry, repository, release):
     """Select the independent API or component lane for this artifact."""
-    api_only = release.get('artifact_kind') == 'core'
+    lane = 'api' if release.get('artifact_kind') == 'core' else 'viewer' if 'compatible_core_receipt' in release else 'combined'
     matches = [c for c in registry['consumers'] if c['repository'] == repository
-               and (c.get('mode') == 'api') == api_only]
+               and ('api' if c.get('mode') == 'api' else 'viewer' if c.get('mode') == 'viewer' else 'combined') == lane]
     if len(matches) != 1:
         raise ValueError('Expected one registered consumer for this release lane')
     return matches[0]
 
 
-def validate(release, consumer, current, artifact):
+def validate(release, consumer, current, artifact, core=None):
+    if consumer.get('mode') == 'viewer':
+        if core is None:
+            raise ValueError('Viewer upgrades require the retained core receipt')
+        validate_viewer(release, consumer, current, artifact, core)
+        return
     if consumer.get('mode') == 'api':
         validate_core(release, consumer, current)
         return
@@ -97,7 +103,13 @@ def prepare(root, consumer, release, artifact, run=subprocess.run):
     receipt, package_file, lock_file = paths[:3]
     engine_file = paths[3] if len(paths) == 4 else None
     current = json.loads(receipt.read_text())
-    validate(release, consumer, current, artifact)
+    retained = []
+    core = None
+    if consumer.get('mode') == 'viewer':
+        core, retained = retained_core(root, consumer)
+        if len({p.resolve() for p in paths + retained}) != len(paths + retained):
+            raise ValueError('Managed viewer and retained core paths must be distinct')
+    validate(release, consumer, current, artifact, core)
     package = json.loads(package_file.read_text())
     if package.get('dependencies', {}).get(release['package']) != current['version']:
         raise ValueError('Package dependency differs from the current release receipt')
@@ -105,7 +117,7 @@ def prepare(root, consumer, release, artifact, run=subprocess.run):
         raise ValueError('Engine pin differs from the current release receipt')
     if current == release:
         return False
-    original = {p: p.read_bytes() for p in paths}
+    original = {p: p.read_bytes() for p in paths + retained}
     try:
         package['dependencies'][release['package']] = release['version']
         package_file.write_text(json.dumps(package, indent=2) + '\n')
@@ -116,6 +128,8 @@ def prepare(root, consumer, release, artifact, run=subprocess.run):
         run(['pnpm', 'install', '--lockfile-only', '--ignore-scripts', '--no-frozen-lockfile'], cwd=package_file.parent, check=True)
         for command in consumer['checks']:
             run(command, cwd=root, check=True)
+        if any(p.read_bytes() != original[p] for p in retained):
+            raise ValueError('Viewer checks changed a retained core pin')
     except BaseException:
         for path, data in original.items():
             path.write_bytes(data)

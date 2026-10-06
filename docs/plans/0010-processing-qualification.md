@@ -49,9 +49,11 @@ bytes, captions and receipts into an independent fresh database/store before
 claiming recovery. Browser playback and human audiovisual assessment remain
 distinct from probe/decode checks.
 
-## Decision still needed
+## Owner decision
 
-The owner may retain this as an optional extension, or approve the exact private
-acquisition and storage scope above so implementation and qualification can
-continue. This document grants no acquisition, processing, public access or
-deployment permission. Existing unchanged-MP4 delivery remains qualified.
+On October 6, 2026, the owner approved the bounded private one-AVI pilot in this
+T3 thread. That approval covers the selected original, derivative, working and
+independent backup/restore allowances above. Acquisition must still pass the
+current metadata, manifest, policy, checksum, capacity and reserve guards.
+This approval does not activate public access or deployment. Existing
+unchanged-MP4 delivery remains qualified; Democracy Now stays streaming only.

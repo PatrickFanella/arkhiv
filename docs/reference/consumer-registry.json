@@ -10,8 +10,7 @@
       "rollout": "reviewed-pr",
       "package_file": "web/package.json",
       "lock_file": "web/pnpm-lock.yaml",
-      "release_file": "deploy/platform-release.json",
-      "engine_file": "deploy/archive-engine.env",
+      "release_file": "deploy/viewer-release.json",
       "checks": [
         [
           "make",
@@ -22,7 +21,18 @@
       "adoption_ref": "main",
       "adoption_pull_request": "https://git.subcult.tv/subculture-collective/video-archive-template/pulls/2",
       "adoption_revision": "77c17ebd7c1da55443936541ef2363092d9f9f07",
-      "merge_revision": "62c5f6794096f7ee29e3bf18bb810ebb4c317b1b"
+      "merge_revision": "62c5f6794096f7ee29e3bf18bb810ebb4c317b1b",
+      "previous_registration": {
+        "release_file": "deploy/platform-release.json",
+        "engine_file": "deploy/archive-engine.env"
+      },
+      "mode": "viewer",
+      "core_file": "deploy/core-release.json",
+      "core_engine_file": "deploy/archive-core.env",
+      "modules": {
+        "catalog": "1",
+        "video": "1"
+      }
     },
     {
       "repository": "subculture-collective/democracy-now-tv",
@@ -33,8 +43,7 @@
       "rollout": "reviewed-pr",
       "package_file": "web/package.json",
       "lock_file": "web/pnpm-lock.yaml",
-      "release_file": "deploy/platform-release.json",
-      "engine_file": "deploy/archive-engine.env",
+      "release_file": "deploy/viewer-release.json",
       "checks": [
         [
           "make",
@@ -45,19 +54,30 @@
       "adoption_ref": "main",
       "adoption_pull_request": "https://git.subcult.tv/subculture-collective/democracy-now-tv/pulls/2",
       "adoption_revision": "7096142dee52bcde9fd3cb2cbca20d4214d1946e",
-      "merge_revision": "e46902e6c2593f042a36e13df11006adbcfc9f7c"
+      "merge_revision": "e46902e6c2593f042a36e13df11006adbcfc9f7c",
+      "previous_registration": {
+        "release_file": "deploy/platform-release.json",
+        "engine_file": "deploy/archive-engine.env"
+      },
+      "mode": "viewer",
+      "core_file": "deploy/core-release.json",
+      "core_engine_file": "deploy/archive-core.env",
+      "modules": {
+        "catalog": "1",
+        "video": "1"
+      }
     },
     {
-      "repository": "subculture-collective/arkhiv-alpha",
+      "repository": "subculture-collective/arkhiv-anarchist",
       "media": [
         "print"
       ],
       "adoption": "package",
-      "mode": "components",
+      "mode": "viewer",
       "rollout": "reviewed-pr",
       "package_file": "web/package.json",
       "lock_file": "web/pnpm-lock.yaml",
-      "release_file": "docs/releases/archive-viewer-0.2.1.json",
+      "release_file": "deploy/viewer-release.json",
       "checks": [
         [
           "make",
@@ -68,7 +88,18 @@
       "adoption_ref": "main",
       "adoption_pull_request": "https://git.subcult.tv/subculture-collective/arkhiv-alpha/pulls/59",
       "adoption_revision": "86680b30a75a7fbe24932b624cf6d9ad013daba8",
-      "merge_revision": "6c8053bc5f3ad398320ce01b88fe4862b4b96597"
+      "merge_revision": "6c8053bc5f3ad398320ce01b88fe4862b4b96597",
+      "previous_repository": "subculture-collective/arkhiv-alpha",
+      "previous_registration": {
+        "mode": "components",
+        "release_file": "docs/releases/archive-viewer-0.2.1.json"
+      },
+      "core_file": "deploy/core-release.json",
+      "core_engine_file": "deploy/archive-core.env",
+      "modules": {
+        "catalog": "1",
+        "print": "1"
+      }
     },
     {
       "repository": "subculture-collective/arkhiv-riot-grrrl",
@@ -76,11 +107,11 @@
         "print"
       ],
       "adoption": "package",
-      "mode": "components",
+      "mode": "viewer",
       "rollout": "reviewed-pr",
       "package_file": "web/package.json",
       "lock_file": "web/pnpm-lock.yaml",
-      "release_file": "docs/releases/archive-viewer-0.2.1.json",
+      "release_file": "deploy/viewer-release.json",
       "checks": [
         [
           "make",
@@ -91,7 +122,17 @@
       "adoption_ref": "main",
       "adoption_pull_request": "https://git.subcult.tv/subculture-collective/arkhiv-riot-grrrl/pulls/10",
       "adoption_revision": "99db53d1f7ae84704a18418d6384c143dbb08ec0",
-      "merge_revision": "845be664f359dc4c94d3101e1b062c32c24a3838"
+      "merge_revision": "845be664f359dc4c94d3101e1b062c32c24a3838",
+      "previous_registration": {
+        "mode": "components",
+        "release_file": "docs/releases/archive-viewer-0.2.1.json"
+      },
+      "core_file": "deploy/core-release.json",
+      "core_engine_file": "deploy/archive-core.env",
+      "modules": {
+        "catalog": "1",
+        "print": "1"
+      }
     },
     {
       "repository": "subculture-collective/bill-nye-tv",
@@ -99,11 +140,11 @@
         "video"
       ],
       "adoption": "package",
-      "mode": "platform",
+      "mode": "viewer",
       "rollout": "reviewed-pr",
       "package_file": "web/package.json",
       "lock_file": "web/pnpm-lock.yaml",
-      "release_file": "deploy/platform-release.json",
+      "release_file": "deploy/viewer-release.json",
       "checks": [
         [
           "make",
@@ -114,8 +155,18 @@
       "adoption_ref": "main",
       "adoption_pull_request": "https://git.subcult.tv/subculture-collective/bill-nye-tv/pulls/2",
       "adoption_revision": "d77639cdbff9a09766b51cfbf4dba668232c77e7",
-      "engine_file": "deploy/archive-engine.env",
-      "merge_revision": "471d22be1d3a35103727e7af35abfc27f2e44598"
+      "merge_revision": "471d22be1d3a35103727e7af35abfc27f2e44598",
+      "previous_registration": {
+        "mode": "platform",
+        "release_file": "deploy/platform-release.json",
+        "engine_file": "deploy/archive-engine.env"
+      },
+      "core_file": "deploy/core-release.json",
+      "core_engine_file": "deploy/archive-core.env",
+      "modules": {
+        "catalog": "1",
+        "video": "1"
+      }
     },
     {
       "repository": "subculture-collective/dedhed",
@@ -123,11 +174,11 @@
         "audio"
       ],
       "adoption": "package",
-      "mode": "components",
+      "mode": "viewer",
       "rollout": "reviewed-pr",
       "package_file": "web/package.json",
       "lock_file": "web/pnpm-lock.yaml",
-      "release_file": "docs/releases/archive-viewer-0.2.1.json",
+      "release_file": "deploy/viewer-release.json",
       "checks": [
         [
           "make",
@@ -138,7 +189,17 @@
       "adoption_ref": "main",
       "adoption_pull_request": "https://git.subcult.tv/subculture-collective/dedhed/pulls/27",
       "adoption_revision": "1105d5ab67f5e4f08c90fc0c336de1efb7fb0ad0",
-      "merge_revision": "2419bf811784c7aa9c41ee20928ed6205e4f0415"
+      "merge_revision": "2419bf811784c7aa9c41ee20928ed6205e4f0415",
+      "previous_registration": {
+        "mode": "components",
+        "release_file": "docs/releases/archive-viewer-0.2.1.json"
+      },
+      "core_file": "deploy/core-release.json",
+      "core_engine_file": "deploy/archive-core.env",
+      "modules": {
+        "catalog": "1",
+        "audio": "1"
+      }
     },
     {
       "repository": "subculture-collective/arkhiv",
@@ -221,7 +282,7 @@
       "adoption_revision": "156962b448f486afbda9dc633793be495e077b49"
     },
     {
-      "repository": "subculture-collective/arkhiv-alpha",
+      "repository": "subculture-collective/arkhiv-anarchist",
       "media": [
         "print"
       ],
@@ -243,7 +304,8 @@
       "adoption_status": "pull-request",
       "adoption_ref": "feat/independent-core-release",
       "adoption_revision": "958b14c0fea5eae2633e93da36a4a53029704858",
-      "adoption_pull_request": "https://git.subcult.tv/subculture-collective/arkhiv-alpha/pulls/62"
+      "adoption_pull_request": "https://git.subcult.tv/subculture-collective/arkhiv-alpha/pulls/62",
+      "previous_repository": "subculture-collective/arkhiv-alpha"
     },
     {
       "repository": "subculture-collective/arkhiv-riot-grrrl",

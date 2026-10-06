@@ -117,7 +117,7 @@ func ItemFile(c domain.Collection, item, file string, raw []byte) (domain.Episod
 	}
 	found := false
 	for _, f := range e.Files {
-		if f.Name == file && f.Candidate() {
+		if f.Name == file && f.PreservationCandidate() {
 			found = true
 			break
 		}
@@ -129,7 +129,7 @@ func ItemFile(c domain.Collection, item, file string, raw []byte) (domain.Episod
 	e.CollectionID = c.ID
 	e.SourceItemID = item
 	e.SourceFile = file
-	e.Title = e.Title + " · " + strings.TrimSuffix(file, ".mp4")
+	e.Title = e.Title + " · " + strings.TrimSuffix(strings.TrimSuffix(file, ".mp4"), ".avi")
 	e.Date = "" // Series debut date is not an individual episode broadcast date.
 	return e, e.Validate()
 }

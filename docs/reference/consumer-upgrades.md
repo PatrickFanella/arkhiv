@@ -98,3 +98,15 @@ job-owned address. The service uses the launcher's `dev` user and disposable
 password so consumer integration guards remain intact. A missing or conflicting container identity fails the job.
 This keeps migration and database tests separate across brands. Local proposal
 work must use the shared isolated launcher for the same required gates.
+
+## Independent viewer upgrades
+
+The six current frontend consumers now register mode `viewer` and `deploy/viewer-release.json`. Their previous combined registrations remain in `previous_registration`; historical adoption links retain their original dates and repository names. The Anarchist consumer uses its canonical `arkhiv-anarchist` repository name, with the former name retained as provenance. API-only consumers remain a separate lane.
+
+Use `scripts/propose_release_upgrades.py --kind viewer --version 0.4.2` for the committed SDK-only receipt, or pass that receipt and its verified tarball directly to `upgrade_consumer.py` or `propose_consumer_upgrade.py`. The default proposal lane is now `viewer`. The owner-waived hosted job remains separate from local qualification; these source changes do not activate it while Kvant is unavailable.
+
+Before mutation, the tool validates the package identity, registry, license, stable version, complete source revision and checksum. The SDK's named compatible core must match the consumer's retained reviewed core version. The core receipt must support version-1 API/configuration and all registered media/modules, and its exact immutable image pin must match `core_engine_file`. This receipt check does not claim that a native backend has completed its separately reviewed shared-core cutover.
+
+The SDK lane changes only the package dependency, frozen pnpm lock and viewer receipt. It does not manage `engine_file`. Registered core files are read-only inputs; if consumer checks alter them, preparation fails and restores the original registered files. Failed checks restore the SDK files and lock as well. Major upgrades, downgrades, reused versions, checksum errors, missing/escaping/overlapping registered paths and incompatible cores fail before delivery. Successful preparation runs each consumer's required checks before creating a proposal.
+
+SDK proposals use `archive-viewer-upgrade/v<VERSION>-<SOURCE>` branches. They keep the existing exact-receipt reuse, declined-proposal refusal, explicit stacked-base selection and timeout reconciliation. An already applied SDK produces no file changes or PR. Backend releases continue through the independent core lane. Legacy combined manifests require an explicitly registered combined consumer; they are not substituted for an SDK-only receipt.

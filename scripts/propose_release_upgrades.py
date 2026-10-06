@@ -34,13 +34,14 @@ def consumer_test_database(inspected, run, repository, resolve=socket.gethostbyn
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--version', required=True)
-    parser.add_argument('--kind', choices=['platform', 'core'], default='platform')
+    parser.add_argument('--kind', choices=['platform', 'core', 'viewer'], default='viewer')
     parser.add_argument('--adoption-refs', action='store_true', help='Explicitly stack on registered adoption branches that are still in review')
     args = parser.parse_args()
     if not re.fullmatch(r'\d+\.\d+\.\d+', args.version):
         raise SystemExit('Expected a stable semantic release version')
     root = Path(__file__).resolve().parents[1]
-    release = json.loads((root / 'docs/releases' / (('core-release-' if args.kind == 'core' else 'release-') + args.version + '.json')).read_text())
+    prefix = {'core': 'core-release-', 'viewer': 'viewer-release-', 'platform': 'release-'}[args.kind]
+    release = json.loads((root / 'docs/releases' / (prefix + args.version + '.json')).read_text())
     if release['version'] != args.version:
         raise SystemExit('Release filename and metadata disagree')
     if args.kind != 'core' and release['package_file'] != 'subcult-archive-viewer-' + args.version + '.tgz':
@@ -55,7 +56,8 @@ def main():
         work = Path(temporary)
         artifact = None if args.kind == 'core' else download(release, work / release['package_file'])
         for consumer in registry['consumers']:
-            if (consumer.get('mode') == 'api') != (args.kind == 'core'):
+            lane = 'core' if consumer.get('mode') == 'api' else 'viewer' if consumer.get('mode') == 'viewer' else 'platform'
+            if lane != args.kind:
                 continue
             if consumer['adoption'] != ('core' if args.kind == 'core' else 'package'):
                 print(consumer['repository'], 'package adoption pending', flush=True)
