@@ -7,10 +7,12 @@ on:
         required: false
         default: ubuntu-latest
   push:
+    branches: [main]
   pull_request:
 jobs:
   verify:
     runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    timeout-minutes: 30
     services:
       postgres:
         image: postgres:17
