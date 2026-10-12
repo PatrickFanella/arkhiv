@@ -14,8 +14,12 @@ on:
         required: false
   push:
     tags: ['core-v*']
+permissions:
+  contents: read
+
 jobs:
   release:
+    timeout-minutes: 120
     runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     services:
       postgres:
