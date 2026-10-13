@@ -21,4 +21,4 @@ test:
 	pnpm --dir web test
 test-integration:
 	test -n "$(TEST_DATABASE_URL)"
-	cd backend && go test -race ./internal/catalog ./internal/worker -count=1
+	cd backend && go test -race ./internal/catalog ./internal/worker ./internal/sourcecatalog -count=1

@@ -41,7 +41,7 @@ func Allowed(u *url.URL) bool {
 }
 func New() *Client {
 	return &Client{Base: "https://archive.org", Clock: time.Now, HTTP: &http.Client{Timeout: 30 * time.Second, CheckRedirect: func(r *http.Request, via []*http.Request) error {
-		if len(via) > 5 || !Allowed(r.URL) || (!strings.HasPrefix(r.URL.Path, "/metadata/") && r.URL.Path != "/advancedsearch.php") {
+		if len(via) > 5 || !Allowed(r.URL) || (!strings.HasPrefix(r.URL.Path, "/metadata/") && r.URL.Path != "/advancedsearch.php" && r.URL.Path != "/services/search/v1/scrape") {
 			return fmt.Errorf("metadata redirect rejected")
 		}
 		return nil
@@ -57,7 +57,7 @@ func RetryDeadline(header string, now time.Time) time.Time {
 	return now.Add(30 * time.Second)
 }
 func (c *Client) get(ctx context.Context, path, etag, modified string) (Response, error) {
-	if !strings.HasPrefix(path, "/metadata/") && !strings.HasPrefix(path, "/advancedsearch.php?") {
+	if !strings.HasPrefix(path, "/metadata/") && !strings.HasPrefix(path, "/advancedsearch.php?") && !strings.HasPrefix(path, "/services/search/v1/scrape?") {
 		return Response{}, fmt.Errorf("metadata client cannot request media")
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.Base+path, nil)

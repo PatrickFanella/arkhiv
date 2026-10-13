@@ -381,6 +381,60 @@
       "adoption_ref": "feat/core-release-012",
       "adoption_revision": "ea480f4fde4ff903ab9575cc8a4a50e229365bd6",
       "adoption_pull_request": "https://git.subcult.tv/subculture-collective/video-archive-template/pulls/5"
+    },
+    {
+      "repository": "PatrickFanella/arkhiv-live-music",
+      "media": [
+        "audio"
+      ],
+      "rollout": "reviewed-pr",
+      "checks": [
+        [
+          "make",
+          "verify"
+        ]
+      ],
+      "adoption_status": "pull-request",
+      "adoption_ref": "feat/etree-archive-access",
+      "adoption_revision": "f00adb9d21acef3b5aa7809f3cd9aab951715cbb",
+      "adoption_pull_request": "https://git.subcult.tv/PatrickFanella/arkhiv-live-music/pulls/1",
+      "adoption": "package",
+      "mode": "viewer",
+      "package_file": "web/package.json",
+      "lock_file": "web/pnpm-lock.yaml",
+      "release_file": "deploy/viewer-release.json",
+      "core_file": "deploy/core-release.json",
+      "core_engine_file": "deploy/archive-core.env",
+      "modules": {
+        "catalog": "1",
+        "audio": "1"
+      }
+    },
+    {
+      "repository": "PatrickFanella/arkhiv-live-music",
+      "media": [
+        "audio"
+      ],
+      "rollout": "reviewed-pr",
+      "checks": [
+        [
+          "make",
+          "verify"
+        ]
+      ],
+      "adoption_status": "pull-request",
+      "adoption_ref": "feat/etree-archive-access",
+      "adoption_revision": "f00adb9d21acef3b5aa7809f3cd9aab951715cbb",
+      "adoption_pull_request": "https://git.subcult.tv/PatrickFanella/arkhiv-live-music/pulls/1",
+      "adoption": "core",
+      "mode": "api",
+      "release_file": "deploy/core-release.json",
+      "engine_file": "deploy/archive-core.env",
+      "modules": {
+        "catalog": "1",
+        "audio": "1",
+        "source_catalog": "1"
+      }
     }
   ]
 }

@@ -40,3 +40,9 @@ Release qualification uses recovered catalogs and the original branded
 frontends. Production rollout, owner audiovisual review, and natural operation
 are separate evidence. See [development instructions](DEVELOPMENT.md),
 [deployment operations](docs/DEPLOYMENT.md), and the [roadmap](ROADMAP.md).
+
+The upcoming core 0.4.0 adds a [source metadata catalog](docs/reference/source-metadata-catalog.md)
+with cursor discovery, complete snapshot retention, local search and filters, and
+corrections that survive re-imports. Metadata ingestion stays independent of media
+acquisition and reviewed playback. The Live Music Archive consumer uses this shared
+backend; it owns no duplicate catalog schema or importer.
