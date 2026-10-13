@@ -77,7 +77,11 @@ type CatalogItem struct {
 }
 
 func (r Representation) Validate() error {
-	if !ValidID(r.ID) || !r.Media.Valid() || !ValidID(r.SourceItemID) || !SafeFile(r.File) || len(r.Snapshot) != 64 || r.LegacyEpisodeID != "" {
+	validFile := SafeFile
+	if r.Media == AudioMedia && r.Extension.Audio != nil && r.Extension.Audio.Recording == nil {
+		validFile = SourceAudioFile
+	}
+	if !ValidID(r.ID) || !r.Media.Valid() || !ValidID(r.SourceItemID) || !validFile(r.File) || len(r.Snapshot) != 64 || r.LegacyEpisodeID != "" {
 		return fmt.Errorf("invalid representation identity")
 	}
 	for _, c := range r.Snapshot {
@@ -121,7 +125,7 @@ func (r Representation) Validate() error {
 		}
 		seen := map[string]bool{}
 		for _, track := range a.Tracks {
-			if !ValidID(track.ID) || !SafeFile(track.File) || seen[track.ID] || (!track.SetReviewed && track.Set != "") {
+			if !ValidID(track.ID) || !validFile(track.File) || seen[track.ID] || (!track.SetReviewed && track.Set != "") {
 				return fmt.Errorf("invalid track identity or unreviewed set")
 			}
 			seen[track.ID] = true

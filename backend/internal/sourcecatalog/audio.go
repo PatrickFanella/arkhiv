@@ -3,6 +3,7 @@ package sourcecatalog
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"path/filepath"
 	"sort"
@@ -11,6 +12,8 @@ import (
 	"git.subcult.tv/subculture-collective/vhness/internal/domain"
 	"github.com/jackc/pgx/v5"
 )
+
+var ErrUnsupportedAudio = errors.New("no bounded, supported public audio files with safe source filenames")
 
 // ReviewAudio is a distinct operator decision. Metadata import never grants
 // playback, downloads, acquisition, scheduling, relay or public visibility.
@@ -41,7 +44,7 @@ func (s *Store) ReviewAudio(ctx context.Context, id, notes string) error {
 		return err
 	}
 	preferred := map[string]map[string]any{}
-	ranks := map[string]int{".mp3": 0, ".m4a": 1, ".ogg": 2, ".flac": 3, ".wav": 4}
+	ranks := map[string]int{".mp3": 0, ".m4a": 1, ".ogg": 2, ".flac": 3, ".wav": 4, ".mp4": 5}
 	byName := map[string]map[string]any{}
 	for _, file := range snapshot.Files {
 		byName[sourceFilename(file["name"])] = file
@@ -53,7 +56,7 @@ func (s *Store) ReviewAudio(ctx context.Context, id, notes string) error {
 		if hasPrivate && flag != false && flag != "false" {
 			continue
 		}
-		if !known || !domain.SafeFile(name) {
+		if !known || !domain.SourceAudioFile(name) {
 			continue
 		}
 		original := sourceFilename(file["original"])
@@ -77,7 +80,7 @@ func (s *Store) ReviewAudio(ctx context.Context, id, notes string) error {
 		return naturalLess(sourceFilename(files[i]["name"]), sourceFilename(files[j]["name"]))
 	})
 	if len(files) == 0 || len(files) > 1000 {
-		return fmt.Errorf("no bounded, supported public audio files with safe source filenames")
+		return ErrUnsupportedAudio
 	}
 	var fields map[string]string
 	if err = json.Unmarshal(detail["metadata"].(json.RawMessage), &fields); err != nil {

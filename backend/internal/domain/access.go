@@ -115,8 +115,12 @@ func AuthorizeTransport(collection Collection, rep Representation, raw []byte, r
 	}
 	selected := false
 	seen := map[string]bool{}
+	validFile := SafeFile
+	if collection.Policy == Stream && rep.Media == AudioMedia {
+		validFile = SourceAudioFile
+	}
 	for _, name := range review.Files {
-		if !SafeFile(name) || seen[name] {
+		if !validFile(name) || seen[name] {
 			return fmt.Errorf("invalid reviewed files")
 		}
 		seen[name] = true

@@ -1,3 +1,9 @@
+## 0.4.3
+
+Accept exact, reviewed nested audio source filenames in catalog URLs. Reject
+absolute paths, traversal, backslashes and control characters. Print, video and
+local media contracts retain their existing validation.
+
 ## 0.4.2
 
 Show retryable archive errors when an upstream proxy returns HTML or unreadable
