@@ -84,6 +84,28 @@ class ViewerUpgradeTests(unittest.TestCase):
             with self.subTest(key=key), self.assertRaises(ValueError):
                 prepare(self.root, self.consumer, self.release, self.artifact)
 
+    def test_additive_core_upgrade_preserves_original_sdk_qualification(self):
+        newer = {**self.core, 'version': '0.4.0', 'source_revision': 'c' * 40,
+                 'engine_digest': self.core['engine_repository'] + '@sha256:' + 'd' * 64,
+                 'migrations': {**self.core['migrations'], '0014_source_catalog.sql': 'e' * 64}}
+        (self.root / 'core.json').write_text(json.dumps(newer))
+        (self.root / 'core.env').write_text('ARCHIVE_ENGINE_IMAGE=' + newer['engine_digest'] + '\n')
+        self.commit()
+        self.assertTrue(prepare(self.root, self.consumer, self.release, self.artifact, mock.Mock()))
+        self.assertEqual(json.loads((self.root / 'viewer.json').read_text())['compatible_core_receipt'],
+                         'core-release-0.3.0.json')
+        self.assertEqual(json.loads((self.root / 'core.json').read_text()), newer)
+
+    def test_newer_core_rejects_changed_qualified_migration_and_major_version(self):
+        for change in [{'version': '1.0.0'},
+                       {'version': '0.4.0', 'migrations': {**self.core['migrations'], '0001_metadata.sql': 'f' * 64}}]:
+            (self.root / 'core.json').write_text(json.dumps({**self.core, **change}))
+            self.commit()
+            before = self.bytes()
+            with self.assertRaises(ValueError):
+                prepare(self.root, self.consumer, self.release, self.artifact, mock.Mock())
+            self.assertEqual(self.bytes(), before)
+
     def test_failed_or_pin_mutating_checks_restore_all_registered_files(self):
         before = self.bytes()
         for outcome in ['failure', 'changed-core']:

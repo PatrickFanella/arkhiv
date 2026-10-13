@@ -41,8 +41,20 @@ def validate_viewer(release, consumer, current, artifact, core):
             raise ValueError('Expected a full viewer source revision')
         if not re.fullmatch(r'[0-9a-f]{64}', value.get('package_sha256', '')):
             raise ValueError('Expected a full viewer package checksum')
-        if value.get('compatible_core_receipt') != 'core-release-' + core['version'] + '.json':
-            raise ValueError('Viewer requires a different reviewed core version')
+        name = value.get('compatible_core_receipt', '')
+        if name != 'core-release-' + core['version'] + '.json':
+            if not re.fullmatch(r'core-release-\d+\.\d+\.\d+\.json', name):
+                raise ValueError('Expected a reviewed compatible core receipt')
+            path = Path(__file__).resolve().parents[1] / 'docs/releases' / name
+            if not path.is_file():
+                raise ValueError('Viewer requires an unavailable reviewed core receipt')
+            compatible = json.loads(path.read_text())
+            if name != 'core-release-' + compatible['version'] + '.json':
+                raise ValueError('Compatible core receipt version disagrees with its filename')
+            # Independent additive core upgrades retain the SDK's original
+            # qualification receipt. Verify its contracts and migration history
+            # against the consumer's newer core instead of rewriting provenance.
+            validate_core(core, core_consumer, compatible)
     old, new = (tuple(map(int, value['version'].split('.'))) for value in (current, release))
     if new[0] != old[0] or new < old:
         raise ValueError('Major changes and downgrades require a coordinated migration')
