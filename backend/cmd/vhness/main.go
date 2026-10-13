@@ -26,6 +26,7 @@ import (
 	"git.subcult.tv/subculture-collective/vhness/internal/preservation"
 	printmodule "git.subcult.tv/subculture-collective/vhness/internal/print"
 	"git.subcult.tv/subculture-collective/vhness/internal/source"
+	"git.subcult.tv/subculture-collective/vhness/internal/sourcecatalog"
 	"git.subcult.tv/subculture-collective/vhness/internal/video"
 	"git.subcult.tv/subculture-collective/vhness/internal/worker"
 	"github.com/jackc/pgx/v5"
@@ -46,7 +47,7 @@ func load(p string, v any) error {
 }
 func run() error {
 	if len(os.Args) < 2 {
-		return fmt.Errorf("usage: vhness migrate|collection|review-budget|review-public-video|review-library|plan-replay|import|import-item|import-source|import-catalog|prepare-curation|retain-legacy|review-transport|index-print|restore-print-index|register-audio|register-video|schedule-audio|renew-public-audio|fetch|inspect|acquire|audit|review|schedule|discover|refresh|report|seed|serve|healthcheck")
+		return fmt.Errorf("usage: vhness migrate|collection|review-budget|review-public-video|review-library|plan-replay|import|import-item|import-source|import-source-catalog|edit-source-catalog|review-source-audio|discover-catalog|refresh-catalog|import-catalog|prepare-curation|retain-legacy|review-transport|index-print|restore-print-index|register-audio|register-video|schedule-audio|renew-public-audio|fetch|inspect|acquire|audit|review|schedule|discover|refresh|report|seed|serve|healthcheck")
 	}
 	cmd := os.Args[1]
 	if cmd == "healthcheck" {
@@ -88,6 +89,7 @@ func run() error {
 	hours := f.Int("hours", 168, "public audio renewal horizon, 1 through 168 hours")
 	pages := f.Int("pages", 1, "bounded discovery pages (0–100)")
 	items := f.Int("items", 20, "bounded metadata fetches (0–1000)")
+	delay := f.Duration("delay", time.Second, "minimum interval between metadata-only catalog requests")
 	timeout := f.Duration("timeout", 10*time.Minute, "run deadline")
 	if err := f.Parse(os.Args[2:]); err != nil {
 		return err
@@ -167,6 +169,61 @@ func run() error {
 			return err
 		}
 		return json.NewEncoder(os.Stdout).Encode(map[string]any{"draft_sha256": sha, "state": "operator-review", "public": false, "transport_granted": false})
+	case "discover-catalog", "refresh-catalog", "import-source-catalog", "edit-source-catalog", "review-source-audio":
+		store := &sourcecatalog.Store{Core: d, Collection: *collection}
+		if err = store.Init(ctx); err != nil {
+			return err
+		}
+		switch cmd {
+		case "import-source-catalog":
+			input, e := os.Open(*file)
+			if e != nil {
+				return e
+			}
+			defer input.Close()
+			raw, e := io.ReadAll(io.LimitReader(input, (32<<20)+1))
+			if e != nil {
+				return e
+			}
+			return store.Import(ctx, *id, raw, 200, "", "")
+		case "edit-source-catalog":
+			input, e := os.Open(*file)
+			if e != nil {
+				return e
+			}
+			defer input.Close()
+			raw, e := io.ReadAll(io.LimitReader(input, (256<<10)+1))
+			if e != nil {
+				return e
+			}
+			if len(raw) > 256<<10 {
+				return fmt.Errorf("metadata correction exceeds input limit")
+			}
+			var patch map[string]any
+			if e = json.Unmarshal(raw, &patch); e != nil {
+				return e
+			}
+			return store.Edit(ctx, *id, patch, *notes)
+		case "review-source-audio":
+			return store.ReviewAudio(ctx, *id, *notes)
+		case "refresh-catalog":
+			if err = store.Reconcile(ctx); err != nil {
+				return err
+			}
+		}
+		if *timeout <= 0 || *timeout > 30*time.Minute {
+			return fmt.Errorf("invalid catalog run deadline")
+		}
+		deadline, cancel := context.WithTimeout(ctx, *timeout)
+		defer cancel()
+		if err = store.Run(deadline, source.New(), *pages, *items, *delay); err != nil {
+			return err
+		}
+		status, e := store.Status(ctx)
+		if e != nil {
+			return e
+		}
+		return json.NewEncoder(os.Stdout).Encode(status)
 	case "import-source":
 		if _, err := d.GetCollection(ctx, *collection); err != nil {
 			return err

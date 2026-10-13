@@ -28,7 +28,9 @@ func (d *DB) Transport(ctx context.Context, item, representation, collection str
  JOIN catalog_representation_memberships rm ON rm.item_id=r.item_id AND rm.representation_id=r.id AND rm.collection_id=$3 AND rm.listed
  JOIN collections c ON c.id=$3
  JOIN representation_transport_reviews t ON t.item_id=r.item_id AND t.representation_id=r.id AND t.collection_id=$3
- WHERE r.item_id=$1 AND r.id=$2 AND (NOT $4 OR (t.review @> '{"public":true}'::jsonb AND t.review->>'snapshot_sha256'=r.source_hash))`, item, representation, collection, d.PublicOnly).Scan(&e.Collection.ID, &e.Collection.Policy, &e.Collection.Budget, &e.Collection.Reserve, &e.Collection.SourceItem, &e.Representation.ID, &e.Representation.Media, &e.Representation.SourceItemID, &e.Representation.Snapshot, &e.Representation.File, &extension, &e.Raw, &review, &approval)
+ WHERE r.item_id=$1 AND r.id=$2
+ AND NOT EXISTS (SELECT 1 FROM source_catalog_items ci WHERE ci.collection_id=$3 AND ci.identifier=r.source_item_id AND (ci.unavailable OR ci.source_hash<>r.source_hash))
+ AND (NOT $4 OR (t.review @> '{"public":true}'::jsonb AND t.review->>'snapshot_sha256'=r.source_hash))`, item, representation, collection, d.PublicOnly).Scan(&e.Collection.ID, &e.Collection.Policy, &e.Collection.Budget, &e.Collection.Reserve, &e.Collection.SourceItem, &e.Representation.ID, &e.Representation.Media, &e.Representation.SourceItemID, &e.Representation.Snapshot, &e.Representation.File, &extension, &e.Raw, &review, &approval)
 	if err != nil {
 		return e, err
 	}

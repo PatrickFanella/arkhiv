@@ -73,6 +73,7 @@ func write(w http.ResponseWriter, status int, v any) {
 }
 func (s *Server) Handler() http.Handler {
 	mux := http.NewServeMux()
+	s.sourceCatalogRoutes(mux)
 	if s.Community != nil {
 		s.Community.Allowed = s.allowsCollection
 		s.Community.Available = s.communityAvailable
@@ -103,7 +104,7 @@ func (s *Server) Handler() http.Handler {
 		if s.DB != nil && s.DB.PublicOnly {
 			audience = "public"
 		}
-		write(w, 200, map[string]any{"api_version": "1", "audience": audience, "collection": s.Collection, "collections": s.collectionScope(), "modules": map[string]string{"catalog": "1", "print": "1", "audio": "1", "video": "1"}})
+		write(w, 200, map[string]any{"api_version": "1", "audience": audience, "collection": s.Collection, "collections": s.collectionScope(), "modules": map[string]string{"catalog": "1", "print": "1", "audio": "1", "video": "1", "source_catalog": "1"}})
 	})
 	mux.HandleFunc("GET /api/ready", func(w http.ResponseWriter, r *http.Request) {
 		if err := s.DB.Pool.Ping(r.Context()); err != nil {
