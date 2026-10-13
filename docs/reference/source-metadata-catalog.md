@@ -51,8 +51,12 @@ is a separate explicit operator action for a source-streaming collection. It map
 supported public files with safe filenames into the existing typed audio catalog,
 then creates an exact snapshot/file-bound playback review. It grants no acquisition,
 download, relay, scheduling or public access. It prefers MP3, M4A, Ogg, FLAC and WAV
-variants and orders filenames naturally. Nested source paths are retained in
-metadata but remain unsupported by the existing representation file contract.
+and falls back to the audio in an MPEG4 concert recording when available. Codec
+decoding remains a browser capability; approvals do not claim every file decodes.
+variants and orders filenames naturally. Core 0.4.1 accepts safe nested audio
+source paths and escapes each URL segment. Traversal, absolute paths, backslashes
+and control characters are rejected. Local preservation retains its existing
+root-filename contract.
 Playback uses the existing representation resolver and a browser-to-source URL.
 
 Changed source snapshots or recorded withdrawals invalidate those mappings until
@@ -60,8 +64,22 @@ an operator re-reviews them. Re-review preserves source and decision history.
 Local preservation continues to use the existing manifest, quota, integrity and
 independent recovery workflow; the metadata worker never performs acquisition.
 
-Migration 0014 adds collection-scoped indexes, corrections and cursor worker state.
+`review-source-audio-batch --collection COLLECTION --items 100 --timeout 10m
+--notes 'Owner approved private source playback'` explicitly approves a bounded
+batch from retained metadata. It never requests media or metadata. Persistent
+outcomes distinguish reviewed, unsupported, held and retryable sources. Successful
+and unsupported snapshots are skipped on subsequent runs; failures retry after
+an hour. Changed metadata requeues the source. Only the batch's unchanged prior
+decision can be renewed automatically; independent approvals or revocations need
+an operator decision. Single-item review can resolve a held record.
+
+The private status response includes current playback coverage. Counts describe
+snapshot-bound approvals, not source CDN availability or browser codec support.
+Withdrawn records and changed snapshots cannot count as currently reviewed.
+
+Migration 0014 adds collection-scoped indexes, corrections and cursor worker state;
+0015 adds playback-review outcomes and indexes for corpus-scale review and reporting.
 Existing source snapshots, catalog decisions, media approvals and schedules are
-retained. Old consumers use their existing APIs. This module is prepared for core
-0.4.0; the published 0.3.0 artifact does not contain it. Package updates and public
+retained. Old consumers use their existing APIs. Core 0.4.0 introduced this module;
+core 0.4.1 adds batch playback review and nested source audio. Package updates and public
 rollout remain separate release decisions.

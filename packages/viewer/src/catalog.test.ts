@@ -50,3 +50,14 @@ test('mixed-media filters and share links preserve collection and exact logical 
  expect(shared.searchParams.get('item')).toBe('print:item');expect(shared.searchParams.get('representation')).toBe('scan:pdf');expect(shared.hash).toBe('');
  expect(catalogFavoriteID('print:item')).toBe('catalog:print:item');
 });
+
+test('accepts only exact safe nested source audio paths',()=>{
+ const audio={...asset,media:'audio' as const,policy:'source_stream',file:'disc 1/01  song.mp3',url:'https://archive.org/download/paper/disc%201/01%20%20song.mp3'};
+ expect(representationURL(audio)).toBe(audio.url);
+ expect(representationURL({...audio,file:'disc/song..mp3',url:'https://archive.org/download/paper/disc/song..mp3'})).toBe('https://archive.org/download/paper/disc/song..mp3');
+ for(const file of ['/song.mp3','disc/../song.mp3','disc//song.mp3','disc/./song.mp3','disc/\nsong.mp3','disc\\song.mp3']) {
+  expect(()=>representationURL({...audio,file,url:'https://archive.org/download/paper/'+file.split('/').map(encodeURIComponent).join('/')})).toThrow();
+ }
+ expect(()=>representationURL({...audio,file:'disc 1/another.mp3'})).toThrow();
+ expect(()=>representationURL({...audio,media:'print'})).toThrow();
+});

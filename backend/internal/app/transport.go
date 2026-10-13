@@ -55,6 +55,9 @@ func (s *Server) resolveRepresentation(w http.ResponseWriter, r *http.Request) {
 	}
 	source := "https://archive.org/details/" + url.PathEscape(e.Representation.SourceItemID)
 	asset := "https://archive.org/download/" + url.PathEscape(e.Representation.SourceItemID) + "/" + url.PathEscape(file)
+	if e.Collection.Policy == domain.Stream && e.Representation.Media == domain.AudioMedia {
+		asset = "https://archive.org/download/" + url.PathEscape(e.Representation.SourceItemID) + "/" + domain.SourceAudioPath(file)
+	}
 	if e.Collection.Policy == domain.Local {
 		q := url.Values{"collection": {e.Collection.ID}, "action": {string(action)}, "file": {file}}
 		asset = "/api/catalog/v1/items/" + url.PathEscape(r.PathValue("id")) + "/representations/" + url.PathEscape(r.PathValue("representation")) + "/media?" + q.Encode()
@@ -80,7 +83,7 @@ func representationMIME(media domain.Media, file string) string {
 			return "audio/ogg"
 		case ".wav":
 			return "audio/wav"
-		case ".m4a":
+		case ".m4a", ".mp4":
 			return "audio/mp4"
 		}
 	}

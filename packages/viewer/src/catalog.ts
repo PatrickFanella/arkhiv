@@ -18,9 +18,12 @@ export function representationURL(asset: RepresentationTransport, action: 'read'
   const source = new URL(asset.source_url);
   if (source.protocol !== 'https:' || source.hostname !== 'archive.org' || source.port || source.username || source.password || source.search || source.hash || !/^\/details\/[A-Za-z0-9][A-Za-z0-9._-]{0,199}$/.test(source.pathname)) throw new Error('Invalid source identity.');
   const url = new URL(asset.url,'https://consumer.invalid');
-  if (url.username || url.password || url.hash || /\\|\.\./.test(asset.url)) throw new Error('Invalid media URL.');
+  if (url.username || url.password || url.hash || /\\/.test(asset.url) || (!(asset.media === 'audio' && asset.policy === 'source_stream') && /\.\./.test(asset.url))) throw new Error('Invalid media URL.');
   const prefix = `/download/${source.pathname.slice(9)}/`;
-  if (asset.policy === 'source_stream' && url.protocol === 'https:' && url.hostname === 'archive.org' && !url.port && !url.search && url.pathname.startsWith(prefix) && decodeURIComponent(url.pathname.slice(prefix.length)) === asset.file && !/[/\\\0]/.test(asset.file)) return asset.url;
+  const safeFile = asset.media === 'audio'
+    ? !asset.file.includes('\\') && [...asset.file].every(char => char.charCodeAt(0) >= 32 && char.charCodeAt(0) !== 127) && asset.file.split('/').every(part => part !== '' && part !== '.' && part !== '..')
+    : !/[/\\\0]/.test(asset.file);
+  if (asset.policy === 'source_stream' && url.protocol === 'https:' && url.hostname === 'archive.org' && !url.port && !url.search && url.pathname.startsWith(prefix) && decodeURIComponent(url.pathname.slice(prefix.length)) === asset.file && safeFile) return asset.url;
   if (asset.policy === 'local_preserve' && asset.url.startsWith('/api/catalog/') && url.origin === 'https://consumer.invalid' && /^\/api\/catalog\/v1\/items\/[A-Za-z0-9._-]+\/representations\/[A-Za-z0-9._-]+\/media$/.test(url.pathname) && [...url.searchParams.keys()].every(key=>['collection','action','file'].includes(key)) && url.searchParams.getAll('collection').length===1 && /^[A-Za-z0-9][A-Za-z0-9._-]{0,199}$/.test(url.searchParams.get('collection') || '') && url.searchParams.getAll('file').length===1 && url.searchParams.get('file')===asset.file && url.searchParams.getAll('action').length===1 && url.searchParams.get('action')===action) return asset.url;
   throw new Error('This media source is unavailable.');
 }

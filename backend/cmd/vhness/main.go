@@ -47,7 +47,7 @@ func load(p string, v any) error {
 }
 func run() error {
 	if len(os.Args) < 2 {
-		return fmt.Errorf("usage: vhness migrate|collection|review-budget|review-public-video|review-library|plan-replay|import|import-item|import-source|import-source-catalog|edit-source-catalog|review-source-audio|discover-catalog|refresh-catalog|import-catalog|prepare-curation|retain-legacy|review-transport|index-print|restore-print-index|register-audio|register-video|schedule-audio|renew-public-audio|fetch|inspect|acquire|audit|review|schedule|discover|refresh|report|seed|serve|healthcheck")
+		return fmt.Errorf("usage: vhness migrate|collection|review-budget|review-public-video|review-library|plan-replay|import|import-item|import-source|import-source-catalog|edit-source-catalog|review-source-audio|review-source-audio-batch|discover-catalog|refresh-catalog|import-catalog|prepare-curation|retain-legacy|review-transport|index-print|restore-print-index|register-audio|register-video|schedule-audio|renew-public-audio|fetch|inspect|acquire|audit|review|schedule|discover|refresh|report|seed|serve|healthcheck")
 	}
 	cmd := os.Args[1]
 	if cmd == "healthcheck" {
@@ -169,7 +169,7 @@ func run() error {
 			return err
 		}
 		return json.NewEncoder(os.Stdout).Encode(map[string]any{"draft_sha256": sha, "state": "operator-review", "public": false, "transport_granted": false})
-	case "discover-catalog", "refresh-catalog", "import-source-catalog", "edit-source-catalog", "review-source-audio":
+	case "discover-catalog", "refresh-catalog", "import-source-catalog", "edit-source-catalog", "review-source-audio", "review-source-audio-batch":
 		store := &sourcecatalog.Store{Core: d, Collection: *collection}
 		if err = store.Init(ctx); err != nil {
 			return err
@@ -206,6 +206,17 @@ func run() error {
 			return store.Edit(ctx, *id, patch, *notes)
 		case "review-source-audio":
 			return store.ReviewAudio(ctx, *id, *notes)
+		case "review-source-audio-batch":
+			if *timeout <= 0 || *timeout > 30*time.Minute {
+				return fmt.Errorf("invalid playback review deadline")
+			}
+			deadline, cancel := context.WithTimeout(ctx, *timeout)
+			defer cancel()
+			coverage, e := store.ReviewAudioBatch(deadline, *items, *notes)
+			if e != nil {
+				return e
+			}
+			return json.NewEncoder(os.Stdout).Encode(coverage)
 		case "refresh-catalog":
 			if err = store.Reconcile(ctx); err != nil {
 				return err

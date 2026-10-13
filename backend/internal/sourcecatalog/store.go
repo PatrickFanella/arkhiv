@@ -226,14 +226,15 @@ func (s *Store) Raw(ctx context.Context, id string) ([]byte, error) {
 }
 
 type Status struct {
-	RetryAt           *time.Time `json:"retry_at,omitempty"`
-	LastError         string     `json:"last_error,omitempty"`
-	Imported          int64      `json:"imported"`
-	Discovered        int64      `json:"discovered"`
-	Pending           int64      `json:"pending"`
-	Failed            int64      `json:"failed"`
-	DiscoveryComplete bool       `json:"discovery_complete"`
-	UpdatedAt         time.Time  `json:"updated_at"`
+	Playback          AudioCoverage `json:"playback"`
+	RetryAt           *time.Time    `json:"retry_at,omitempty"`
+	LastError         string        `json:"last_error,omitempty"`
+	Imported          int64         `json:"imported"`
+	Discovered        int64         `json:"discovered"`
+	Pending           int64         `json:"pending"`
+	Failed            int64         `json:"failed"`
+	DiscoveryComplete bool          `json:"discovery_complete"`
+	UpdatedAt         time.Time     `json:"updated_at"`
 }
 
 func (s *Store) Status(ctx context.Context) (Status, error) {
@@ -241,6 +242,9 @@ func (s *Store) Status(ctx context.Context) (Status, error) {
 	err := s.Core.Pool.QueryRow(ctx, `SELECT (SELECT count(*) FROM source_catalog_items WHERE collection_id=$1),discovered,
  (SELECT count(*) FROM source_catalog_queue WHERE collection_id=$1 AND state IN ('pending','retry')),
  (SELECT count(*) FROM source_catalog_queue WHERE collection_id=$1 AND state IN ('rejected','unavailable')),complete,updated_at,retry_at,last_error FROM source_catalog_worker_state WHERE collection_id=$1`, s.Collection).Scan(&status.Imported, &status.Discovered, &status.Pending, &status.Failed, &status.DiscoveryComplete, &status.UpdatedAt, &status.RetryAt, &status.LastError)
+	if err == nil {
+		status.Playback, err = s.AudioCoverage(ctx)
+	}
 	return status, err
 }
 
