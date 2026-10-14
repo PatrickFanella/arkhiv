@@ -105,7 +105,7 @@ export default function MixedArchive({brand}: {brand:Brand}) {
   function actions(item:CatalogItem){return <>{item.representations.flatMap(rep=>rep.collections.map(member=><button key={`${rep.id}:${member}`} onClick={()=>select({item,representation:rep,collection:member})}>{rep.media === 'print' ? 'Read' : rep.media === 'audio' ? 'Listen' : 'Watch'}{item.representations.filter(other=>other.media===rep.media).length>1 ? ` · ${rep.file}` : ''}{rep.collections.length>1 ? ` · ${member}` : ''}</button>))}{collection && <button aria-pressed={personal.favoriteIDs.includes(catalogFavoriteID(item.id))} disabled={personal.busy} onClick={()=>{void personal.toggle(catalogFavoriteID(item.id));}}>{personal.favoriteIDs.includes(catalogFavoriteID(item.id)) ? 'Remove favorite' : 'Favorite'}</button>}</>;}
 
   useEffect(()=> {
-    document.title = brand.title;
+    document.title = `${brand.title} — ${brand.headline}`;
     for (const [key,color] of Object.entries(brand.colors)) document.documentElement.style.setProperty(`--${key}`,color);
   },[brand]);
   useEffect(()=> {

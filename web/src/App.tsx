@@ -9,7 +9,7 @@ import MixedArchive from './MixedArchive';
 function Archive({ brand }: { brand: Brand }) {
   const viewer = useViewer(brand.collection);
   useEffect(() => {
-    document.title = brand.title;
+    document.title = `${brand.title} — ${brand.headline}`;
     for (const [key, color] of Object.entries(brand.colors)) document.documentElement.style.setProperty(`--${key}`, color);
   }, [brand]);
   return <main>
