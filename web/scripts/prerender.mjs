@@ -1,0 +1,22 @@
+import { readFile, writeFile } from 'node:fs/promises';
+import { URL } from 'node:url';
+import { argv } from 'node:process';
+import { render } from '../dist-ssr/entry-prerender.js';
+
+const [, , profilePath, originValue] = argv;
+if (!profilePath || !originValue) throw new Error('Usage: prerender.mjs public-site.json https://public-origin');
+const origin = new URL(originValue);
+if (origin.protocol !== 'https:' || origin.username || origin.password || origin.pathname !== '/' || origin.search || origin.hash) throw new Error('Expected a public HTTPS origin');
+const profile = JSON.parse(await readFile(profilePath, 'utf8'));
+const escape = value => String(value).replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
+const body = render(profile);
+if (!body.includes('<h1') || !body.includes('<main')) throw new Error('Public introduction did not render');
+const path = new URL('../dist/index.html', import.meta.url);
+const template = await readFile(path, 'utf8');
+if (!template.includes('<div id="root"></div>')) throw new Error('Expected an unrendered root placeholder');
+const title = `${profile.title} — ${profile.headline}`;
+const tags = `<meta name="description" content="${escape(profile.description)}"><link rel="canonical" href="${origin.href}"><meta property="og:type" content="website"><meta property="og:title" content="${escape(title)}"><meta property="og:description" content="${escape(profile.description)}"><meta property="og:url" content="${origin.href}"><meta name="twitter:card" content="summary">`;
+await writeFile(path, template.replace(/<title>.*?<\/title>/s, `<title>${escape(title)}</title>`).replace('</head>', `${tags}</head>`).replace('<div id="root"></div>', `<div id="root">${body}</div>`));
+await writeFile(new URL('../dist/site.json', import.meta.url), JSON.stringify(profile));
+await writeFile(new URL('../dist/robots.txt', import.meta.url), `User-agent: *\nAllow: /\n\nSitemap: ${origin.href}sitemap.xml\n`);
+await writeFile(new URL('../dist/sitemap.xml', import.meta.url), `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>${origin.href}</loc></url></urlset>`);

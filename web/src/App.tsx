@@ -21,8 +21,8 @@ function Archive({ brand }: { brand: Brand }) {
   </main>;
 }
 
-export default function App() {
-  const [brand, setBrand] = useState<Brand | null>(null);
+export default function App({ initialBrand }: { initialBrand?: Brand } = {}) {
+  const [brand, setBrand] = useState<Brand | null>(initialBrand ?? null);
   const [error, setError] = useState('');
   useEffect(() => {
     const controller = new AbortController();
