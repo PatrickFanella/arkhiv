@@ -77,7 +77,7 @@ function NativeMedia({asset,title,onError}: {asset:Transport;title:string;onErro
 export default function MixedArchive({brand}: {brand:Brand}) {
   const [collections,setCollections] = useState<CatalogCollection[]>([]);
   const [collectionError,setCollectionError] = useState('');
-  const [collection,setCollection] = useState(()=>new URLSearchParams(location.search).get('collection') || '');
+  const [collection,setCollection] = useState(()=>new URLSearchParams(typeof window === 'undefined' ? '' : window.location.search).get('collection') || '');
   const [media,setMedia] = useState<CatalogMedia | ''>('');
   const [query,setQuery] = useState('');
   const [page,setPage] = useState(1);
