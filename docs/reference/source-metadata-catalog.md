@@ -83,3 +83,27 @@ Existing source snapshots, catalog decisions, media approvals and schedules are
 retained. Old consumers use their existing APIs. Core 0.4.0 introduced this module;
 core 0.4.1 adds batch playback review and nested source audio. Package updates and public
 rollout remain separate release decisions.
+
+## Excluding retained recordings
+
+An operator can remove records from source-catalog browse, search, facets and
+HTTP detail/source routes while retaining their exact snapshots, corrections,
+review attempts and import accounting. Listing decisions survive metadata
+re-imports and remain separate from independent transport permissions.
+
+Use the operator command:
+
+```sh
+vhness set-source-catalog-listing --collection etree --file listing.json \
+  --notes "Owner excluded unsupported recordings"
+```
+
+ The JSON input is
+`{"identifiers":["SOURCE_ID"],"listed":false}`. A decision accepts 1–1000 unique
+existing identifiers, applies atomically, and records each changed listing in
+source history. Set `listed` to `true` with new notes to restore them.
+
+Status retains the full `imported` count and reports `excluded` separately.
+Search totals, facets and playback coverage omit excluded records. The playback
+review worker skips them. Listing is a presentation decision; revoke independent
+transport reviews separately when removing previously granted media permissions.

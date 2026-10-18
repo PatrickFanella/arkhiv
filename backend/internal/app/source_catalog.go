@@ -62,6 +62,15 @@ func (s *Server) sourceCatalog(w http.ResponseWriter, r *http.Request) {
 			write(w, 400, map[string]string{"error": "invalid source identity"})
 			return
 		}
+		listed, err := store.IsListed(r.Context(), id)
+		if err != nil {
+			failed(err)
+			return
+		}
+		if !listed {
+			write(w, 404, map[string]string{"error": "source metadata is not listed"})
+			return
+		}
 		if r.Pattern == "GET /api/source-catalog/v1/items/{id}/source" {
 			raw, err := store.Raw(r.Context(), id)
 			if err != nil {

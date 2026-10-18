@@ -46,3 +46,7 @@ with cursor discovery, complete snapshot retention, local search and filters, an
 corrections that survive re-imports. Metadata ingestion stays independent of media
 acquisition and reviewed playback. The Live Music Archive consumer uses this shared
 backend; it owns no duplicate catalog schema or importer.
+
+Source metadata can be retained while excluded from browsing with the audited
+`set-source-catalog-listing` operator command. See
+[retained recording exclusions](docs/reference/source-metadata-catalog.md#excluding-retained-recordings).

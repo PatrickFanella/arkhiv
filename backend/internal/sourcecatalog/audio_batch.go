@@ -33,7 +33,7 @@ func (s *Store) AudioCoverage(ctx context.Context) (AudioCoverage, error) {
  SELECT ci.unavailable,a.state,p.source_item_id IS NOT NULL AS playable
  FROM source_catalog_items ci LEFT JOIN source_catalog_audio_reviews a ON a.collection_id=ci.collection_id AND a.item_id=ci.identifier AND a.source_hash=ci.source_hash
  LEFT JOIN playable p ON p.source_item_id=ci.identifier AND p.source_hash=ci.source_hash
- WHERE ci.collection_id=$1)
+ WHERE ci.collection_id=$1 AND NOT ci.excluded)
  SELECT count(*) FILTER(WHERE NOT unavailable AND playable),
  count(*) FILTER(WHERE NOT unavailable AND NOT playable AND state IS NULL),
  count(*) FILTER(WHERE NOT unavailable AND NOT playable AND state='unsupported'),
@@ -76,7 +76,7 @@ func (s *Store) ReviewAudioBatch(ctx context.Context, limit int, notes string) (
 	}
 	defer conn.Exec(context.Background(), `SELECT pg_advisory_unlock(hashtextextended(current_schema() || ':source-audio:' || $1,7920))`, s.Collection)
 	rows, err := s.Core.Pool.Query(ctx, `SELECT ci.identifier FROM source_catalog_items ci LEFT JOIN source_catalog_audio_reviews a ON a.collection_id=ci.collection_id AND a.item_id=ci.identifier
- WHERE ci.collection_id=$1 AND NOT ci.unavailable AND (a.item_id IS NULL OR a.source_hash<>ci.source_hash OR (a.state='retry' AND a.next_attempt<=now()))
+ WHERE ci.collection_id=$1 AND NOT ci.excluded AND NOT ci.unavailable AND (a.item_id IS NULL OR a.source_hash<>ci.source_hash OR (a.state='retry' AND a.next_attempt<=now()))
  ORDER BY ci.imported_at,ci.identifier LIMIT $2`, s.Collection, limit)
 	if err != nil {
 		return AudioCoverage{}, err

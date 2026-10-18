@@ -160,7 +160,7 @@ func (s *Store) Search(ctx context.Context, q Query) (Page, error) {
 	}
 	var raw []byte
 	err = s.Core.Pool.QueryRow(ctx, `WITH filtered AS MATERIALIZED (
- SELECT identifier,effective,unavailable FROM source_catalog_items WHERE collection_id=$9 AND
+ SELECT identifier,effective,unavailable FROM source_catalog_items WHERE collection_id=$9 AND NOT excluded AND
  ($1='' OR search @@ websearch_to_tsquery('simple',$1))
  AND ($2='' OR left(effective->>'date',4)=$2)
  AND ($3='' OR lower(effective->>'creator')=lower($3))
@@ -187,10 +187,10 @@ func (s *Store) Detail(ctx context.Context, id string) (map[string]any, error) {
 	var source, effective, normalized, editorial, rules, history []byte
 	var hash string
 	var updated time.Time
-	var unavailable bool
-	err := s.Core.Pool.QueryRow(ctx, `SELECT s.parsed,r.effective,r.normalized,r.editorial,r.normalization,r.source_hash,r.updated_at,r.unavailable,
+	var unavailable, excluded bool
+	err := s.Core.Pool.QueryRow(ctx, `SELECT s.parsed,r.effective,r.normalized,r.editorial,r.normalization,r.source_hash,r.updated_at,r.unavailable,r.excluded,
  COALESCE((SELECT jsonb_agg(jsonb_build_object('patch',h.patch,'notes',h.notes,'created_at',h.created_at) ORDER BY h.id DESC) FROM (SELECT * FROM source_catalog_history WHERE collection_id=r.collection_id AND item_id=r.identifier ORDER BY id DESC LIMIT 20) h),'[]'::jsonb)
- FROM source_catalog_items r JOIN snapshots s ON s.sha256=r.source_hash WHERE r.collection_id=$1 AND r.identifier=$2`, s.Collection, id).Scan(&source, &effective, &normalized, &editorial, &rules, &hash, &updated, &unavailable, &history)
+ FROM source_catalog_items r JOIN snapshots s ON s.sha256=r.source_hash WHERE r.collection_id=$1 AND r.identifier=$2`, s.Collection, id).Scan(&source, &effective, &normalized, &editorial, &rules, &hash, &updated, &unavailable, &excluded, &history)
 	if err != nil {
 		return nil, err
 	}
@@ -207,6 +207,7 @@ func (s *Store) Detail(ctx context.Context, id string) (map[string]any, error) {
 	result["snapshot_sha256"] = hash
 	result["updated_at"] = updated
 	result["unavailable"] = unavailable
+	result["excluded"] = excluded
 	var bindings []byte
 	err = s.Core.Pool.QueryRow(ctx, `SELECT COALESCE(jsonb_agg(jsonb_build_object('item',r.item_id,'representation',r.id,'files',t.review->'files')),'[]'::jsonb)
  FROM catalog_representations r JOIN representation_transport_reviews t ON t.item_id=r.item_id AND t.representation_id=r.id AND t.collection_id=$1
@@ -226,6 +227,7 @@ func (s *Store) Raw(ctx context.Context, id string) ([]byte, error) {
 }
 
 type Status struct {
+	Excluded          int64         `json:"excluded"`
 	Playback          AudioCoverage `json:"playback"`
 	RetryAt           *time.Time    `json:"retry_at,omitempty"`
 	LastError         string        `json:"last_error,omitempty"`
@@ -241,7 +243,7 @@ func (s *Store) Status(ctx context.Context) (Status, error) {
 	var status Status
 	err := s.Core.Pool.QueryRow(ctx, `SELECT (SELECT count(*) FROM source_catalog_items WHERE collection_id=$1),discovered,
  (SELECT count(*) FROM source_catalog_queue WHERE collection_id=$1 AND state IN ('pending','retry')),
- (SELECT count(*) FROM source_catalog_queue WHERE collection_id=$1 AND state IN ('rejected','unavailable')),complete,updated_at,retry_at,last_error FROM source_catalog_worker_state WHERE collection_id=$1`, s.Collection).Scan(&status.Imported, &status.Discovered, &status.Pending, &status.Failed, &status.DiscoveryComplete, &status.UpdatedAt, &status.RetryAt, &status.LastError)
+ (SELECT count(*) FROM source_catalog_queue WHERE collection_id=$1 AND state IN ('rejected','unavailable')),complete,updated_at,retry_at,last_error,(SELECT count(*) FROM source_catalog_items WHERE collection_id=$1 AND excluded) FROM source_catalog_worker_state WHERE collection_id=$1`, s.Collection).Scan(&status.Imported, &status.Discovered, &status.Pending, &status.Failed, &status.DiscoveryComplete, &status.UpdatedAt, &status.RetryAt, &status.LastError, &status.Excluded)
 	if err == nil {
 		status.Playback, err = s.AudioCoverage(ctx)
 	}
@@ -263,7 +265,7 @@ func (s *Store) Facets(ctx context.Context) (map[string][]Facet, error) {
 		if name == "venues" {
 			field = "effective->>'venue'"
 		}
-		rows, err := s.Core.Pool.Query(ctx, `SELECT `+field+`,count(*) FROM source_catalog_items WHERE collection_id=$1 AND `+field+`<>'' GROUP BY 1 ORDER BY count(*) DESC,1 LIMIT 200`, s.Collection)
+		rows, err := s.Core.Pool.Query(ctx, `SELECT `+field+`,count(*) FROM source_catalog_items WHERE collection_id=$1 AND NOT excluded AND `+field+`<>'' GROUP BY 1 ORDER BY count(*) DESC,1 LIMIT 200`, s.Collection)
 		if err != nil {
 			return nil, err
 		}
