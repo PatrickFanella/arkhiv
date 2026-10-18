@@ -32,6 +32,9 @@ func (s *Store) ReviewAudio(ctx context.Context, id, notes string) error {
 	if err != nil {
 		return err
 	}
+	if detail["excluded"] == true {
+		return fmt.Errorf("source is excluded from the catalog")
+	}
 	if detail["unavailable"] == true {
 		return fmt.Errorf("source is unavailable")
 	}

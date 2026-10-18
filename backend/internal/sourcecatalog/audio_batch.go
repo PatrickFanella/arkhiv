@@ -23,17 +23,24 @@ type AudioCoverage struct {
 // Coverage counts usable current bindings, rather than historical review attempts.
 func (s *Store) AudioCoverage(ctx context.Context) (AudioCoverage, error) {
 	var c AudioCoverage
-	err := s.Core.Pool.QueryRow(ctx, `WITH playable AS (
- SELECT DISTINCT r.source_item_id,r.source_hash FROM catalog_representations r
- JOIN representation_transport_reviews t ON t.item_id=r.item_id AND t.representation_id=r.id AND t.collection_id=$1
- JOIN catalog_memberships cm ON cm.item_id=r.item_id AND cm.collection_id=$1 AND cm.listed
- JOIN catalog_representation_memberships rm ON rm.item_id=r.item_id AND rm.representation_id=r.id AND rm.collection_id=$1 AND rm.listed
- WHERE r.media='audio' AND t.review->>'snapshot_sha256'=r.source_hash AND t.review->>'playback'='true'),
+	err := s.Core.Pool.QueryRow(ctx, `WITH reviews AS MATERIALIZED (
+ SELECT item_id,representation_id,review->>'snapshot_sha256' AS source_hash
+ FROM representation_transport_reviews WHERE collection_id=$1 AND review->>'playback'='true'),
+ representations AS MATERIALIZED (
+ SELECT item_id,id,source_item_id,source_hash FROM catalog_representations WHERE media='audio'),
+ listed AS MATERIALIZED (
+ SELECT rm.item_id,rm.representation_id FROM catalog_representation_memberships rm
+ JOIN catalog_memberships cm ON cm.item_id=rm.item_id AND cm.collection_id=rm.collection_id
+ WHERE rm.collection_id=$1 AND rm.listed AND cm.listed),
+ playable AS (
+ SELECT DISTINCT r.source_item_id,r.source_hash FROM representations r
+ JOIN reviews t ON t.item_id=r.item_id AND t.representation_id=r.id AND t.source_hash=r.source_hash
+ JOIN listed l ON l.item_id=r.item_id AND l.representation_id=r.id),
  coverage AS (
  SELECT ci.unavailable,a.state,p.source_item_id IS NOT NULL AS playable
  FROM source_catalog_items ci LEFT JOIN source_catalog_audio_reviews a ON a.collection_id=ci.collection_id AND a.item_id=ci.identifier AND a.source_hash=ci.source_hash
  LEFT JOIN playable p ON p.source_item_id=ci.identifier AND p.source_hash=ci.source_hash
- WHERE ci.collection_id=$1)
+ WHERE ci.collection_id=$1 AND NOT ci.excluded)
  SELECT count(*) FILTER(WHERE NOT unavailable AND playable),
  count(*) FILTER(WHERE NOT unavailable AND NOT playable AND state IS NULL),
  count(*) FILTER(WHERE NOT unavailable AND NOT playable AND state='unsupported'),
@@ -76,7 +83,7 @@ func (s *Store) ReviewAudioBatch(ctx context.Context, limit int, notes string) (
 	}
 	defer conn.Exec(context.Background(), `SELECT pg_advisory_unlock(hashtextextended(current_schema() || ':source-audio:' || $1,7920))`, s.Collection)
 	rows, err := s.Core.Pool.Query(ctx, `SELECT ci.identifier FROM source_catalog_items ci LEFT JOIN source_catalog_audio_reviews a ON a.collection_id=ci.collection_id AND a.item_id=ci.identifier
- WHERE ci.collection_id=$1 AND NOT ci.unavailable AND (a.item_id IS NULL OR a.source_hash<>ci.source_hash OR (a.state='retry' AND a.next_attempt<=now()))
+ WHERE ci.collection_id=$1 AND NOT ci.excluded AND NOT ci.unavailable AND (a.item_id IS NULL OR a.source_hash<>ci.source_hash OR (a.state='retry' AND a.next_attempt<=now()))
  ORDER BY ci.imported_at,ci.identifier LIMIT $2`, s.Collection, limit)
 	if err != nil {
 		return AudioCoverage{}, err

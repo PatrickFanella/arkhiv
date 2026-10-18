@@ -26,3 +26,7 @@ the consumer repositories; engine releases must not replace those interfaces.
 Keep Gitea issues open until required evidence exists. Original dates and replay
 labels must be visible. Viewer controls cannot alter shared schedules. Public
 deployment requires its separate owner decision.
+
+Source-catalog listing decisions use `set-source-catalog-listing`; do not delete
+retained source metadata to hide a recording. Exclusion survives re-import and
+keeps source history and import accounting independent of catalog visibility.
