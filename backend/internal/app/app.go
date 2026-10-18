@@ -194,7 +194,7 @@ func (s *Server) Handler() http.Handler {
 			budget := 3 * time.Second
 			// Whole-corpus private metadata counts may exceed the readiness and
 			// playback deadline. Keep that larger budget confined to aggregation.
-			if r.URL.Path == "/api/source-catalog/v1/items" || r.URL.Path == "/api/source-catalog/v1/status" {
+			if r.URL.Path == "/api/source-catalog/v1/items" || r.URL.Path == "/api/source-catalog/v1/status" || r.URL.Path == "/api/source-catalog/v1/facets" {
 				budget = 10 * time.Second
 			}
 			ctx, cancel := context.WithTimeout(r.Context(), budget)

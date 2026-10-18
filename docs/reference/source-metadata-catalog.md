@@ -108,7 +108,7 @@ Search totals, facets and playback coverage omit excluded records. The playback
 review worker skips them. Listing is a presentation decision; revoke independent
 transport reviews separately when removing previously granted media permissions.
 
-Private source-catalog list and status aggregation have a ten-second database
+Private source-catalog list, facet and status aggregation have a ten-second database
 budget for full collections. Other API routes, including readiness and playback,
 keep their three-second budget. Playback totals project narrow review and
 membership fields before joining, retaining current snapshot and listing checks.
