@@ -47,7 +47,7 @@ func load(p string, v any) error {
 }
 func run() error {
 	if len(os.Args) < 2 {
-		return fmt.Errorf("usage: vhness migrate|collection|review-budget|review-public-video|review-library|plan-replay|import|import-item|import-source|import-source-catalog|set-source-catalog-listing|edit-source-catalog|review-source-audio|review-source-audio-batch|discover-catalog|refresh-catalog|import-catalog|prepare-curation|retain-legacy|review-transport|index-print|restore-print-index|register-audio|register-video|schedule-audio|renew-public-audio|fetch|inspect|acquire|audit|review|schedule|discover|refresh|report|seed|serve|healthcheck")
+		return fmt.Errorf("usage: vhness migrate|collection|review-budget|review-public-video|review-library|plan-replay|import|import-item|import-source|import-source-catalog|import-source-artist|set-source-catalog-listing|edit-source-catalog|review-source-audio|review-source-audio-batch|discover-catalog|refresh-catalog|import-catalog|prepare-curation|retain-legacy|review-transport|index-print|restore-print-index|register-audio|register-video|schedule-audio|renew-public-audio|fetch|inspect|acquire|audit|review|schedule|discover|refresh|report|seed|serve|healthcheck")
 	}
 	cmd := os.Args[1]
 	if cmd == "healthcheck" {
@@ -65,6 +65,7 @@ func run() error {
 	}
 	f := flag.NewFlagSet(cmd, flag.ContinueOnError)
 	id := f.String("id", "", "source item identity")
+	artist := f.String("artist", "", "exact recording-source artist name for a verified enrichment binding")
 	representation := f.String("representation", "", "catalog representation identity")
 	scope := os.Getenv("VHNESS_COLLECTION")
 	allowlist, err := domain.ParseCollectionScope(scope, os.Getenv("VHNESS_COLLECTIONS"))
@@ -169,12 +170,29 @@ func run() error {
 			return err
 		}
 		return json.NewEncoder(os.Stdout).Encode(map[string]any{"draft_sha256": sha, "state": "operator-review", "public": false, "transport_granted": false})
-	case "discover-catalog", "refresh-catalog", "set-source-catalog-listing", "import-source-catalog", "edit-source-catalog", "review-source-audio", "review-source-audio-batch":
+	case "discover-catalog", "refresh-catalog", "import-source-artist", "set-source-catalog-listing", "import-source-catalog", "edit-source-catalog", "review-source-audio", "review-source-audio-batch":
 		store := &sourcecatalog.Store{Core: d, Collection: *collection}
 		if err = store.Init(ctx); err != nil {
 			return err
 		}
 		switch cmd {
+		case "import-source-artist":
+			input, e := os.Open(*file)
+			if e != nil {
+				return e
+			}
+			defer input.Close()
+			var bundle sourcecatalog.ArtistBundle
+			decoder := json.NewDecoder(io.LimitReader(input, (18<<20)+1))
+			decoder.DisallowUnknownFields()
+			if e = decoder.Decode(&bundle); e != nil {
+				return e
+			}
+			var extra any
+			if e = decoder.Decode(&extra); e != io.EOF {
+				return fmt.Errorf("expected one artist bundle")
+			}
+			return store.ImportArtist(ctx, *artist, bundle, *notes)
 		case "set-source-catalog-listing":
 			input, e := os.Open(*file)
 			if e != nil {

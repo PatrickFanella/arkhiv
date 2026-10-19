@@ -104,7 +104,7 @@ func (s *Server) Handler() http.Handler {
 		if s.DB != nil && s.DB.PublicOnly {
 			audience = "public"
 		}
-		write(w, 200, map[string]any{"api_version": "1", "audience": audience, "collection": s.Collection, "collections": s.collectionScope(), "modules": map[string]string{"catalog": "1", "print": "1", "audio": "1", "video": "1", "source_catalog": "1"}})
+		write(w, 200, map[string]any{"api_version": "1", "audience": audience, "collection": s.Collection, "collections": s.collectionScope(), "modules": map[string]string{"catalog": "1", "print": "1", "audio": "1", "video": "1", "source_catalog": "1", "source_discovery": "1"}})
 	})
 	mux.HandleFunc("GET /api/ready", func(w http.ResponseWriter, r *http.Request) {
 		if err := s.DB.Pool.Ping(r.Context()); err != nil {
@@ -194,7 +194,7 @@ func (s *Server) Handler() http.Handler {
 			budget := 3 * time.Second
 			// Whole-corpus private metadata counts may exceed the readiness and
 			// playback deadline. Keep that larger budget confined to aggregation.
-			if r.URL.Path == "/api/source-catalog/v1/items" || r.URL.Path == "/api/source-catalog/v1/status" || r.URL.Path == "/api/source-catalog/v1/facets" {
+			if r.URL.Path == "/api/source-catalog/v1/items" || r.URL.Path == "/api/source-catalog/v1/status" || r.URL.Path == "/api/source-catalog/v1/facets" || r.URL.Path == "/api/source-catalog/v1/calendar" || r.URL.Path == "/api/source-catalog/v1/artist" {
 				budget = 10 * time.Second
 			}
 			ctx, cancel := context.WithTimeout(r.Context(), budget)

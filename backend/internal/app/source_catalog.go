@@ -15,6 +15,8 @@ func (s *Server) sourceCatalogRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/source-catalog/v1/items/{id}/source", s.sourceCatalog)
 	mux.HandleFunc("GET /api/source-catalog/v1/facets", s.sourceCatalog)
 	mux.HandleFunc("GET /api/source-catalog/v1/status", s.sourceCatalog)
+	mux.HandleFunc("GET /api/source-catalog/v1/calendar", s.sourceCatalog)
+	mux.HandleFunc("GET /api/source-catalog/v1/artist", s.sourceCatalog)
 }
 func (s *Server) sourceCatalog(w http.ResponseWriter, r *http.Request) {
 	// A source inventory is not an operator-reviewed public catalog. Public
@@ -40,6 +42,33 @@ func (s *Server) sourceCatalog(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	switch r.URL.Path {
+	case "/api/source-catalog/v1/calendar":
+		values := r.URL.Query()
+		q := sourcecatalog.CalendarQuery{Month: values.Get("month"), YearFrom: values.Get("year_from"), YearTo: values.Get("year_to"), Artist: values.Get("artist")}
+		if err := q.Validate(); err != nil {
+			write(w, 400, map[string]string{"error": err.Error()})
+			return
+		}
+		value, err := store.Calendar(r.Context(), q)
+		if err != nil {
+			failed(err)
+			return
+		}
+		write(w, 200, value)
+		return
+	case "/api/source-catalog/v1/artist":
+		artist := r.URL.Query().Get("artist")
+		if err := sourcecatalog.ValidateArtist(artist); err != nil {
+			write(w, 400, map[string]string{"error": err.Error()})
+			return
+		}
+		value, err := store.Artist(r.Context(), artist)
+		if err != nil {
+			failed(err)
+			return
+		}
+		write(w, 200, value)
+		return
 	case "/api/source-catalog/v1/status":
 		value, err := store.Status(r.Context())
 		if err != nil {
@@ -91,7 +120,7 @@ func (s *Server) sourceCatalog(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	values := r.URL.Query()
-	q := sourcecatalog.Query{Collection: collection, Search: values.Get("q"), Year: values.Get("year"), Artist: values.Get("artist"), Venue: values.Get("venue"), Availability: values.Get("availability"), Cursor: values.Get("cursor"), From: values.Get("date_from"), To: values.Get("date_to")}
+	q := sourcecatalog.Query{Collection: collection, Search: values.Get("q"), Year: values.Get("year"), Artist: values.Get("artist"), Venue: values.Get("venue"), Availability: values.Get("availability"), Cursor: values.Get("cursor"), From: values.Get("date_from"), To: values.Get("date_to"), MonthDay: values.Get("month_day"), YearFrom: values.Get("year_from"), YearTo: values.Get("year_to"), Sort: values.Get("sort"), Month: values.Get("month")}
 	if err := q.Validate(); err != nil {
 		write(w, 400, map[string]string{"error": err.Error()})
 		return

@@ -112,3 +112,49 @@ Private source-catalog list, facet and status aggregation have a ten-second data
 budget for full collections. Other API routes, including readiness and playback,
 keep their three-second budget. Playback totals project narrow review and
 membership fields before joining, retaining current snapshot and listing checks.
+
+## Artist and historical date discovery
+
+`source_discovery` module 1 adds read-only collection-scoped endpoints:
+
+- `GET /api/source-catalog/v1/calendar?collection=etree&month=05` returns dated
+  recording counts across all years. Supply both `year_from` and `year_to` for an
+  inclusive range; equal bounds select a single year. Optional `artist` uses the
+  catalog's exact, case-insensitive creator filter.
+- Recording search accepts `month`, `month_day` (`MM-DD`), `year_from`, `year_to`
+  and `sort=date_desc`. Date order uses date plus identifier keyset cursors,
+  rejects changed filters, and includes only complete valid dates. February 29
+  is valid for anniversary selection; invalid source dates remain retained.
+- `GET /api/source-catalog/v1/artist?collection=etree&artist=Ween` returns visible
+  recording counts and date bounds, plus a cached enrichment profile when bound.
+
+All discovery queries omit excluded recordings. Counts are recordings, not
+independently deduplicated concerts. Artist enrichment is independent of source
+recording metadata, corrections, import queues and playback decisions. Unknown
+or excluded-only artists return 404. Public-only engine mode keeps the private
+source inventory unavailable, as for the other source-catalog routes.
+
+Artist enrichment is an explicit operator workflow. Verify the MusicBrainz
+identity first, then run the metadata-only helper outside an isolated test
+network, writing a private operator bundle:
+
+```sh
+python3 scripts/enrich_source_artist.py --mbid c0eee88b-47f2-4cd2-ac48-a045e902a432 \
+  --output /private/operator/ween-artist.json
+vhness import-source-artist --collection etree --artist Ween \
+  --file /private/operator/ween-artist.json --notes "Verified the Ween artist identity and linked sources"
+```
+
+The helper never searches by artist name. It follows the reviewed MusicBrainz
+entity's Wikidata relationship to Wikipedia and Commons, preserving exact raw
+JSON responses. It caches for seven days and serializes outbound calls at 1.1
+seconds with an identifying User-Agent; `--refresh` bypasses the response cache.
+Provider throttling persists a cooldown. Import requires matching MusicBrainz
+response identity, bounded sources, attribution and operator notes, and appends
+profile history. The helper requests metadata only, never audio or image binaries.
+Uncredited images are omitted. Biography text is attributed to Wikipedia
+contributors under CC BY-SA 4.0; Commons images retain their individual licenses.
+
+A new core release/adoption is required before consumers rely on this module.
+Do not edit an existing published receipt to advertise unreleased capability.
+The contract source includes the additive capability for the next release.
