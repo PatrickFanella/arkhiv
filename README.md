@@ -50,3 +50,9 @@ backend; it owns no duplicate catalog schema or importer.
 Source metadata can be retained while excluded from browsing with the audited
 `set-source-catalog-listing` operator command. See
 [retained recording exclusions](docs/reference/source-metadata-catalog.md#excluding-retained-recordings).
+
+Source discovery module 1 adds historical calendar counts across one year, an
+inclusive year range or all years; month/day recording search; and cached artist
+profiles with retained MusicBrainz/Wikipedia/Commons provenance. See the
+[operator and API contracts](docs/reference/source-metadata-catalog.md#artist-and-historical-date-discovery).
+The module is additive and requires a normal core release before consumer adoption.

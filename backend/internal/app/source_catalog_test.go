@@ -7,7 +7,7 @@ import (
 )
 
 func TestSourceCatalogIsScopedAndPrivate(t *testing.T) {
-	for _, path := range []string{"/api/source-catalog/v1/items", "/api/source-catalog/v1/items/source", "/api/source-catalog/v1/status", "/api/source-catalog/v1/facets"} {
+	for _, path := range []string{"/api/source-catalog/v1/items", "/api/source-catalog/v1/items/source", "/api/source-catalog/v1/status", "/api/source-catalog/v1/facets", "/api/source-catalog/v1/calendar", "/api/source-catalog/v1/artist"} {
 		w := httptest.NewRecorder()
 		(&Server{DB: &catalog.DB{PublicOnly: true}, Collection: "etree"}).Handler().ServeHTTP(w, httptest.NewRequest("GET", path, nil))
 		if w.Code != 404 {

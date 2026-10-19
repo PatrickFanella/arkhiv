@@ -30,3 +30,9 @@ deployment requires its separate owner decision.
 Source-catalog listing decisions use `set-source-catalog-listing`; do not delete
 retained source metadata to hide a recording. Exclusion survives re-import and
 keeps source history and import accounting independent of catalog visibility.
+
+Artist enrichment is explicitly bound to reviewed MusicBrainz IDs via
+`import-source-artist`. Retain exact provider responses independently of recording
+metadata; public artist reads never trigger provider searches or fetches.
+Date discovery uses current source-catalog items and exclusions, not the retained
+legacy audio inventory. Counts describe recordings, not deduplicated concerts.

@@ -94,9 +94,18 @@ func (s *Store) Edit(ctx context.Context, id string, patch map[string]any, notes
 	return tx.Commit(ctx)
 }
 
-type Query struct{ Search, Year, Artist, Venue, Availability, Cursor, From, To, Collection string }
+type Query struct{ Search, Year, Artist, Venue, Availability, Cursor, From, To, Collection, MonthDay, YearFrom, YearTo, Sort, Month string }
 
 func (q Query) Validate() error {
+	if q.Month != "" && !regexpMonth.MatchString(q.Month) {
+		return fmt.Errorf("use a month in MM form")
+	}
+	if err := validateDiscovery(q.MonthDay, q.YearFrom, q.YearTo); err != nil {
+		return err
+	}
+	if q.Sort != "" && q.Sort != "date_desc" {
+		return fmt.Errorf("invalid recording order")
+	}
 	if len(q.Search) > 300 || len(q.Artist) > 300 || len(q.Venue) > 300 || len(q.Cursor) > 1024 {
 		return fmt.Errorf("search or filter is too long")
 	}
@@ -122,6 +131,7 @@ func (q Query) Validate() error {
 type pageCursor struct {
 	After  string `json:"after"`
 	Filter string `json:"filter"`
+	Date   string `json:"date,omitempty"`
 }
 
 func (q Query) fingerprint() string {
@@ -135,7 +145,7 @@ func (q Query) after() (string, error) {
 	}
 	raw, err := base64.RawURLEncoding.DecodeString(q.Cursor)
 	var c pageCursor
-	if err != nil || json.Unmarshal(raw, &c) != nil || !ItemID.MatchString(c.After) || c.Filter != q.fingerprint() {
+	if err != nil || json.Unmarshal(raw, &c) != nil || !ItemID.MatchString(c.After) || c.Filter != q.fingerprint() || (q.Sort == "date_desc" && !validCompleteDate(c.Date)) {
 		return "", fmt.Errorf("invalid cursor or changed filters")
 	}
 	return c.After, nil
@@ -159,6 +169,15 @@ func (s *Store) Search(ctx context.Context, q Query) (Page, error) {
 		return page, err
 	}
 	var raw []byte
+	afterDate := ""
+	if q.Cursor != "" && q.Sort == "date_desc" {
+		decoded, _ := base64.RawURLEncoding.DecodeString(q.Cursor)
+		var cursor pageCursor
+		if err := json.Unmarshal(decoded, &cursor); err != nil {
+			return page, err
+		}
+		afterDate = cursor.Date
+	}
 	err = s.Core.Pool.QueryRow(ctx, `WITH filtered AS MATERIALIZED (
  SELECT identifier,effective,unavailable FROM source_catalog_items WHERE collection_id=$9 AND NOT excluded AND
  ($1='' OR search @@ websearch_to_tsquery('simple',$1))
@@ -166,9 +185,15 @@ func (s *Store) Search(ctx context.Context, q Query) (Page, error) {
  AND ($3='' OR lower(effective->>'creator')=lower($3))
  AND ($4='' OR position(lower($4) in lower(effective->>'venue'))>0)
  AND ($5='' OR ($5='available' AND NOT unavailable) OR ($5='unavailable' AND unavailable))
+ AND ($10='' OR (source_catalog_complete_date(effective->>'date') AND substring(effective->>'date',6,5)=$10))
+ AND ($11='' OR left(effective->>'date',4)>=$11) AND ($12='' OR left(effective->>'date',4)<=$12)
+ AND ($13='' OR source_catalog_complete_date(effective->>'date'))
+ AND ($15='' OR (source_catalog_complete_date(effective->>'date') AND substring(effective->>'date',6,2)=$15))
  AND (($7='' AND $8='') OR (source_catalog_complete_date(effective->>'date') AND ($7='' OR effective->>'date'>=$7) AND ($8='' OR effective->>'date'<=$8)))
- ), selected AS (SELECT * FROM filtered WHERE identifier>$6 ORDER BY identifier LIMIT 101)
- SELECT (SELECT count(*) FROM filtered),COALESCE(jsonb_agg(effective || jsonb_build_object('identifier',identifier,'unavailable',unavailable) ORDER BY identifier),'[]'::jsonb) FROM selected`, q.Search, q.Year, q.Artist, q.Venue, q.Availability, after, q.From, q.To, s.Collection).Scan(&page.Total, &raw)
+ ), selected AS (SELECT * FROM filtered WHERE
+ (($13='' AND identifier>$6) OR ($13='date_desc' AND ($6='' OR effective->>'date'<$14 OR (effective->>'date'=$14 AND identifier>$6))))
+ ORDER BY CASE WHEN $13='date_desc' THEN effective->>'date' END DESC,identifier LIMIT 101)
+ SELECT (SELECT count(*) FROM filtered),COALESCE(jsonb_agg(effective || jsonb_build_object('identifier',identifier,'unavailable',unavailable) ORDER BY CASE WHEN $13='date_desc' THEN effective->>'date' END DESC,identifier),'[]'::jsonb) FROM selected`, q.Search, q.Year, q.Artist, q.Venue, q.Availability, after, q.From, q.To, s.Collection, q.MonthDay, q.YearFrom, q.YearTo, q.Sort, afterDate, q.Month).Scan(&page.Total, &raw)
 	if err != nil {
 		return page, err
 	}
@@ -177,7 +202,11 @@ func (s *Store) Search(ctx context.Context, q Query) (Page, error) {
 	}
 	if len(page.Items) > 100 {
 		page.Items = page.Items[:100]
-		cursor, _ := json.Marshal(pageCursor{page.Items[99]["identifier"].(string), q.fingerprint()})
+		cursorDate := ""
+		if q.Sort == "date_desc" {
+			cursorDate, _ = page.Items[99]["date"].(string)
+		}
+		cursor, _ := json.Marshal(pageCursor{After: page.Items[99]["identifier"].(string), Filter: q.fingerprint(), Date: cursorDate})
 		page.Cursor = base64.RawURLEncoding.EncodeToString(cursor)
 	}
 	page.Status, err = s.Status(ctx)

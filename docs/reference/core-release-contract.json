@@ -17,7 +17,8 @@
     "video": "1",
     "personal": "1",
     "chat": "1",
-    "source_catalog": "1"
+    "source_catalog": "1",
+    "source_discovery": "1"
   },
   "engine_repository": "git.subcult.tv/subculture-collective/archive-core",
   "schema_strategy": "checksum-locked-additive-migrations",
