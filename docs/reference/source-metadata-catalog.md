@@ -138,6 +138,28 @@ membership fields before joining, retaining current snapshot and listing checks.
   whose recordings are all excluded are omitted. Directory and recording views
   can show photographs without one artist request per row.
 
+`source_artist_media` module 1 stores artist photographs in the engine and
+allows a second identity:
+
+- `GET /api/source-catalog/v1/artist-media/{sha256}` returns a stored rendition.
+  A photo's `image` is at most 1280 pixels wide and its `thumbnail` 330 pixels;
+  each has `sha256`, `content_type`, `width` and `height`. Both are re-encoded
+  as JPEG, or PNG when the image has transparency, so embedded metadata such as
+  camera location is dropped. Responses are immutable, `nosniff` and sandboxed.
+  A rendition is served only while a current profile of an artist with visible
+  recordings references it.
+- A profile may be bound to the Internet Archive collection that holds the
+  artist's recordings (`archive_collection`, `archive_url`), with or without a
+  MusicBrainz ID. Import retains the collection's metadata response and checks
+  that it is a collection inside the catalog's collection and that at least one
+  of the artist's visible recordings belongs to it. The profile name is then the
+  collection title, and `musicbrainz_id` is null when absent.
+- A collection-bound profile can use the collection page's text as its
+  biography (license `Internet Archive collection description`) and its item
+  image as the photograph (license `Internet Archive collection image`, no
+  license URL). Neither has a separate license. Consumers must label them as
+  the collection's own material, not as Wikipedia or Commons content.
+
 All discovery queries omit excluded recordings. Counts are recordings, not
 independently deduplicated concerts. Artist enrichment is independent of source
 recording metadata, corrections, import queues and playback decisions. Unknown
@@ -161,14 +183,24 @@ JSON responses. It caches for seven days and serializes outbound calls at 1.1
 seconds with an identifying User-Agent; `--refresh` bypasses the response cache.
 Provider throttling persists a cooldown. Import requires matching MusicBrainz
 response identity, bounded sources, attribution and operator notes, and appends
-profile history. The helper requests metadata only, never audio or image binaries.
-Uncredited images are omitted. Biography text is attributed to Wikipedia
+profile history. The helper never requests audio. It downloads the selected
+photograph (a 1280-pixel Commons rendering, or the collection's item image) into
+the bundle as `data_base64` with its `data_url`; import stores renditions, not
+the downloaded bytes. Uncredited images are omitted. Biography text is attributed to Wikipedia
 contributors under CC BY-SA 4.0; Commons images retain their individual licenses.
 The photograph is the Wikidata image (P18). Without one, the article's lead image
 is used only when it is a Commons file; locally hosted, often non-free, images
 are skipped. Public-domain files have no license URL and GFDL or Free Art License
 files link other sites, so those photographs link the Commons file page's
 licensing section, which the import accepts.
+
+`--archive-collection ID` adds the Live Music Archive collection identity, alone
+or with `--mbid`. Determine the collection from the artist's own recordings'
+retained `metadata.collection` values, not from a name search. Wikipedia and
+Commons take precedence. The collection page text is used only when generated
+download notices leave at least 25 words; the image is the file whose format is
+`Item Image`. Pass `--no-archive-image` for a placeholder shared by several
+collections, and `--no-archive-description` to omit the text.
 
 A new core release/adoption is required before consumers rely on this module.
 Do not edit an existing published receipt to advertise unreleased capability.
