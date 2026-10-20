@@ -164,6 +164,11 @@ response identity, bounded sources, attribution and operator notes, and appends
 profile history. The helper requests metadata only, never audio or image binaries.
 Uncredited images are omitted. Biography text is attributed to Wikipedia
 contributors under CC BY-SA 4.0; Commons images retain their individual licenses.
+The photograph is the Wikidata image (P18). Without one, the article's lead image
+is used only when it is a Commons file; locally hosted, often non-free, images
+are skipped. Public-domain files have no license URL and GFDL or Free Art License
+files link other sites, so those photographs link the Commons file page's
+licensing section, which the import accepts.
 
 A new core release/adoption is required before consumers rely on this module.
 Do not edit an existing published receipt to advertise unreleased capability.
