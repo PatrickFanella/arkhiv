@@ -112,3 +112,26 @@ func (s *Store) Artist(ctx context.Context, artist string) (map[string]any, erro
 	}
 	return result, nil
 }
+
+type ArtistPhotoEntry struct {
+	Artist string          `json:"artist"`
+	Photo  json.RawMessage `json:"photo"`
+}
+
+// ArtistPhotos lists attributed photographs for bound artists that still have
+// visible recordings. Artist is the lowercased source artist key; consumers
+// match it case-insensitively against recording creators.
+func (s *Store) ArtistPhotos(ctx context.Context) ([]ArtistPhotoEntry, error) {
+	rows, err := s.Core.Pool.Query(ctx, `SELECT p.source_artist,p.profile->'photo' FROM source_artist_profiles p
+ WHERE p.collection_id=$1 AND jsonb_typeof(p.profile->'photo')='object'
+ AND EXISTS(SELECT 1 FROM source_catalog_items i WHERE i.collection_id=p.collection_id AND NOT i.excluded AND lower(i.effective->>'creator')=p.source_artist)
+ ORDER BY p.source_artist`, s.Collection)
+	if err != nil {
+		return nil, err
+	}
+	entries, err := pgx.CollectRows(rows, pgx.RowToStructByPos[ArtistPhotoEntry])
+	if entries == nil {
+		entries = []ArtistPhotoEntry{}
+	}
+	return entries, err
+}
