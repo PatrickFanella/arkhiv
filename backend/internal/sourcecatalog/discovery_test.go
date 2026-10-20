@@ -119,11 +119,30 @@ func TestArtistEnrichmentRetainsSourcesAndRecordingIdentity(t *testing.T) {
 	if err = s.ImportArtist(ctx, "Absent artist", bundle, "No recordings"); err == nil {
 		t.Fatal("foreign artist bound")
 	}
+	if photos, err := s.ArtistPhotos(ctx); err != nil || len(photos) != 0 {
+		t.Fatal("artist without a photograph listed", photos, err)
+	}
+	bundle.MusicBrainzID = id
+	bundle.Photo = &ArtistPhoto{URL: "https://upload.wikimedia.org/wikipedia/commons/a/ab/Fixture.jpg", Source: "https://commons.wikimedia.org/wiki/File:Fixture.jpg", Credit: "Fixture photographer", License: "CC BY-SA 4.0", LicenseURL: "https://creativecommons.org/licenses/by-sa/4.0"}
+	if err = s.ImportArtist(ctx, "Ween", bundle, "Verified fixture photograph; test data only"); err != nil {
+		t.Fatal(err)
+	}
+	photos, err := s.ArtistPhotos(ctx)
+	if err != nil || len(photos) != 1 || photos[0].Artist != "ween" {
+		t.Fatal(photos, err)
+	}
+	var photo ArtistPhoto
+	if err = json.Unmarshal(photos[0].Photo, &photo); err != nil || photo.Credit != "Fixture photographer" {
+		t.Fatal(photo, err)
+	}
 	listed := false
 	if err = s.SetListing(ctx, ListingDecision{Identifiers: []string{"show"}, Listed: &listed}, "Exclude only recording"); err != nil {
 		t.Fatal(err)
 	}
 	if _, err = s.Artist(ctx, "Ween"); err == nil {
 		t.Fatal("excluded-only artist leaked")
+	}
+	if photos, err = s.ArtistPhotos(ctx); err != nil || len(photos) != 0 {
+		t.Fatal("excluded-only artist photograph leaked", photos, err)
 	}
 }

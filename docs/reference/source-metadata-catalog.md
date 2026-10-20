@@ -128,6 +128,16 @@ membership fields before joining, retaining current snapshot and listing checks.
 - `GET /api/source-catalog/v1/artist?collection=etree&artist=Ween` returns visible
   recording counts and date bounds, plus a cached enrichment profile when bound.
 
+`source_artist_photos` module 1 adds one read-only, collection-scoped list:
+
+- `GET /api/source-catalog/v1/artist-photos?collection=etree` returns
+  `{"artists":[{"artist":"ween","photo":{...}}]}` for every bound artist profile
+  with an attributed photograph. `artist` is the lowercased source artist key;
+  match it case-insensitively against recording creators. `photo` has the same
+  URL, Commons source, credit and license fields as the artist profile. Artists
+  whose recordings are all excluded are omitted. Directory and recording views
+  can show photographs without one artist request per row.
+
 All discovery queries omit excluded recordings. Counts are recordings, not
 independently deduplicated concerts. Artist enrichment is independent of source
 recording metadata, corrections, import queues and playback decisions. Unknown

@@ -17,6 +17,7 @@ func (s *Server) sourceCatalogRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/source-catalog/v1/status", s.sourceCatalog)
 	mux.HandleFunc("GET /api/source-catalog/v1/calendar", s.sourceCatalog)
 	mux.HandleFunc("GET /api/source-catalog/v1/artist", s.sourceCatalog)
+	mux.HandleFunc("GET /api/source-catalog/v1/artist-photos", s.sourceCatalog)
 }
 func (s *Server) sourceCatalog(w http.ResponseWriter, r *http.Request) {
 	// A source inventory is not an operator-reviewed public catalog. Public
@@ -68,6 +69,14 @@ func (s *Server) sourceCatalog(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		write(w, 200, value)
+		return
+	case "/api/source-catalog/v1/artist-photos":
+		value, err := store.ArtistPhotos(r.Context())
+		if err != nil {
+			failed(err)
+			return
+		}
+		write(w, 200, map[string]any{"artists": value})
 		return
 	case "/api/source-catalog/v1/status":
 		value, err := store.Status(r.Context())
