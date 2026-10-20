@@ -134,6 +134,6 @@ export default function MixedArchive({brand}: {brand:Brand}) {
     {collection && <CatalogPersonal key={`${collection}:${personal.user?.id || 'browser'}`} personal={personal} collection={collection} onOpen={openFavorite}/>}
     {collection && <details><summary>Scheduled programs for this collection</summary><Suspense fallback={<p role="status">Opening channel controls…</p>}><CollectionChannels collection={collection} media={collections.find(c=>c.id===collection)?.media || []}/></Suspense></details>}
     {selection && <SelectedItem key={`${selection.item.id}:${selection.representation.id}:${selection.collection}`} selection={selection} onClose={close} focus={focus} onFocus={()=>setFocus(!focus)}/>}
-    <footer><span>{brand.title}</span><span>Source metadata retained · Access reviewed per collection</span></footer>
+    <footer><span>{brand.title}</span><span>Source metadata retained · Access reviewed per collection</span><a href="https://subcult.tv/support">Support SUBCULT’s archive software</a></footer>
   </main>;
 }
