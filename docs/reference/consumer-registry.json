@@ -426,8 +426,8 @@
       ],
       "adoption_status": "merged",
       "adoption_ref": "main",
-      "adoption_revision": "8bb3f14f3401b70eda70fbe213c1fb31578b0573",
-      "adoption_pull_request": "https://git.subcult.tv/PatrickFanella/arkhiv-live-music/pulls/14",
+      "adoption_revision": "7a42762fa16c8589eacac303230affadee14c95d",
+      "adoption_pull_request": "https://git.subcult.tv/PatrickFanella/arkhiv-live-music/pulls/17",
       "adoption": "core",
       "mode": "api",
       "release_file": "deploy/core-release.json",
@@ -437,9 +437,10 @@
         "audio": "1",
         "source_catalog": "1",
         "source_discovery": "1",
-        "source_artist_photos": "1"
+        "source_artist_photos": "1",
+        "source_artist_media": "1"
       },
-      "merge_revision": "d6a84e56f4c171fcca5289633b57425c0ae721d2"
+      "merge_revision": "a9ee2892f2a52c0ffa15f0681d1d73ef6a1f2891"
     }
   ]
 }
