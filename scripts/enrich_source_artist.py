@@ -129,6 +129,16 @@ class Fetcher:
         return data
 
 
+def commons_url(url):
+    """Drop tracking parameters. Commons may report thumbnails on
+    thumb.wikimedia.org; upload.wikimedia.org serves the same path."""
+    parts = urllib.parse.urlsplit(url)
+    host = "upload.wikimedia.org" if parts.hostname == "thumb.wikimedia.org" and parts.path.startswith("/wikipedia/commons/thumb/") else parts.hostname
+    if host != "upload.wikimedia.org" or parts.scheme != "https":
+        return url
+    return urllib.parse.urlunsplit(("https", host, parts.path, "", ""))
+
+
 def plain(value):
     return " ".join(html.unescape(re.sub(r"<[^>]*>", " ", value)).split())
 
@@ -221,10 +231,10 @@ def build_bundle(mbid, fetch, fetch_image=None):
         credit = plain(meta.get("Artist", {}).get("value", ""))
         license_name = plain(meta.get("LicenseShortName", {}).get("value", ""))
         license_url = meta.get("LicenseUrl", {}).get("value", "").replace("http://", "https://", 1)
-        image_url = info.get("thumburl", info.get("url", ""))
+        image_url = commons_url(info.get("thumburl", info.get("url", "")))
         description = info.get("descriptionurl", "")
         if urllib.parse.urlsplit(image_url).hostname != "upload.wikimedia.org":
-            image_url = info.get("url", "")
+            image_url = commons_url(info.get("url", ""))
         # Public-domain files have no license URL, and GFDL/FAL link other hosts;
         # the file page's licensing section states the terms for both.
         if description and urllib.parse.urlsplit(license_url).hostname not in ("creativecommons.org", "commons.wikimedia.org"):
