@@ -98,6 +98,11 @@ class ArtistEnrichmentTests(unittest.TestCase):
         self.assertIsNone(archive_description("Plan J Download free music from Plan J. Concerts in the Live Music Archive are available for download and streaming in formats including flac, mp3, and ogg vorbis.", "Plan J"))
         self.assertIsNone(archive_description("Free Stockholm Syndrome concerts. Trade-friendly Live Music Archive concerts are available for download and/or streaming in formats including mp3, flac, and ogg vorbis. Limited Flag: NoSBD", "Stockholm Syndrome"))
 
+    def test_collection_text_drops_taping_notes_and_joins_wrapped_lines(self):
+        text = archive_description("Escaper is a Brooklyn-based space rock band named an \"On the\n\nVerge\" artist by Relix Magazine,\nwith funky dance parties at festivals across the northeast and long improvised sets.\n\nThe band allows audience taping; soundboard patches on request.", "Escaper")
+        self.assertEqual(text, "Escaper is a Brooklyn-based space rock band named an \"On the Verge\" artist by Relix Magazine, with funky dance parties at festivals across the northeast and long improvised sets.")
+        self.assertIsNone(archive_description("On May 30, 2019, permission was granted to the LMA: Just wanted to give the go ahead and allow the LMA permission to create a section for the band and its many recordings from shows.", "Band"))
+
     def test_commons_photo_bytes_and_image_hosts(self):
         def fetch(url):
             if "musicbrainz.org/" in url:

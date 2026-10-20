@@ -198,7 +198,8 @@ licensing section, which the import accepts.
 or with `--mbid`. Determine the collection from the artist's own recordings'
 retained `metadata.collection` values, not from a name search. Wikipedia and
 Commons take precedence. The collection page text is used only when generated
-download notices leave at least 25 words; the image is the file whose format is
+download notices and paragraphs about taping, trading or archive permission
+leave at least 25 words; the image is the file whose format is
 `Item Image`. Pass `--no-archive-image` for a placeholder shared by several
 collections, and `--no-archive-description` to omit the text.
 

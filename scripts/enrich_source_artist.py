@@ -39,6 +39,8 @@ BOILERPLATE = [re.compile(pattern, re.I) for pattern in (
     r"Limited Flag:.*$",
     r"Stream ?only\.?$",
 )]
+# Paragraphs about taping, trading or archive permission are not biography.
+NOT_BIOGRAPHY = re.compile(r"(?i)\b(?:permission|tap(?:e|es|ed|er|ers|ing)\b|taping|soundboard|non-?commercial|trad(?:e|ing)\b|audience record|recording policy|live music archive|\bLMA\b|etree|archive\.org|flac|mp3|shn\b)")
 COMMONS_UPLOAD = re.compile(r"https://upload\.wikimedia\.org/wikipedia/commons/(?:thumb/)?[0-9a-f]/[0-9a-f]{2}/([^/?#]+)")
 
 
@@ -142,8 +144,14 @@ def archive_description(value, title):
         for pattern in BOILERPLATE:
             block = pattern.sub("", block)
         block = " ".join(block.split())
-        if block and block.casefold() != title.casefold():
+        if not block or block.casefold() == title.casefold():
+            continue
+        # Hard-wrapped text: continue a paragraph that stopped mid-sentence.
+        if paragraphs and not re.search(r"[.!?:\"”’')\]]$", paragraphs[-1]):
+            paragraphs[-1] += " " + block
+        else:
             paragraphs.append(block)
+    paragraphs = [block for block in paragraphs if not NOT_BIOGRAPHY.search(block) and not re.fullmatch(r"\S+", block)]
     if paragraphs:
         # Drop a repeated name or "BIO" label before the text itself.
         name = re.escape(title)
