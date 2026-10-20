@@ -28,6 +28,36 @@ class ArtistEnrichmentTests(unittest.TestCase):
         self.assertEqual(len(calls), 4)
         self.assertTrue(all("/artist?query=" not in call for call in calls))
 
+    def test_commons_lead_image_and_license_page_fallbacks(self):
+        calls = []
+
+        def fetch(url):
+            calls.append(url)
+            if "musicbrainz.org/" in url:
+                return {"id": ID, "relations": [{"type": "wikidata", "url": {"resource": "https://www.wikidata.org/wiki/Q123"}}]}
+            if "wikidata.org/" in url:
+                return {"entities": {"Q123": {"sitelinks": {"enwiki": {"title": "Fixture artist"}}, "claims": {}}}}
+            if "en.wikipedia.org/" in url:
+                return {"extract": "Bio.", "originalimage": {"source": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Lead_%28live%29.jpg/1920px-Lead_%28live%29.jpg"}}
+            return {"query": {"pages": {"1": {"imageinfo": [{"thumburl": "https://upload.wikimedia.org/wikipedia/commons/a/ab/Lead_(live).jpg", "descriptionurl": "https://commons.wikimedia.org/wiki/File:Lead_(live).jpg", "extmetadata": {"Artist": {"value": "Photographer"}, "LicenseShortName": {"value": "GFDL 1.2"}, "LicenseUrl": {"value": "https://www.gnu.org/licenses/old-licenses/fdl-1.2.html"}}}]}}}}
+
+        bundle = build_bundle(ID, fetch)
+        self.assertIn("File%3ALead_%28live%29.jpg", calls[-1])
+        self.assertEqual(bundle["photo"]["license_url"], "https://commons.wikimedia.org/wiki/File:Lead_(live).jpg#Licensing")
+        self.assertEqual(bundle["photo"]["license"], "GFDL 1.2")
+
+    def test_locally_hosted_lead_image_is_not_used(self):
+        def fetch(url):
+            if "musicbrainz.org/" in url:
+                return {"id": ID, "relations": [{"type": "wikidata", "url": {"resource": "https://www.wikidata.org/wiki/Q123"}}]}
+            if "wikidata.org/" in url:
+                return {"entities": {"Q123": {"sitelinks": {"enwiki": {"title": "Fixture artist"}}, "claims": {}}}}
+            if "en.wikipedia.org/" in url:
+                return {"extract": "Bio.", "originalimage": {"source": "https://upload.wikimedia.org/wikipedia/en/a/ab/Album_cover.jpg"}}
+            raise AssertionError("Commons queried for a non-Commons image: " + url)
+
+        self.assertNotIn("photo", build_bundle(ID, fetch))
+
     def test_no_identity_guess_or_uncredited_photo(self):
         with self.assertRaises(ValueError):
             build_bundle("artist name", lambda _: {})

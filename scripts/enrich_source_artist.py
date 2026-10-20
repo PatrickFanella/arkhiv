@@ -21,6 +21,7 @@ import urllib.request
 MBID = re.compile(r"[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}")
 AGENT = "ArkhivArtistEnrichment/1.0 (https://git.subcult.tv/subculture-collective/arkhiv)"
 HOSTS = {"musicbrainz.org", "www.wikidata.org", "en.wikipedia.org", "commons.wikimedia.org"}
+COMMONS_UPLOAD = re.compile(r"https://upload\.wikimedia\.org/wikipedia/commons/(?:thumb/)?[0-9a-f]/[0-9a-f]{2}/([^/?#]+)")
 
 
 class Redirects(urllib.request.HTTPRedirectHandler):
@@ -101,6 +102,7 @@ def build_bundle(mbid, fetch):
         return bundle
     entity = fetch("https://www.wikidata.org/wiki/Special:EntityData/" + match[1] + ".json").get("entities", {}).get(match[1], {})
     title = entity.get("sitelinks", {}).get("enwiki", {}).get("title")
+    summary = {}
     if title:
         summary = fetch("https://en.wikipedia.org/api/rest_v1/page/summary/" + urllib.parse.quote(title.replace(" ", "_"), safe=""))
         if summary.get("type") != "disambiguation" and summary.get("extract"):
@@ -108,6 +110,12 @@ def build_bundle(mbid, fetch):
     images = entity.get("claims", {}).get("P18", [])
     images = sorted(images, key=lambda claim: claim.get("rank") != "preferred")
     filename = next((claim.get("mainsnak", {}).get("datavalue", {}).get("value") for claim in images if claim.get("rank") != "deprecated" and isinstance(claim.get("mainsnak", {}).get("datavalue", {}).get("value"), str)), None)
+    if not filename and summary.get("type") != "disambiguation":
+        # Without a Wikidata image, use the article's lead image only when it is
+        # a Commons file; locally hosted (often non-free) images are skipped.
+        lead = (summary.get("originalimage") or {}).get("source", "")
+        match = COMMONS_UPLOAD.match(lead)
+        filename = urllib.parse.unquote(match[1]) if match else None
     if filename:
         query = urllib.parse.urlencode({"action": "query", "format": "json", "titles": "File:" + filename, "prop": "imageinfo", "iiprop": "url|extmetadata", "iiurlwidth": "720"})
         pages = fetch("https://commons.wikimedia.org/w/api.php?" + query).get("query", {}).get("pages", {})
@@ -117,8 +125,15 @@ def build_bundle(mbid, fetch):
         license_name = plain(meta.get("LicenseShortName", {}).get("value", ""))
         license_url = meta.get("LicenseUrl", {}).get("value", "").replace("http://", "https://", 1)
         image_url = info.get("thumburl", info.get("url", ""))
-        if credit and license_name and license_url and image_url and info.get("descriptionurl"):
-            bundle["photo"] = {"url": image_url, "source": info["descriptionurl"], "credit": credit, "license": license_name, "license_url": license_url}
+        description = info.get("descriptionurl", "")
+        if urllib.parse.urlsplit(image_url).hostname != "upload.wikimedia.org":
+            image_url = info.get("url", "")
+        # Public-domain files have no license URL, and GFDL/FAL link other hosts;
+        # the file page's licensing section states the terms for both.
+        if description and urllib.parse.urlsplit(license_url).hostname not in ("creativecommons.org", "commons.wikimedia.org"):
+            license_url = description + "#Licensing"
+        if credit and license_name and urllib.parse.urlsplit(image_url).hostname == "upload.wikimedia.org" and description.startswith("https://commons.wikimedia.org/"):
+            bundle["photo"] = {"url": image_url, "source": description, "credit": credit[:2000], "license": license_name[:200], "license_url": license_url}
     return bundle
 
 
