@@ -3,7 +3,7 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from enrich_source_artist import IMAGE_HOSTS, Fetcher, add_archive, archive_description, build_bundle, validate_url
+from enrich_source_artist import IMAGE_HOSTS, Fetcher, commons_url, add_archive, archive_description, build_bundle, validate_url
 
 ID = "00000000-0000-0000-0000-000000000001"
 
@@ -102,6 +102,11 @@ class ArtistEnrichmentTests(unittest.TestCase):
         text = archive_description("Escaper is a Brooklyn-based space rock band named an \"On the\n\nVerge\" artist by Relix Magazine,\nwith funky dance parties at festivals across the northeast and long improvised sets.\n\nThe band allows audience taping; soundboard patches on request.", "Escaper")
         self.assertEqual(text, "Escaper is a Brooklyn-based space rock band named an \"On the Verge\" artist by Relix Magazine, with funky dance parties at festivals across the northeast and long improvised sets.")
         self.assertIsNone(archive_description("On May 30, 2019, permission was granted to the LMA: Just wanted to give the go ahead and allow the LMA permission to create a section for the band and its many recordings from shows.", "Band"))
+
+    def test_commons_thumbnail_host_and_tracking_parameters(self):
+        self.assertEqual(commons_url("https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7d/K.jpg/1280px-K.jpg?utm_source=commons.wikimedia.org"), "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/K.jpg/1280px-K.jpg")
+        self.assertEqual(commons_url("https://upload.wikimedia.org/wikipedia/commons/7/7d/K.jpg?utm_content=original"), "https://upload.wikimedia.org/wikipedia/commons/7/7d/K.jpg")
+        self.assertEqual(commons_url("https://thumb.wikimedia.org/other/K.jpg"), "https://thumb.wikimedia.org/other/K.jpg")
 
     def test_commons_photo_bytes_and_image_hosts(self):
         def fetch(url):
