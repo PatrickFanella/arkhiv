@@ -3,6 +3,7 @@ package app
 import (
 	"errors"
 	"net/http"
+	"strconv"
 
 	"git.subcult.tv/subculture-collective/vhness/internal/domain"
 	"git.subcult.tv/subculture-collective/vhness/internal/sourcecatalog"
@@ -18,6 +19,7 @@ func (s *Server) sourceCatalogRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/source-catalog/v1/calendar", s.sourceCatalog)
 	mux.HandleFunc("GET /api/source-catalog/v1/artist", s.sourceCatalog)
 	mux.HandleFunc("GET /api/source-catalog/v1/artist-photos", s.sourceCatalog)
+	mux.HandleFunc("GET /api/source-catalog/v1/artist-media/{sha256}", s.sourceCatalog)
 }
 func (s *Server) sourceCatalog(w http.ResponseWriter, r *http.Request) {
 	// A source inventory is not an operator-reviewed public catalog. Public
@@ -41,6 +43,27 @@ func (s *Server) sourceCatalog(w http.ResponseWriter, r *http.Request) {
 		} else {
 			write(w, 503, map[string]string{"error": "metadata catalog unavailable"})
 		}
+	}
+	if r.Pattern == "GET /api/source-catalog/v1/artist-media/{sha256}" {
+		id := r.PathValue("sha256")
+		contentType, data, err := store.ArtistMedia(r.Context(), id)
+		if err != nil {
+			failed(err)
+			return
+		}
+		// Renditions are content-addressed, so a stored hash never changes.
+		w.Header().Set("Content-Type", contentType)
+		w.Header().Set("Content-Length", strconv.Itoa(len(data)))
+		w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
+		w.Header().Set("ETag", `"`+id+`"`)
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		w.Header().Set("Content-Security-Policy", "default-src 'none'; sandbox")
+		if r.Header.Get("If-None-Match") == `"`+id+`"` {
+			w.WriteHeader(http.StatusNotModified)
+			return
+		}
+		_, _ = w.Write(data)
+		return
 	}
 	switch r.URL.Path {
 	case "/api/source-catalog/v1/calendar":

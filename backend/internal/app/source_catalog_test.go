@@ -3,11 +3,12 @@ package app
 import (
 	"git.subcult.tv/subculture-collective/vhness/internal/catalog"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
 func TestSourceCatalogIsScopedAndPrivate(t *testing.T) {
-	for _, path := range []string{"/api/source-catalog/v1/items", "/api/source-catalog/v1/items/source", "/api/source-catalog/v1/status", "/api/source-catalog/v1/facets", "/api/source-catalog/v1/calendar", "/api/source-catalog/v1/artist", "/api/source-catalog/v1/artist-photos"} {
+	for _, path := range []string{"/api/source-catalog/v1/items", "/api/source-catalog/v1/items/source", "/api/source-catalog/v1/status", "/api/source-catalog/v1/facets", "/api/source-catalog/v1/calendar", "/api/source-catalog/v1/artist", "/api/source-catalog/v1/artist-photos", "/api/source-catalog/v1/artist-media/" + strings.Repeat("a", 64)} {
 		w := httptest.NewRecorder()
 		(&Server{DB: &catalog.DB{PublicOnly: true}, Collection: "etree"}).Handler().ServeHTTP(w, httptest.NewRequest("GET", path, nil))
 		if w.Code != 404 {

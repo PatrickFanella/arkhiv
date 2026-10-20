@@ -183,7 +183,7 @@ func run() error {
 			}
 			defer input.Close()
 			var bundle sourcecatalog.ArtistBundle
-			decoder := json.NewDecoder(io.LimitReader(input, (18<<20)+1))
+			decoder := json.NewDecoder(io.LimitReader(input, (48<<20)+1))
 			decoder.DisallowUnknownFields()
 			if e = decoder.Decode(&bundle); e != nil {
 				return e
