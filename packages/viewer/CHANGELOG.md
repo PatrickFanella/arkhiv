@@ -1,3 +1,10 @@
+## 0.4.4
+
+Fetch audio and video with anonymous CORS so browser volume extensions can route
+reviewed cross-origin streams through Web Audio without silencing them. Custom
+consumer players must set `crossOrigin="anonymous"` on their media elements too.
+Remote media servers must permit the consumer origin through CORS.
+
 ## 0.4.3
 
 Accept exact, reviewed nested audio source filenames in catalog URLs. Reject

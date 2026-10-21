@@ -71,8 +71,15 @@ only the entries it uses.
 
 `useAudioControls` from `@subcult/archive-viewer/audio` supplies bounded seeking,
 play/pause state, volume, teardown and completion callbacks for consumer-owned
-markup. Supply the audio element ref and reviewed start/end positions. Source
-resolution, access decisions, schedule lookup, metadata and visual layout remain
+markup. Supply the audio element ref and reviewed start/end positions.
+
+Set `crossOrigin="anonymous"` on custom audio and video elements before assigning
+their source. Volume extensions route media through Web Audio, which silences
+cross-origin responses fetched without CORS. Remote media servers must allow the
+consumer origin; same-origin engine media retains its normal session behavior.
+Shared `AudioPlayer` and `Player` components set this attribute themselves.
+
+Source resolution, access decisions, schedule lookup, metadata and visual layout remain
 the consumer's responsibility. `AudioPlayer` uses the same hook.
 
 Optional personal favorites and channel discussion hooks are exported from the root entry. Consumers own the interface and same-origin session service. See [community configuration](../../docs/reference/community.md) for the trust, database and recovery contract.

@@ -56,8 +56,10 @@ it('exposes channel controls without scrubbing and preserves native on-demand co
   const channel = renderToStaticMarkup(<Player session={session} paused={false} onPaused={() => {}} />);
   expect(channel).toContain('Rejoin channel');
   expect(channel).toContain('Channel playback controls');
+  expect(channel).toMatch(/<video[^>]*crossorigin="anonymous"/);
   expect(channel).not.toMatch(/<video[^>]* controls/);
   expect(channel).toContain('Volume');
   const demand = renderToStaticMarkup(<Player session={{ ...session, mode: 'ondemand' }} paused={false} onPaused={() => {}} />);
   expect(demand).toMatch(/<video[^>]* controls/);
+  expect(demand).toMatch(/<video[^>]*crossorigin="anonymous"/);
 });

@@ -52,7 +52,7 @@ function AudioSession({asset,set,initialOffset,autoPlay,station,onRejoin,onEnded
  if (!url) return <p role="alert">This recording is unavailable.</p>;
  const track = currentTrack(asset.recording,position);
  return <section className="audio-player" aria-label="Audio player" aria-busy={pending}>
-  <audio ref={audio} src={url} preload="metadata" onLoadedMetadata={metadataReady} {...events} />
+  <audio ref={audio} crossOrigin="anonymous" src={url} preload="metadata" onLoadedMetadata={metadataReady} {...events} />
   <p role="status">{station ? playbackState==='synchronized' ? 'On the station · Scheduled replay' : playbackState==='paused' ? 'Paused · Station continues' : `Scheduled replay · ${error ? 'blocked or unavailable' : playbackState}` : `On demand · ${set?.title || 'Full recording'}`}</p><p>{asset.recording.title} · Original date: <time>{asset.recording.date || 'Unknown'}</time></p>
   <button disabled={Boolean(station && !playing && !onRejoin)} onClick={() => {if(station && !playing)onRejoin?.();else void toggle();}}>{playing ? 'Pause' : station ? 'Resume at current program' : 'Play'}</button>
   {station && onRejoin && <button onClick={onRejoin}>Rejoin current program</button>}
