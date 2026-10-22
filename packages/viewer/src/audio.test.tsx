@@ -5,7 +5,7 @@ const asset: AudioAsset = {policy:'local_preserve',url:'/api/catalog/v1/items/co
 describe('continuous audio contracts',()=>{
  it('retains recording/credit controls without downloading or public relay',()=>{
   const html=renderToStaticMarkup(<AudioPlayer asset={asset}/>);
-  expect(html).toContain('Recording position');expect(html).toContain('Fixture generator');expect(html).toContain('Set boundaries unreviewed');expect(html).not.toContain('download=');
+  expect(html).toContain('Recording position');expect(html).toContain('Fixture generator');expect(html).toContain('Set boundaries unreviewed');expect(html).not.toContain('download=');expect(html).toMatch(/<audio[^>]*crossorigin="anonymous"/);
  });
  it('rejects unreviewed sets, external assets and malformed station clocks',()=>{
   expect(()=>setBounds(asset.recording,{title:'Inferred set',first:0,last:1,reviewed:false})).toThrow();

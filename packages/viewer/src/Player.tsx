@@ -126,7 +126,7 @@ export function Player({ session, paused, onPaused, onRejoin, onPlaybackState }:
   const clock = (seconds: number) => `${Math.floor(Math.max(0, seconds) / 60)}:${String(Math.floor(Math.max(0, seconds) % 60)).padStart(2, '0')}`;
   return <div className="player" ref={container}>
     <p className="viewing-state" role="status">{videoStateLabel(session.mode, state)}</p>
-    <video ref={video} controls={session.mode === 'ondemand'} poster={posterFailed ? undefined : poster} playsInline preload="metadata" aria-label={session.episode.title} onPause={() => { if (active.current && video.current?.readyState && !video.current.ended) onPaused(true); }} onPlay={() => { setBlocked(false); onPaused(false); }} onWaiting={() => setLoading(true)} onPlaying={() => setLoading(false)}>
+    <video ref={video} crossOrigin="anonymous" controls={session.mode === 'ondemand'} poster={posterFailed ? undefined : poster} playsInline preload="metadata" aria-label={session.episode.title} onPause={() => { if (active.current && video.current?.readyState && !video.current.ended) onPaused(true); }} onPlay={() => { setBlocked(false); onPaused(false); }} onWaiting={() => setLoading(true)} onPlaying={() => setLoading(false)}>
       {captions.map(track => <track key={track.file} kind="captions" src={captionURLs[track.file]} srcLang={track.language} label={track.label} onError={() => setCaptionError('Captions could not be loaded from their source.')} />)}
     </video>
     {session.episode.artwork?.scope === 'series' && poster && !posterFailed && <small>Series artwork</small>}

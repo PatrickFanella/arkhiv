@@ -72,7 +72,7 @@ function SelectedItem({selection,onClose,focus,onFocus}: {selection:Selection;on
 }
 function NativeMedia({asset,title,onError}: {asset:Transport;title:string;onError:()=>void}) {
  const media=useRef<HTMLMediaElement>(null);useMediaPreferences(media);
- return asset.media==='audio' ? <audio ref={media as React.RefObject<HTMLAudioElement>} controls preload="metadata" src={asset.url} aria-label={title} onError={onError}/> : <video ref={media as React.RefObject<HTMLVideoElement>} controls playsInline preload="metadata" src={asset.url} aria-label={title} onError={onError}/>;
+ return asset.media==='audio' ? <audio ref={media as React.RefObject<HTMLAudioElement>} crossOrigin="anonymous" controls preload="metadata" src={asset.url} aria-label={title} onError={onError}/> : <video ref={media as React.RefObject<HTMLVideoElement>} crossOrigin="anonymous" controls playsInline preload="metadata" src={asset.url} aria-label={title} onError={onError}/>;
 }
 export default function MixedArchive({brand}: {brand:Brand}) {
   const [collections,setCollections] = useState<CatalogCollection[]>([]);
