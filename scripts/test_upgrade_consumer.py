@@ -1,3 +1,4 @@
+import base64
 import hashlib
 import json
 from pathlib import Path
@@ -194,10 +195,47 @@ class UpgradeTests(unittest.TestCase):
             proposal(self.release, self.consumer, self.root, self.artifact, request)
 
 
-if __name__ == '__main__':
-    unittest.main()
-import base64
+    def test_auto_merge_schedules_the_merge_for_new_and_existing_proposals(self):
+        import urllib.error
+        self.consumer['repository'] = 'subculture-collective/example'
+        branch = 'archive-upgrade/v0.1.1-' + 'b' * 40
+        for existing, answer in [(False, None), (True, None), (True, 405)]:
+            calls = []
+            def request(path, method='GET', payload=None):
+                calls.append((path, method, payload))
+                if path == '/user':
+                    return {'login': 'subcult-agent'}
+                if method == 'POST' and path.endswith('/merge'):
+                    if answer:
+                        raise urllib.error.HTTPError(path, answer, 'not mergeable', {}, None)
+                    return None
+                if method == 'POST':
+                    return {'html_url': 'https://git.subcult.tv/example/pulls/7'}
+                if '/pulls?' in path:
+                    return [{'head': {'ref': branch}, 'base': {'ref': 'main'}, 'state': 'open', 'html_url': 'https://git.subcult.tv/example/pulls/7'}] if existing else []
+                if '/contents/' in path:
+                    return {'content': base64.b64encode(json.dumps(self.release).encode()).decode()}
+                return {'default_branch': 'main'}
+            with self.subTest(existing=existing, answer=answer), mock.patch('propose_consumer_upgrade.prepare'), mock.patch('propose_consumer_upgrade.subprocess.run'):
+                self.assertEqual(proposal(self.release, self.consumer, self.root, self.artifact, request, auto_merge=True), 'https://git.subcult.tv/example/pulls/7')
+            merges = [(path, payload) for path, method, payload in calls if method == 'POST' and path.endswith('/merge')]
+            self.assertEqual(merges, [('/repos/subculture-collective/example/pulls/7/merge', {'do': 'merge', 'merge_when_checks_succeed': True, 'delete_branch_after_merge': True})])
 
+    def test_without_auto_merge_no_merge_is_requested(self):
+        self.consumer['repository'] = 'subculture-collective/example'
+        calls = []
+        def request(path, method='GET', payload=None):
+            calls.append((path, method))
+            if path == '/user':
+                return {'login': 'subcult-agent'}
+            if method == 'POST':
+                return {'html_url': 'https://git.subcult.tv/example/pulls/8'}
+            if '/pulls?' in path:
+                return []
+            return {'default_branch': 'main'}
+        with mock.patch('propose_consumer_upgrade.prepare'), mock.patch('propose_consumer_upgrade.subprocess.run'):
+            proposal(self.release, self.consumer, self.root, self.artifact, request)
+        self.assertFalse(any(path.endswith('/merge') for path, _ in calls))
 
 class ConsumerEnvironmentTests(unittest.TestCase):
     def test_consumer_checks_never_receive_write_credentials(self):
@@ -207,3 +245,8 @@ class ConsumerEnvironmentTests(unittest.TestCase):
         scrubbed = consumer_environment(environment)
         self.assertEqual(scrubbed, {'NPM_CONFIG_USERCONFIG': '/tmp/npmrc', 'TEST_DATABASE_URL': 'postgres://db', 'PATH': '/bin'})
         self.assertIn('ARCHIVE_UPGRADE_TOKEN', environment, 'the caller environment is left intact')
+
+
+if __name__ == '__main__':
+    unittest.main()
+

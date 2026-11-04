@@ -1,0 +1,126 @@
+name: viewer-release
+# Publishes the shared viewer package when its version changes on main and lands
+# the SDK receipt through an auto-merging pull request, which in turn triggers
+# consumer upgrade proposals. A version already in the registry is never republished.
+on:
+  push:
+    branches: [main]
+    paths:
+      - packages/viewer/package.json
+  workflow_dispatch:
+    inputs:
+      compatible_core:
+        description: Core receipt filename the SDK stays compatible with; empty keeps the previous receipt's value
+        required: false
+        default: ''
+      runner:
+        description: Runner label for isolated verification
+        required: false
+        default: ubuntu-latest
+permissions:
+  contents: read
+
+jobs:
+  release:
+    timeout-minutes: 120
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: vhness
+          POSTGRES_PASSWORD: disposable-release-only
+          POSTGRES_DB: vhness_release
+        options: --label vhness.release-database=${{ github.run_id }}-${{ github.run_attempt }} --health-cmd "pg_isready -U vhness -d vhness_release" --health-interval 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Select the viewer version
+        id: select
+        run: |
+          set -euo pipefail
+          version=$(node -p "require('./packages/viewer/package.json').version")
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if [ -f "docs/releases/viewer-release-$version.json" ]; then
+            echo "Viewer $version already has a committed receipt; nothing to release."
+            echo "release=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          published=$(curl -fsS "https://git.subcult.tv/api/packages/subculture-collective/npm/@subcult%2Farchive-viewer" | python3 -c 'import sys,json; print(" ".join(json.load(sys.stdin).get("versions",{}).keys()))' || true)
+          if [[ " $published " == *" $version "* ]]; then
+            echo "Viewer $version is already published but has no receipt; record it by hand from the registry bytes." >&2
+            exit 1
+          fi
+          echo "release=true" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-go@v5
+        if: steps.select.outputs.release == 'true'
+        with:
+          go-version-file: backend/go.mod
+          cache: false
+      - uses: actions/setup-node@v4
+        if: steps.select.outputs.release == 'true'
+        with:
+          node-version: '24'
+      - run: npm install --global pnpm@10.33.0 --force
+        if: steps.select.outputs.release == 'true'
+      - name: Install bounded print extraction tools
+        if: steps.select.outputs.release == 'true'
+        run: |
+          if [ "$(id -u)" = 0 ]; then
+            apt-get update && apt-get install --yes --no-install-recommends poppler-utils util-linux ffmpeg
+          else
+            sudo -n apt-get update && sudo -n apt-get install --yes --no-install-recommends poppler-utils util-linux ffmpeg
+          fi
+      - name: Verify the release source with the job-owned disposable database
+        if: steps.select.outputs.release == 'true'
+        env:
+          TEST_DATABASE_RUN: ${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          [[ "$TEST_DATABASE_RUN" =~ ^[0-9]+-[0-9]+$ ]]
+          test_db_id=$(docker ps --no-trunc --quiet --filter "label=vhness.release-database=$TEST_DATABASE_RUN")
+          [[ "$test_db_id" =~ ^[0-9a-f]{64}$ ]]
+          test_db_ip=$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$test_db_id")
+          [[ "$test_db_ip" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]
+          export TEST_DATABASE_URL="postgres://vhness:disposable-release-only@$test_db_ip:5432/vhness_release?sslmode=disable"
+          make verify
+          release_status=$(git status --porcelain)
+          test -z "$release_status" || { printf 'Verification changed release paths:\n%s\n' "$release_status" >&2; exit 1; }
+      - name: Publish the package and record its receipt
+        if: steps.select.outputs.release == 'true'
+        env:
+          ARCHIVE_PACKAGE_TOKEN: ${{ secrets.ARCHIVE_PACKAGE_TOKEN }}
+          ARCHIVE_UPGRADE_TOKEN: ${{ secrets.ARCHIVE_UPGRADE_TOKEN }}
+          VIEWER_VERSION: ${{ steps.select.outputs.version }}
+          COMPATIBLE_CORE: ${{ inputs.compatible_core }}
+        run: |
+          set -euo pipefail
+          test -n "$ARCHIVE_PACKAGE_TOKEN"
+          test -n "$ARCHIVE_UPGRADE_TOKEN"
+          mkdir -p .artifacts
+          pnpm --dir packages/viewer pack --pack-destination "$PWD/.artifacts" >/dev/null
+          package=".artifacts/subcult-archive-viewer-$VIEWER_VERSION.tgz"
+          test -f "$package"
+          release_auth_dir=$(mktemp -d)
+          trap 'rm -rf "$release_auth_dir"' EXIT
+          chmod 700 "$release_auth_dir"
+          export NPM_CONFIG_USERCONFIG="$release_auth_dir/npmrc"
+          cat > "$NPM_CONFIG_USERCONFIG" <<'NPMRC'
+          @subcult:registry=https://git.subcult.tv/api/packages/subculture-collective/npm/
+          //git.subcult.tv/api/packages/subculture-collective/npm/:_authToken=${ARCHIVE_PACKAGE_TOKEN}
+          NPMRC
+          chmod 600 "$NPM_CONFIG_USERCONFIG"
+          npm publish "$package" --registry https://git.subcult.tv/api/packages/subculture-collective/npm/
+          if [ -n "$COMPATIBLE_CORE" ]; then
+            python3 scripts/viewer_receipt.py --package "$package" --compatible-core "$COMPATIBLE_CORE"
+          else
+            python3 scripts/viewer_receipt.py --package "$package"
+          fi
+          branch="release/viewer-$VIEWER_VERSION"
+          git switch -c "$branch"
+          git add "docs/releases/viewer-release-$VIEWER_VERSION.json"
+          git -c user.name='SUBCULT Agent' -c user.email='info@subcult.tv' -c commit.gpgsign=false commit -m "release(viewer): record published $VIEWER_VERSION SDK artifact"
+          git -c credential.helper= -c 'credential.helper=!f() { echo username=subcult-agent; echo "password=$ARCHIVE_UPGRADE_TOKEN"; }; f' push origin "$branch"
+          python3 scripts/receipt_pull_request.py --branch "$branch" --title "Record viewer $VIEWER_VERSION SDK receipt" --body "Automated receipt for the published \`@subcult/archive-viewer@$VIEWER_VERSION\` artifact. Merging it starts the consumer upgrade proposals."

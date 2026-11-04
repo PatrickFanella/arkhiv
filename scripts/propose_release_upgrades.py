@@ -36,6 +36,7 @@ def main():
     parser.add_argument('--version', required=True)
     parser.add_argument('--kind', choices=['platform', 'core', 'viewer'], default='viewer')
     parser.add_argument('--adoption-refs', action='store_true', help='Explicitly stack on registered adoption branches that are still in review')
+    parser.add_argument('--auto-merge', action='store_true', help='Merge each proposal automatically once the consumer\'s required checks pass')
     args = parser.parse_args()
     if not re.fullmatch(r'\d+\.\d+\.\d+', args.version):
         raise SystemExit('Expected a stable semantic release version')
@@ -83,7 +84,7 @@ def main():
                 database, test_url = consumer_test_database(inspected, os.environ['ARCHIVE_UPGRADE_DATABASE_RUN'], consumer['repository'])
                 subprocess.run(['docker', 'exec', database_container, 'createdb', '-U', 'dev', database], check=True)
                 os.environ['TEST_DATABASE_URL'] = test_url
-            result = proposal(release, consumer, clone, artifact, base_ref=base_ref)
+            result = proposal(release, consumer, clone, artifact, base_ref=base_ref, auto_merge=args.auto_merge)
             print(consumer['repository'], result or 'Release already applied; no PR', flush=True)
 
 

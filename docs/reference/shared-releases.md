@@ -36,6 +36,20 @@ breaking APIs/configuration and coordinate engine/migration/client order. Rollba
 must use a compatible schema or an independently restored checkpoint. Public
 release and collection approvals remain independent of package publication.
 
+## Automated releases
+
+`viewer-release` publishes `@subcult/archive-viewer` when a merge on `main`
+changes the version in `packages/viewer/package.json`, after the full `make
+verify` gate with a job-owned database. It writes the SDK receipt with
+`scripts/viewer_receipt.py`, carrying the previous receipt's compatible core
+unless the dispatch names another, and lands it through a `release/viewer-<v>`
+pull request that merges once `verify` passes. `core-release` does the same for
+`docs/reference/core-version.json` changes (tags still work) and lands
+`core-release-<v>.json` through `release/core-<v>`. A version that already has a
+committed receipt is skipped; a version already in the registry without a
+receipt stops the job for an operator. Each merged receipt starts the consumer
+proposals described in [consumer upgrades](consumer-upgrades.md).
+
 ## Independent SDK patches
 
 Viewer 0.4.1 is an SDK-only patch with `docs/releases/viewer-release-0.4.1.json`. It changes no core or reference-engine image. Keep the consumer's reviewed core and engine receipts separately; validate the exact frontend tarball/source/checksum against its SDK receipt. Do not replace the reference-engine digest with a nonexistent 0.4.1 image or label the retained engine as a 0.4.1 release. The six consumers now verify SDK provenance independently of their core/reference-engine provenance. The existing full-platform upgrade command expects a combined platform receipt; this audit's SDK-only adoption uses independently reviewed consumer patches rather than passing the SDK-only receipt into that command. Existing scripts continue to support their documented combined/core receipt formats.

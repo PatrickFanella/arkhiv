@@ -56,6 +56,14 @@ upgrades omit `--base-ref` and use the default branch.
 
 ## Hosted proposal automation
 
+Since 2026-11-04 the proposal job runs for every receipt that a push to `main`
+adds under `docs/releases/` (viewer and core lanes alike) and creates each
+upgrade PR with Gitea's merge-when-checks-succeed flag. Branch protection on
+every consumer `main` requires the `verify` status, so a proposal merges on its
+own only after the consumer's own checks pass; a failed check leaves the PR open
+for review. The job still never deploys a consumer. The design and rollout order
+are in [plan 0006](../plans/0006-automated-update-and-deploy.md).
+
 Committed receipts under `docs/releases/` bind published registry bytes to their
 qualified source and engine digest. The proposal job runs on default-branch
 receipt/registry changes or explicit dispatch. It downloads the actual registry
