@@ -1,0 +1,37 @@
+{
+  "state": "/home/onnwee/.local/state/arkhiv-deploy",
+  "registry": "git.subcult.tv/subculture-collective",
+  "targets": {
+    "platform": {
+      "project": "arkhiv-platform-public-20261004",
+      "maintenance_lock": "/mnt/spektr/server/data/arkhiv-platform-20261004/ops/state/maintenance.lock",
+      "before_backend_change": ["python3", "/mnt/spektr/server/data/arkhiv-platform-20261004/ops/public_runtime.py", "backup", "--config", "/mnt/spektr/server/data/arkhiv-platform-20261004/ops/config.json"],
+      "after": ["python3", "/mnt/spektr/server/data/arkhiv-platform-20261004/ops/public_runtime.py", "monitor", "--config", "/mnt/spektr/server/data/arkhiv-platform-20261004/ops/config.json"],
+      "services": {
+        "archive-core": {"kind": "core", "image": "archive-core", "migrate": ["docker", "run", "--rm", "--network", "arkhiv-platform-public-20261004_archive", "--read-only", "--tmpfs", "/tmp", "-e", "DATABASE_URL_FILE=/run/secrets/database-url", "-v", "/mnt/spektr/server/data/arkhiv-platform-20261004/runtime/arkhiv-operator-url:/run/secrets/database-url:ro", "{image}", "migrate"]},
+        "democracy-core": {"kind": "core", "image": "archive-core", "migrate": ["docker", "run", "--rm", "--network", "arkhiv-platform-public-20261004_archive", "--read-only", "--tmpfs", "/tmp", "-e", "DATABASE_URL_FILE=/run/secrets/database-url", "-v", "/mnt/spektr/server/data/arkhiv-platform-20261004/runtime/democracy_now-operator-url:/run/secrets/database-url:ro", "{image}", "migrate"]},
+        "bill-core": {"kind": "core", "image": "archive-core", "migrate": ["docker", "run", "--rm", "--network", "arkhiv-platform-public-20261004_archive", "--read-only", "--tmpfs", "/tmp", "-e", "DATABASE_URL_FILE=/run/secrets/database-url", "-v", "/mnt/spektr/server/data/arkhiv-platform-20261004/runtime/bill_nye-operator-url:/run/secrets/database-url:ro", "{image}", "migrate"]},
+        "reference": {"kind": "frontend", "image": "archive-reference", "origin": "https://arkhiv.subcult.tv", "check": {"path": "/", "expect": "<html"}},
+        "democracy-now-reference": {"kind": "frontend", "image": "democracy-now-tv-frontend", "upstream": "democracy-core:8080", "origin": "https://democracy-now.subcult.tv", "check": {"path": "/", "expect": "<html"}},
+        "bill-nye-reference": {"kind": "frontend", "image": "bill-nye-tv-frontend", "upstream": "bill-core:8080", "origin": "https://bill-nye.subcult.tv", "check": {"path": "/", "expect": "<html"}},
+        "riot-public-api": {"kind": "api", "image": "arkhiv-riot-grrrl-api"},
+        "riot-public-web": {"kind": "frontend", "image": "arkhiv-riot-grrrl-web", "origin": "https://riot-grrrl.subcult.tv", "check": {"path": "/", "expect": "<html"}}
+      }
+    },
+    "anarchist": {
+      "project": "arkhiv-pilot",
+      "services": {
+        "public-api": {"kind": "api", "image": "arkhiv-anarchist-api"},
+        "public-web": {"kind": "frontend", "image": "arkhiv-anarchist-web", "origin": "https://anarchist-archive.subcult.tv", "check": {"path": "/", "expect": "<html"}}
+      }
+    },
+    "dedhed": {
+      "project": "dedhed-public-20261004",
+      "services": {
+        "api": {"kind": "api", "image": "dedhed-api"},
+        "operator": {"kind": "api", "image": "dedhed-api"},
+        "web": {"kind": "frontend", "image": "dedhed-web-public", "origin": "https://dedhed.subcult.tv", "check": {"path": "/", "expect": "<html"}}
+      }
+    }
+  }
+}

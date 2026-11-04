@@ -47,6 +47,11 @@ runs and independent restore checks succeed. Inspect service results, receipts,
 and timer next-run times separately; a manual run does not prove a natural daily
 cycle or long-term reliability.
 
+Image changes to the public services are applied by the dispatchable deploy job
+described in the [public deployment runbook](runbooks/public-deploy.md); it
+takes the same maintenance lock, runs the backup before a core change and the
+monitor afterwards, and leaves receipts beside its rollback overlays.
+
 For a release, retain the previous image pins, current ingress/configuration
 hashes and independent checkpoints. Change only this deployment's services and
 owned ingress blocks. Restore public access reviews and source histories along

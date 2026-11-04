@@ -1,0 +1,57 @@
+name: deploy-public
+# One click deploys a target's public services on Almaz: the plan names each
+# consumer's current main revision image and the core digest that consumer pins.
+# The Almaz runner connects as the deployment owner through a forced command.
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Deployment target on Almaz
+        required: true
+        default: platform
+        type: choice
+        options: [platform, anarchist, dedhed]
+      dry_run:
+        description: Pull, verify and report without swapping any service
+        required: false
+        default: false
+        type: boolean
+permissions:
+  contents: read
+concurrency:
+  group: deploy-public
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: almaz
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Resolve the image plan from each repository's main branch
+        env:
+          TARGET: ${{ inputs.target }}
+          ARCHIVE_PACKAGE_READ_TOKEN: ${{ secrets.ARCHIVE_PACKAGE_READ_TOKEN }}
+        run: |
+          set -euo pipefail
+          python3 scripts/deploy_plan.py --target "$TARGET" --run-id "$GITHUB_RUN_ID" > plan.json
+          cat plan.json
+      - name: Apply the plan on Almaz
+        env:
+          TARGET: ${{ inputs.target }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          ALMAZ_DEPLOY_KEY: ${{ secrets.ALMAZ_DEPLOY_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "$ALMAZ_DEPLOY_KEY"
+          command -v ssh >/dev/null || { apt-get update && apt-get install --yes --no-install-recommends openssh-client; }
+          key_dir=$(mktemp -d)
+          trap 'rm -rf "$key_dir"' EXIT
+          chmod 700 "$key_dir"
+          printf '%s\n' "$ALMAZ_DEPLOY_KEY" > "$key_dir/key"
+          chmod 600 "$key_dir/key"
+          dry=""
+          if [ "$DRY_RUN" = true ]; then dry=" --dry-run"; fi
+          ssh -i "$key_dir/key" -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$PWD/deploy/almaz.known_hosts" onnwee@10.0.0.200 "deploy --target $TARGET$dry" < plan.json
