@@ -4,13 +4,14 @@
   "targets": {
     "platform": {
       "project": "arkhiv-platform-public-20261004",
-      "maintenance_lock": "/mnt/spektr/server/data/arkhiv-platform-20261004/ops/state/maintenance.lock",
+      "docker": ["sudo", "-n", "docker"],
+      "maintenance_lock": "/home/onnwee/.local/state/arkhiv-platform-public-20261004/operations/maintenance.lock",
       "before_backend_change": ["python3", "/mnt/spektr/server/data/arkhiv-platform-20261004/ops/public_runtime.py", "backup", "--config", "/mnt/spektr/server/data/arkhiv-platform-20261004/ops/config.json"],
       "after": ["python3", "/mnt/spektr/server/data/arkhiv-platform-20261004/ops/public_runtime.py", "monitor", "--config", "/mnt/spektr/server/data/arkhiv-platform-20261004/ops/config.json"],
       "services": {
-        "archive-core": {"kind": "core", "image": "archive-core", "migrate": ["docker", "run", "--rm", "--network", "arkhiv-platform-public-20261004_archive", "--read-only", "--tmpfs", "/tmp", "-e", "DATABASE_URL_FILE=/run/secrets/database-url", "-v", "/mnt/spektr/server/data/arkhiv-platform-20261004/runtime/arkhiv-operator-url:/run/secrets/database-url:ro", "{image}", "migrate"]},
-        "democracy-core": {"kind": "core", "image": "archive-core", "migrate": ["docker", "run", "--rm", "--network", "arkhiv-platform-public-20261004_archive", "--read-only", "--tmpfs", "/tmp", "-e", "DATABASE_URL_FILE=/run/secrets/database-url", "-v", "/mnt/spektr/server/data/arkhiv-platform-20261004/runtime/democracy_now-operator-url:/run/secrets/database-url:ro", "{image}", "migrate"]},
-        "bill-core": {"kind": "core", "image": "archive-core", "migrate": ["docker", "run", "--rm", "--network", "arkhiv-platform-public-20261004_archive", "--read-only", "--tmpfs", "/tmp", "-e", "DATABASE_URL_FILE=/run/secrets/database-url", "-v", "/mnt/spektr/server/data/arkhiv-platform-20261004/runtime/bill_nye-operator-url:/run/secrets/database-url:ro", "{image}", "migrate"]},
+        "archive-core": {"kind": "core", "image": "archive-core", "migrate": ["sudo", "-n", "docker", "run", "--rm", "--network", "arkhiv-platform-public-20261004_archive", "--read-only", "--tmpfs", "/tmp", "-e", "DATABASE_URL_FILE=/run/secrets/database-url", "-v", "/mnt/spektr/server/data/arkhiv-platform-20261004/runtime/arkhiv-operator-url:/run/secrets/database-url:ro", "{image}", "migrate"]},
+        "democracy-core": {"kind": "core", "image": "archive-core", "migrate": ["sudo", "-n", "docker", "run", "--rm", "--network", "arkhiv-platform-public-20261004_archive", "--read-only", "--tmpfs", "/tmp", "-e", "DATABASE_URL_FILE=/run/secrets/database-url", "-v", "/mnt/spektr/server/data/arkhiv-platform-20261004/runtime/democracy_now-operator-url:/run/secrets/database-url:ro", "{image}", "migrate"]},
+        "bill-core": {"kind": "core", "image": "archive-core", "migrate": ["sudo", "-n", "docker", "run", "--rm", "--network", "arkhiv-platform-public-20261004_archive", "--read-only", "--tmpfs", "/tmp", "-e", "DATABASE_URL_FILE=/run/secrets/database-url", "-v", "/mnt/spektr/server/data/arkhiv-platform-20261004/runtime/bill_nye-operator-url:/run/secrets/database-url:ro", "{image}", "migrate"]},
         "reference": {"kind": "frontend", "image": "archive-reference", "origin": "https://arkhiv.subcult.tv", "check": {"path": "/", "expect": "<html"}},
         "democracy-now-reference": {"kind": "frontend", "image": "democracy-now-tv-frontend", "upstream": "democracy-core:8080", "origin": "https://democracy-now.subcult.tv", "check": {"path": "/", "expect": "<html"}},
         "bill-nye-reference": {"kind": "frontend", "image": "bill-nye-tv-frontend", "upstream": "bill-core:8080", "origin": "https://bill-nye.subcult.tv", "check": {"path": "/", "expect": "<html"}},

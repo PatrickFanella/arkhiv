@@ -25,6 +25,7 @@ from pathlib import Path
 DIGEST = re.compile(r'^(?P<registry>[a-z0-9.-]+(?::\d+)?/[a-z0-9._-]+)/(?P<name>[a-z0-9._-]+)@sha256:(?P<digest>[0-9a-f]{64})$')
 TAG = re.compile(r'^(?P<registry>[a-z0-9.-]+(?::\d+)?/[a-z0-9._-]+)/(?P<name>[a-z0-9._-]+):(?P<revision>[0-9a-f]{40})$')
 SERVICE = re.compile(r'^[a-z0-9][a-z0-9_-]{0,63}$')
+DOCKER = ['docker']
 HOST_KEYS = ['Memory', 'MemorySwap', 'NanoCpus', 'PidsLimit', 'ReadonlyRootfs', 'SecurityOpt', 'CapDrop', 'CapAdd', 'PortBindings', 'RestartPolicy', 'LogConfig']
 
 
@@ -87,8 +88,8 @@ def validate_plan(config, target_name, plan):
 
 
 def pull_and_verify(run, image, revision):
-    run(['docker', 'pull', '--quiet', image])
-    inspected = json.loads(run(['docker', 'image', 'inspect', image]))[0]
+    run(DOCKER + ['pull', '--quiet', image])
+    inspected = json.loads(run(DOCKER + ['image', 'inspect', image]))[0]
     labels = inspected['Config'].get('Labels') or {}
     if revision is not None and labels.get('org.opencontainers.image.revision') != revision:
         raise DeployError('Image ' + image + ' carries revision ' + str(labels.get('org.opencontainers.image.revision')) + ', not ' + revision)
@@ -102,8 +103,8 @@ def wrap_upstream(run, image, upstream, tag):
     dockerfile = ('FROM ' + image + '\nUSER root\n'
                   "RUN grep -q 'api:8080' /etc/nginx/nginx.conf && sed -i 's#api:8080#" + upstream + "#g' /etc/nginx/nginx.conf\n"
                   'USER 101:101\n')
-    run(['docker', 'build', '--quiet', '--label', 'tv.subcult.arkhiv-deploy.source=' + image, '-t', tag, '-'], stdin=dockerfile)
-    return run(['docker', 'image', 'inspect', '--format', '{{.Id}}', tag])
+    run(DOCKER + ['build', '--quiet', '--label', 'tv.subcult.arkhiv-deploy.source=' + image, '-t', tag, '-'], stdin=dockerfile)
+    return run(DOCKER + ['image', 'inspect', '--format', '{{.Id}}', tag])
 
 
 def container_name(project, service):
@@ -111,11 +112,11 @@ def container_name(project, service):
 
 
 def compose_base(run, project, service):
-    old = json.loads(run(['docker', 'inspect', container_name(project, service)]))[0]
+    old = json.loads(run(DOCKER + ['inspect', container_name(project, service)]))[0]
     labels = old['Config']['Labels']
     if labels.get('com.docker.compose.project') != project or labels.get('com.docker.compose.service') != service:
         raise DeployError('Container for ' + service + ' does not belong to ' + project)
-    base = ['docker', 'compose', '-p', project]
+    base = DOCKER + ['compose', '-p', project]
     environment = labels.get('com.docker.compose.project.environment_file')
     if environment:
         base += ['--env-file', environment]
@@ -155,7 +156,7 @@ def swap_service(run, fetch, release, project, service, image_id, image_ref, ori
               'command': base + ['-f', str(overlay)] + up, 'rollback_command': base + ['-f', str(rollback)] + up}
     try:
         run(record['command'])
-        current = json.loads(run(['docker', 'inspect', container_name(project, service)]))[0]
+        current = json.loads(run(DOCKER + ['inspect', container_name(project, service)]))[0]
         if current['Image'] != image_id:
             raise DeployError('Container for ' + service + ' did not switch to the planned image')
         if sorted(current['Config']['Env']) != sorted(old['Config']['Env']):
@@ -187,7 +188,11 @@ def swap_service(run, fetch, release, project, service, image_id, image_ref, ori
 
 
 def apply(config, target_name, plan, run=default_run, fetch=default_fetch, dry_run=False, now=None):
+    global DOCKER
     target = config['targets'][target_name]
+    DOCKER = list(target.get('docker') or config.get('docker') or ['docker'])
+    if not DOCKER or not all(re.fullmatch(r'[A-Za-z0-9_./-]+', part) for part in DOCKER) or DOCKER[-1] != 'docker':
+        raise DeployError('The docker command must end in docker')
     resolved = validate_plan(config, target_name, plan)
     stamp = (now or datetime.datetime.now(datetime.timezone.utc)).strftime('%Y%m%dT%H%M%SZ')
     state = Path(config['state'])
@@ -219,7 +224,7 @@ def apply(config, target_name, plan, run=default_run, fetch=default_fetch, dry_r
                     ref = 'local/arkhiv-deploy/' + target_name + '-' + service + ':' + (entry['revision'] or image_id.split(':')[-1][:12])
                     image_id = wrap_upstream(run, entry['image'], spec['upstream'], ref)
                 images[service] = (image_id, ref)
-            changing = [s for s, (image_id, _) in images.items() if json.loads(run(['docker', 'inspect', container_name(target['project'], s)]))[0]['Image'] != image_id]
+            changing = [s for s, (image_id, _) in images.items() if json.loads(run(DOCKER + ['inspect', container_name(target['project'], s)]))[0]['Image'] != image_id]
             receipt['changing'] = changing
             if dry_run:
                 receipt['status'] = 'dry-run'

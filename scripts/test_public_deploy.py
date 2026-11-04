@@ -170,5 +170,18 @@ class ApplyTests(unittest.TestCase):
         self.assertFalse(any(c[0] == 'monitor' for c in docker.calls))
 
 
+    def test_docker_prefix_applies_to_every_docker_and_compose_command(self):
+        docker = FakeDocker('arkhiv-platform-public-20261004', {'reference': 'sha256:old', 'democracy-now-reference': 'sha256:old', 'archive-core': 'sha256:old'}, self.labels)
+        prefixed = config(self.state.name, self.services, {'docker': ['sudo', '-n', 'docker']})
+        def run(args, stdin=None):
+            if args[:1] != ['migrate']:
+                self.assertEqual(args[:3], ['sudo', '-n', 'docker'], args)
+                return docker.run(args[2:], stdin)
+            return docker.run(args, stdin)
+        receipt = apply(prefixed, 'platform', self.plan, run=run, fetch=docker.fetch)
+        self.assertEqual(receipt['status'], 'deployed')
+        self.assertEqual(receipt['services'][0]['command'][:3], ['sudo', '-n', 'docker'])
+
+
 if __name__ == '__main__':
     unittest.main()
