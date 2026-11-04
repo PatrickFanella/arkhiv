@@ -48,7 +48,23 @@ def existing_proposal(base, target, branch, consumer, release, request):
     return None
 
 
-def proposal(release, consumer, clone, artifact, request=api, base_ref=None):
+def schedule_merge(request, base, url):
+    """Ask Gitea to merge the proposal once its required checks pass. Branch protection on the consumer holds the merge until verify is green."""
+    number = url.rstrip('/').rsplit('/', 1)[-1]
+    if not number.isdigit():
+        raise ValueError('Proposal URL does not name a pull request number')
+    try:
+        request(base + '/pulls/' + number + '/merge', 'POST', {'do': 'merge', 'merge_when_checks_succeed': True, 'delete_branch_after_merge': True})
+    except urllib.error.HTTPError as error:
+        # 405: not mergeable yet (conflict or failed check); 409/423: already merged, scheduled or locked.
+        if error.code not in (405, 409, 423):
+            raise
+        print(url, 'left for review: merge request answered HTTP', error.code, flush=True)
+        return False
+    return True
+
+
+def proposal(release, consumer, clone, artifact, request=api, base_ref=None, auto_merge=False):
     if request('/user')['login'] != 'subcult-agent':
         raise ValueError('Upgrade proposals require the subcult-agent identity')
     repository = consumer['repository']
@@ -66,6 +82,8 @@ def proposal(release, consumer, clone, artifact, request=api, base_ref=None):
         return None
     existing = existing_proposal(base, target, branch, consumer, release, request)
     if existing:
+        if auto_merge:
+            schedule_merge(request, base, existing)
         return existing
     subprocess.run(['git', 'switch', '-c', branch], cwd=clone, check=True)
     prepare(clone, consumer, release, artifact)
@@ -99,8 +117,12 @@ def proposal(release, consumer, clone, artifact, request=api, base_ref=None):
         # before considering it delivered; do not repeat the write blindly.
         existing = existing_proposal(base, target, branch, consumer, release, request)
         if existing:
+            if auto_merge:
+                schedule_merge(request, base, existing)
             return existing
         raise
+    if auto_merge:
+        schedule_merge(request, base, result['html_url'])
     return result['html_url']
 
 
@@ -111,6 +133,7 @@ def main():
     parser.add_argument('--release', type=Path, required=True)
     parser.add_argument('--package-artifact', type=Path)
     parser.add_argument('--base-ref', help='Explicit reviewed adoption branch for a stacked proposal; defaults to the repository default branch')
+    parser.add_argument('--auto-merge', action='store_true', help='Merge the proposal automatically once the consumer\'s required checks pass')
     args = parser.parse_args()
     registry = json.loads(args.registry.read_text())
     release = json.loads(args.release.read_text())
@@ -124,7 +147,7 @@ def main():
         subprocess.run(['git', 'clone', '--quiet', 'https://git.subcult.tv/' + consumer['repository'] + '.git', str(clone)], check=True)
         if args.base_ref:
             subprocess.run(['git', 'switch', '--detach', 'origin/' + args.base_ref], cwd=clone, check=True)
-        print(proposal(release, consumer, clone, args.package_artifact.resolve() if args.package_artifact else None, base_ref=args.base_ref) or 'Release already applied; no PR')
+        print(proposal(release, consumer, clone, args.package_artifact.resolve() if args.package_artifact else None, base_ref=args.base_ref, auto_merge=args.auto_merge) or 'Release already applied; no PR')
 
 
 if __name__ == '__main__':

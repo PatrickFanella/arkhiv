@@ -41,15 +41,51 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+          fetch-depth: 0
+      - name: Select the receipts to propose
+        id: select
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+          INPUT_KIND: ${{ inputs.kind || 'viewer' }}
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = workflow_dispatch ]; then
+            version="$INPUT_VERSION"
+            if [ -z "$version" ]; then
+              if [ "$INPUT_KIND" = core ]; then
+                version=$(python3 -c 'import json; print(json.load(open("docs/reference/core-version.json"))["version"])')
+              else
+                version=$(node -p "require('./packages/viewer/package.json').version")
+              fi
+            fi
+            echo "releases=$INPUT_KIND=$version" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          releases=""
+          for file in $(git diff --name-only "$BEFORE" "$GITHUB_SHA" -- docs/releases docs/reference/consumer-registry.json | sort -u); do
+            case "$file" in
+              docs/releases/viewer-release-*.json) releases="$releases viewer=${file#docs/releases/viewer-release-}" ;;
+              docs/releases/core-release-*.json) releases="$releases core=${file#docs/releases/core-release-}" ;;
+              docs/reference/consumer-registry.json)
+                releases="$releases viewer=$(node -p "require('./packages/viewer/package.json').version") core=$(python3 -c 'import json; print(json.load(open("docs/reference/core-version.json"))["version"])')" ;;
+            esac
+          done
+          releases=$(for entry in $releases; do echo "${entry%.json}"; done | sort -u | tr '\n' ' ')
+          echo "releases=$releases" >> "$GITHUB_OUTPUT"
+          echo "Proposing: ${releases:-nothing}"
       - uses: actions/setup-go@v5
+        if: steps.select.outputs.releases != ''
         with:
           go-version-file: backend/go.mod
           cache: false
       - uses: actions/setup-node@v4
-        if: ${{ inputs.kind != 'core' }}
+        if: steps.select.outputs.releases != ''
         with:
           node-version: '24'
       - name: Install consumer verification tools
+        if: steps.select.outputs.releases != ''
         run: |
           if [ "$(id -u)" = 0 ]; then
             apt-get update && apt-get install --yes --no-install-recommends poppler-utils util-linux ffmpeg postgresql-client-16
@@ -57,10 +93,10 @@ jobs:
             sudo -n apt-get update && sudo -n apt-get install --yes --no-install-recommends poppler-utils util-linux ffmpeg postgresql-client-16
           fi
       - name: Propose compatible consumer upgrades
+        if: steps.select.outputs.releases != ''
         env:
           ARCHIVE_UPGRADE_DATABASE_RUN: ${{ github.run_id }}-${{ github.run_attempt }}
-          ARCHIVE_RELEASE_VERSION: ${{ inputs.version }}
-          ARCHIVE_RELEASE_KIND: ${{ inputs.kind || 'viewer' }}
+          ARCHIVE_RELEASES: ${{ steps.select.outputs.releases }}
           ARCHIVE_ADOPTION_REFS: ${{ inputs.adoption_refs || 'false' }}
           ARCHIVE_PACKAGE_READ_TOKEN: ${{ secrets.ARCHIVE_PACKAGE_READ_TOKEN }}
           ARCHIVE_UPGRADE_TOKEN: ${{ secrets.ARCHIVE_UPGRADE_TOKEN }}
@@ -74,26 +110,22 @@ jobs:
           auth_dir=$(mktemp -d)
           trap 'rm -rf "$tool_dir" "$auth_dir"' EXIT
           chmod 700 "$auth_dir"
-          if [ "$ARCHIVE_RELEASE_KIND" = platform ] || [ "$ARCHIVE_RELEASE_KIND" = viewer ]; then
-            test -n "$ARCHIVE_PACKAGE_READ_TOKEN"
-            printf '%s\n' '@subcult:registry=https://git.subcult.tv/api/packages/subculture-collective/npm/' '//git.subcult.tv/api/packages/subculture-collective/npm/:_authToken=${ARCHIVE_PACKAGE_READ_TOKEN}' > "$auth_dir/npmrc"
-            chmod 600 "$auth_dir/npmrc"
-            export NPM_CONFIG_USERCONFIG="$auth_dir/npmrc"
-            npm install --prefix "$tool_dir" pnpm@10.33.0
-            export PATH="$tool_dir/node_modules/.bin:$PATH"
-          else
-            test "$ARCHIVE_RELEASE_KIND" = core
-          fi
-          if [ -z "$ARCHIVE_RELEASE_VERSION" ]; then
-            if [ "$ARCHIVE_RELEASE_KIND" = core ]; then
-              ARCHIVE_RELEASE_VERSION=$(python3 -c 'import json; print(json.load(open("docs/reference/core-version.json"))["version"])')
+          test -n "$ARCHIVE_PACKAGE_READ_TOKEN"
+          printf '%s\n' '@subcult:registry=https://git.subcult.tv/api/packages/subculture-collective/npm/' '//git.subcult.tv/api/packages/subculture-collective/npm/:_authToken=${ARCHIVE_PACKAGE_READ_TOKEN}' > "$auth_dir/npmrc"
+          chmod 600 "$auth_dir/npmrc"
+          export NPM_CONFIG_USERCONFIG="$auth_dir/npmrc"
+          npm install --prefix "$tool_dir" pnpm@10.33.0
+          export PATH="$tool_dir/node_modules/.bin:$PATH"
+          for entry in $ARCHIVE_RELEASES; do
+            kind="${entry%%=*}"
+            version="${entry#*=}"
+            case "$kind" in viewer|core|platform) ;; *) echo "Unknown release kind $kind" >&2; exit 1 ;; esac
+            echo "::group::Propose $kind $version"
+            if [ "$ARCHIVE_ADOPTION_REFS" = true ]; then
+              python3 scripts/propose_release_upgrades.py --kind "$kind" --version "$version" --adoption-refs --auto-merge
             else
-              ARCHIVE_RELEASE_VERSION=$(node -p "require('./packages/viewer/package.json').version")
+              test "$ARCHIVE_ADOPTION_REFS" = false
+              python3 scripts/propose_release_upgrades.py --kind "$kind" --version "$version" --auto-merge
             fi
-          fi
-          if [ "$ARCHIVE_ADOPTION_REFS" = true ]; then
-            python3 scripts/propose_release_upgrades.py --kind "$ARCHIVE_RELEASE_KIND" --version "$ARCHIVE_RELEASE_VERSION" --adoption-refs
-          else
-            test "$ARCHIVE_ADOPTION_REFS" = false
-            python3 scripts/propose_release_upgrades.py --kind "$ARCHIVE_RELEASE_KIND" --version "$ARCHIVE_RELEASE_VERSION"
-          fi
+            echo "::endgroup::"
+          done

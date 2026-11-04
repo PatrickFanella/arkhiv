@@ -14,6 +14,9 @@ on:
         required: false
   push:
     tags: ['core-v*']
+    branches: [main]
+    paths:
+      - docs/reference/core-version.json
 permissions:
   contents: read
 
@@ -34,11 +37,28 @@ jobs:
         with:
           persist-credentials: false
           ref: ${{ inputs.source_revision || github.sha }}
+      - name: Select the core version
+        id: select
+        run: |
+          set -euo pipefail
+          version=$(python3 -c 'import json; print(json.load(open("docs/reference/core-version.json"))["version"])')
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if [ -f "docs/releases/core-release-$version.json" ] && [ -z "${CORE_RECOVERY_DIGEST:-}" ]; then
+            echo "Core $version already has a committed receipt; nothing to release."
+            echo "release=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "release=true" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          CORE_RECOVERY_DIGEST: ${{ inputs.published_digest }}
       - uses: actions/setup-go@v5
+        if: steps.select.outputs.release == 'true'
         with:
           go-version-file: backend/go.mod
           cache: false
       - name: Install backend media verification tools
+        if: steps.select.outputs.release == 'true'
         run: |
           if [ "$(id -u)" = 0 ]; then
             apt-get update && apt-get install --yes --no-install-recommends poppler-utils util-linux ffmpeg
@@ -46,6 +66,7 @@ jobs:
             sudo -n apt-get update && sudo -n apt-get install --yes --no-install-recommends poppler-utils util-linux ffmpeg
           fi
       - name: Verify independent core
+        if: steps.select.outputs.release == 'true'
         env:
           TEST_DATABASE_RUN: ${{ github.run_id }}-${{ github.run_attempt }}
         run: |
@@ -60,6 +81,7 @@ jobs:
           python3 -m unittest discover -s scripts -p 'test_core_release.py'
           test -z "$(git status --porcelain)"
       - name: Publish immutable core image and receipt
+        if: steps.select.outputs.release == 'true'
         env:
           ARCHIVE_PACKAGE_TOKEN: ${{ secrets.ARCHIVE_PACKAGE_TOKEN }}
           ARCHIVE_REGISTRY_USER: ${{ vars.ARCHIVE_REGISTRY_USER }}
@@ -100,8 +122,30 @@ jobs:
           core_digest=$(docker inspect --format '{{index .RepoDigests 0}}' "$core_image")
           python3 scripts/core_release.py --engine-digest "$core_digest" --output ".artifacts/core-release-$core_version.json"
       - uses: actions/upload-artifact@v3
+        if: steps.select.outputs.release == 'true'
         with:
           name: headless-core-release
           path: .artifacts/core-release-*.json
           if-no-files-found: error
           include-hidden-files: true
+      - name: Land the receipt through an auto-merging pull request
+        if: steps.select.outputs.release == 'true'
+        env:
+          ARCHIVE_UPGRADE_TOKEN: ${{ secrets.ARCHIVE_UPGRADE_TOKEN }}
+          CORE_VERSION: ${{ steps.select.outputs.version }}
+        run: |
+          set -euo pipefail
+          test -n "$ARCHIVE_UPGRADE_TOKEN"
+          receipt="docs/releases/core-release-$CORE_VERSION.json"
+          if [ -f "$receipt" ]; then
+            cmp -s "$receipt" ".artifacts/core-release-$CORE_VERSION.json" || { echo "Committed receipt differs from this run's receipt; inspect before replacing" >&2; exit 1; }
+            echo "Receipt already committed."
+            exit 0
+          fi
+          cp ".artifacts/core-release-$CORE_VERSION.json" "$receipt"
+          branch="release/core-$CORE_VERSION"
+          git switch -c "$branch"
+          git add "$receipt"
+          git -c user.name='SUBCULT Agent' -c user.email='info@subcult.tv' -c commit.gpgsign=false commit -m "release(core): record published $CORE_VERSION core receipt"
+          git -c credential.helper= -c 'credential.helper=!f() { echo username=subcult-agent; echo "password=$ARCHIVE_UPGRADE_TOKEN"; }; f' push origin "$branch"
+          python3 scripts/receipt_pull_request.py --branch "$branch" --title "Record core $CORE_VERSION release receipt" --body "Automated receipt for the published immutable core image. Merging it starts the consumer upgrade proposals."
