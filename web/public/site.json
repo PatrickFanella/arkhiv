@@ -13,5 +13,11 @@
     "accent": "#ebd59b",
     "border": "#42505c"
   },
-  "interface": "catalog"
+  "interface": "catalog",
+  "preview": {
+    "image": "/og.png",
+    "width": 1200,
+    "height": 630,
+    "alt": "The Arkhiv mark at the left, the label ARKHIV / BY SUBCULT, the name Arkhiv, the line: A zine archive: original files preserved, a catalogue with a reader and downloads. Bottom right: SUBCULT.TV."
+  }
 }
