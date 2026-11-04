@@ -35,8 +35,10 @@ using `Player` directly should pass `onRejoin={viewer.tune}` and
 [video viewer contract](../../docs/reference/video-viewer.md) for API fields,
 filter semantics, state labels and independent adoption requirements.
 
-The root entry supports video API version `1`. `Compatibility` verifies the exact
-collection for standalone consumers. Video channel/playback requests name the
+The root entry supports video API version `1`. `Compatibility` verifies that the
+engine serves the brand collection: an engine bound to one collection must match
+it, an engine scoped by a collection list must include it, and an unscoped engine
+is accepted. Video channel/playback requests name the
 selected collection; typed print/audio entries have their own contracts. Consumers
 own mixed media page composition. Acquisition/publication policies stay on the
 server.
