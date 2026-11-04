@@ -60,3 +60,25 @@ jobs:
           fi
           export TEST_DATABASE_URL="postgres://vhness:disposable-ci-only@$test_db_ip:5432/vhness_test?sslmode=disable"
           make verify
+  image:
+    needs: verify
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and publish the reference frontend image for this revision
+        env:
+          REGISTRY_PAT: ${{ secrets.REGISTRY_PAT }}
+          IMAGE: git.subcult.tv/subculture-collective/archive-reference
+        run: |
+          set -euo pipefail
+          test -n "$REGISTRY_PAT"
+          auth_dir=$(mktemp -d)
+          trap 'rm -rf "$auth_dir"' EXIT
+          chmod 700 "$auth_dir"
+          export DOCKER_BUILDKIT=1 DOCKER_CONFIG="$auth_dir/docker"
+          docker build --target reference-frontend --label "org.opencontainers.image.revision=$GITHUB_SHA" -t "$IMAGE:$GITHUB_SHA" .
+          printf '%s' "$REGISTRY_PAT" | docker login git.subcult.tv --username subcult-agent --password-stdin
+          docker push "$IMAGE:$GITHUB_SHA"
+          echo "published $(docker inspect --format '{{index .RepoDigests 0}}' "$IMAGE:$GITHUB_SHA")"
