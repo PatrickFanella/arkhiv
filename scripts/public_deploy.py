@@ -34,7 +34,11 @@ class DeployError(Exception):
 
 
 def default_run(args, stdin=None):
-    return subprocess.run(args, input=stdin, capture_output=True, text=True, check=True).stdout.strip()
+    result = subprocess.run(args, input=stdin, capture_output=True, text=True)
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout).strip().splitlines()
+        raise DeployError(' '.join(args[:6]) + ('...' if len(args) > 6 else '') + ' failed: ' + ' | '.join(detail[-3:]))
+    return result.stdout.strip()
 
 
 def default_fetch(url, timeout=20):
@@ -191,8 +195,8 @@ def apply(config, target_name, plan, run=default_run, fetch=default_fetch, dry_r
     global DOCKER
     target = config['targets'][target_name]
     DOCKER = list(target.get('docker') or config.get('docker') or ['docker'])
-    if not DOCKER or not all(re.fullmatch(r'[A-Za-z0-9_./-]+', part) for part in DOCKER) or DOCKER[-1] != 'docker':
-        raise DeployError('The docker command must end in docker')
+    if 'docker' not in DOCKER or not all(re.fullmatch(r'[A-Za-z0-9_./=-]+', part) for part in DOCKER):
+        raise DeployError('The docker command must name docker and may add only plain flags such as --config <dir>')
     resolved = validate_plan(config, target_name, plan)
     stamp = (now or datetime.datetime.now(datetime.timezone.utc)).strftime('%Y%m%dT%H%M%SZ')
     state = Path(config['state'])
