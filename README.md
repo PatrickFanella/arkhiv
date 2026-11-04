@@ -1,5 +1,7 @@
 # Arkhiv
 
+![Arkhiv: three stacked, slightly offset sheets with two staple marks, the top sheet outlined in riso red and blue, beside the name Arkhiv](brand/readme-lockup.png)
+
 Arkhiv is the shared archive engine for independent print, audio, and video apps.
 It preserves source metadata, editorial history, reviewed access decisions,
 media identities, search indexes, and shared playback schedules.
