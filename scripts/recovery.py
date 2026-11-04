@@ -90,11 +90,13 @@ def main():
     if args.media:
         media = Path(args.media).resolve()
         # Only immutable originals and receipts belong to this bounded sample backup.
-        originals = list(media.rglob('originals/*.mp4'))
+        originals = sorted(p for p in media.rglob('originals/*') if p.is_symlink() or p.is_file())
+        receipts = sorted(media.rglob('*.receipt.json'))
+        if any(p.is_symlink() for p in receipts): raise RuntimeError('Symlinked receipts are not backed up')
         if args.media_budget <= 0 or args.media_budget > 32 << 30 or not originals or any(p.is_symlink() for p in originals) or sum(p.stat().st_size for p in originals) > args.media_budget:
             raise RuntimeError('Preservation exceeds the explicit media backup bound')
         archive = directory / 'preservation.tar'
-        run(['tar', '-cf', str(archive), '-C', str(media), *[str(p.relative_to(media)) for p in originals], *[str(p.relative_to(media)) for p in media.rglob('*.receipt.json')]])
+        run(['tar', '-cf', str(archive), '-C', str(media), *[str(p.relative_to(media)) for p in originals], *[str(p.relative_to(media)) for p in receipts]])
         archive.chmod(0o600)
         run(['scp', '-q', str(archive), args.host + ':' + remote + '/preservation.tar'])
         archive_hash = checksum(archive)

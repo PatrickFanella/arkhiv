@@ -53,6 +53,8 @@ def main():
                 if not assets.is_dir() or not re.fullmatch(r'/[A-Za-z0-9_./-]+',str(assets)): raise RuntimeError('Use an existing brand asset directory')
                 mounts.append(f'{assets}:/app/web/brand:ro')
             (root/'brand.override.json').write_text(json.dumps({'services':{'app':{'volumes':mounts}}},indent=2)+'\n')
+        else:
+            (root/'brand.override.json').unlink(missing_ok=True)
         print(f'Prepared {args.project} at {root}; secrets retained privately')
         return
     receipt = json.loads((root / 'deployment.json').read_text())

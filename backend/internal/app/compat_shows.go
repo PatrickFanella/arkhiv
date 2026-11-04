@@ -2,6 +2,7 @@
 package app
 
 import (
+	"errors"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -30,7 +31,8 @@ func (s *Server) legacyCalendar(w http.ResponseWriter, r *http.Request) {
 		}
 		days, err := s.DB.LegacyDays(r.Context(), s.configuredCollection(), year)
 		if err != nil {
-			write(w, 400, map[string]string{"error": "That year isn't on the calendar."})
+			status, message := legacyStatus(err, "That year isn't on the calendar.")
+			write(w, status, map[string]string{"error": message})
 			return
 		}
 		out["year"] = year
@@ -50,7 +52,8 @@ func (s *Server) legacyDate(w http.ResponseWriter, r *http.Request) {
 	date := r.PathValue("date")
 	items, err := s.DB.LegacyItemsOn(r.Context(), s.configuredCollection(), date)
 	if err != nil {
-		write(w, 400, map[string]string{"error": "That isn't a date the calendar can read."})
+		status, message := legacyStatus(err, "That isn't a date the calendar can read.")
+		write(w, status, map[string]string{"error": message})
 		return
 	}
 	entries, err := s.legacyAudioEntries(r)
@@ -102,7 +105,8 @@ func (s *Server) legacyOnThisDay(w http.ResponseWriter, r *http.Request) {
 	}
 	days, err := s.DB.LegacyOnThisDay(r.Context(), s.configuredCollection(), month, day)
 	if err != nil {
-		write(w, 400, map[string]string{"error": "invalid month or day"})
+		status, message := legacyStatus(err, "invalid month or day")
+		write(w, status, map[string]string{"error": message})
 		return
 	}
 	write(w, 200, map[string]any{"month": month, "day": day, "dates": days})
@@ -115,11 +119,22 @@ func (s *Server) legacyShows(w http.ResponseWriter, r *http.Request) {
 	}
 	hits, total, err := s.DB.LegacySearch(r.Context(), s.configuredCollection(), r.URL.Query().Get("q"), r.URL.Query().Get("year"), page, 20)
 	if err != nil {
-		write(w, 400, map[string]string{"error": "invalid search"})
+		status, message := legacyStatus(err, "invalid search")
+		write(w, status, map[string]string{"error": message})
 		return
 	}
 	if hits == nil {
 		hits = []catalog.SearchHit{}
 	}
 	write(w, 200, map[string]any{"dates": hits, "total": total, "page": page})
+}
+
+// legacyStatus keeps the compatibility wording for rejected input and reports
+// every other failure, including an expired request deadline, as unavailable.
+func legacyStatus(err error, invalid string) (int, string) {
+	if errors.Is(err, catalog.ErrInvalidInput) {
+		return 400, invalid
+	}
+	slog.Error("legacy show read failed", "error", err)
+	return 503, "The show index isn't answering. Try again in a moment."
 }

@@ -166,7 +166,14 @@ func (s *Store) Run(ctx context.Context, client *source.Client, pages, batch int
 		}
 		if fetchErr == nil {
 			if response.Status == 304 {
-				response.Raw, _, _, fetchErr = s.Core.RetainedResponse(ctx, id)
+				var priorETag, priorModified string
+				response.Raw, priorETag, priorModified, fetchErr = s.Core.RetainedResponse(ctx, id)
+				if response.ETag == "" {
+					response.ETag = priorETag
+				}
+				if response.Modified == "" {
+					response.Modified = priorModified
+				}
 			}
 			if fetchErr == nil {
 				if strings.TrimSpace(string(response.Raw)) == "{}" {

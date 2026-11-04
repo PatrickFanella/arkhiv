@@ -9,6 +9,7 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "strict": true,
+    "allowUnreachableCode": false,
     "declaration": true,
     "outDir": "dist",
     "rootDir": "src",

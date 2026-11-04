@@ -46,7 +46,7 @@ def require_matching_config(args):
         raise ValueError('CLI configuration must name this exact personal database and deployment')
 
 
-def prune(destination, now):
+def prune(destination, now, deployment):
     removed = 0
     for directory in destination.glob('personal-*'):
         if directory.is_symlink() or not directory.is_dir():
@@ -57,7 +57,7 @@ def prune(destination, now):
         try:
             receipt = json.loads(receipt_path.read_text())
             created = dt.datetime.fromisoformat(receipt['created_at'])
-            if receipt['kind'] != 'arkhiv-personal-backup' or receipt['version'] != 1 or created.tzinfo is None:
+            if receipt['kind'] != 'arkhiv-personal-backup' or receipt['version'] != 1 or receipt['deployment'] != deployment or created.tzinfo is None:
                 continue
             if now - created < dt.timedelta(days=35):
                 continue
@@ -104,7 +104,7 @@ def backup(args):
         checkpoint_tmp.replace(checkpoints / 'current-personal-recovery.json')
         final = destination / ('personal-' + now.strftime('%Y%m%dT%H%M%SZ') + '-' + root.name.rsplit('-', 1)[-1])
         root.rename(final)
-    print(json.dumps({'backup': str(final), 'sha256': receipt['sha256'], 'expired_backups_removed': prune(destination, now)}))
+    print(json.dumps({'backup': str(final), 'sha256': receipt['sha256'], 'expired_backups_removed': prune(destination, now, args.deployment)}))
 
 
 def restore(args):

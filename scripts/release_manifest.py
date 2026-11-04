@@ -25,7 +25,10 @@ def main():
     if args.output.exists():
         raise SystemExit('Do not overwrite a release manifest')
     with tarfile.open(args.package) as archive:
-        member = archive.extractfile('package/package.json')
+        try:
+            member = archive.extractfile('package/package.json')
+        except KeyError:
+            member = None
         if member is None:
             raise SystemExit('Packed artifact has no package metadata')
         package = json.load(member)

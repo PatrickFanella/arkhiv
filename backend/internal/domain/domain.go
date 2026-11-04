@@ -208,7 +208,11 @@ func (e Entry) reviewedCaptions(d Decision) ([]Caption, error) {
 			return nil, fmt.Errorf("reviewed caption is absent or restricted")
 		}
 		seen[review.File] = true
-		tracks = append(tracks, Caption{CaptionReview: review, URL: "https://archive.org/download/" + url.PathEscape(e.Episode.ID) + "/" + url.PathEscape(review.File)})
+		sourceID := e.Episode.ID
+		if e.Episode.SourceItemID != "" {
+			sourceID = e.Episode.SourceItemID
+		}
+		tracks = append(tracks, Caption{CaptionReview: review, URL: "https://archive.org/download/" + url.PathEscape(sourceID) + "/" + url.PathEscape(review.File)})
 	}
 	return tracks, nil
 }

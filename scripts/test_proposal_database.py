@@ -16,8 +16,8 @@ class ProposalDatabaseTests(unittest.TestCase):
             calls.append(name)
             return '172.18.0.2'
         database, url = consumer_test_database(self.inspected, 'run-1', 'subculture-collective/arkhiv-alpha', resolve)
-        self.assertEqual(database, 'upgrade_arkhiv_alpha')
-        self.assertEqual(url, 'postgres://dev:disposable-dev-only@db:5432/upgrade_arkhiv_alpha?sslmode=disable')
+        self.assertEqual(database, 'upgrade_subculture_collective__arkhiv_alpha')
+        self.assertEqual(url, 'postgres://dev:disposable-dev-only@db:5432/upgrade_subculture_collective__arkhiv_alpha?sslmode=disable')
         self.assertEqual(calls, ['db'])
 
     def test_rejects_other_job_identity_alias_network_and_database_name(self):
@@ -37,3 +37,15 @@ class ProposalDatabaseTests(unittest.TestCase):
             with self.subTest(failure=failure), self.assertRaises(ValueError):
                 consumer_test_database(inspected, 'run-1', repository,
                     lambda name: '172.18.0.99' if failure == 'alias' else '172.18.0.2')
+
+    def test_same_name_under_two_owners_gets_distinct_databases(self):
+        first, _ = consumer_test_database(self.inspected, 'run-1', 'subculture-collective/arkhiv-live-music', lambda name: '172.18.0.2')
+        second, _ = consumer_test_database(self.inspected, 'run-1', 'PatrickFanella/arkhiv-live-music', lambda name: '172.18.0.2')
+        self.assertNotEqual(first, second)
+
+    def test_missing_environment_is_an_identity_mismatch(self):
+        inspected = copy.deepcopy(self.inspected)
+        inspected['Config']['Env'] = None
+        with self.assertRaises(ValueError):
+            consumer_test_database(inspected, 'run-1', 'subculture-collective/arkhiv-alpha', lambda name: '172.18.0.2')
+

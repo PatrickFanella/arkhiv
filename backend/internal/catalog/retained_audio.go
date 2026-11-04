@@ -45,7 +45,7 @@ func (d *DB) LegacyYears(ctx context.Context, collection string) ([]YearCount, e
 // Days lists every show date in a year with its item count and most common venue.
 func (d *DB) LegacyDays(ctx context.Context, collection string, year int) ([]DayCount, error) {
 	if year < 1960 || year > 2100 {
-		return nil, fmt.Errorf("year out of range")
+		return nil, fmt.Errorf("%w: year out of range", ErrInvalidInput)
 	}
 	rows, err := d.Pool.Query(ctx, `SELECT to_char(show_date,'YYYY-MM-DD'), count(*)::int, mode() WITHIN GROUP (ORDER BY venue) FROM retained_audio_items WHERE `+d.retainedAudioPredicate(collection)+` AND show_date >= make_date($3,1,1) AND show_date < make_date($3+1,1,1) GROUP BY show_date ORDER BY show_date`, collection, d.PublicOnly, year)
 	if err != nil {
@@ -57,7 +57,7 @@ func (d *DB) LegacyDays(ctx context.Context, collection string, year int) ([]Day
 // OnThisDay lists every show date sharing a month and day, across years.
 func (d *DB) LegacyOnThisDay(ctx context.Context, collection string, month, day int) ([]DayCount, error) {
 	if month < 1 || month > 12 || day < 1 || day > 31 {
-		return nil, fmt.Errorf("month or day out of range")
+		return nil, fmt.Errorf("%w: month or day out of range", ErrInvalidInput)
 	}
 	rows, err := d.Pool.Query(ctx, `SELECT to_char(show_date,'YYYY-MM-DD'), count(*)::int, mode() WITHIN GROUP (ORDER BY venue) FROM retained_audio_items WHERE `+d.retainedAudioPredicate(collection)+` AND EXTRACT(MONTH FROM show_date)=$3 AND EXTRACT(DAY FROM show_date)=$4 GROUP BY show_date ORDER BY show_date`, collection, d.PublicOnly, month, day)
 	if err != nil {
@@ -96,7 +96,7 @@ func scanItem(rows pgx.CollectableRow) (music.SourceItem, error) {
 // ItemsOn returns every item for one show date, best rated and most downloaded first.
 func (d *DB) LegacyItemsOn(ctx context.Context, collection string, date string) ([]music.SourceItem, error) {
 	if !dateShape.MatchString(date) {
-		return nil, fmt.Errorf("invalid date")
+		return nil, fmt.Errorf("%w: invalid date", ErrInvalidInput)
 	}
 	rows, err := d.Pool.Query(ctx, `SELECT `+itemColumns+` FROM retained_audio_items WHERE `+d.retainedAudioPredicate(collection)+` AND show_date=$3::date ORDER BY avg_rating DESC, downloads DESC, id`, collection, d.PublicOnly, date)
 	if err != nil {
@@ -116,7 +116,7 @@ type SearchHit struct {
 // titles, grouping hits by show date. Dates without a month or day are excluded.
 func (d *DB) LegacySearch(ctx context.Context, collection string, q, year string, page, size int) ([]SearchHit, int, error) {
 	if page < 1 || size < 1 || size > 100 {
-		return nil, 0, fmt.Errorf("invalid page")
+		return nil, 0, fmt.Errorf("%w: invalid page", ErrInvalidInput)
 	}
 	words := []string{}
 	for _, w := range strings.Fields(strings.ToLower(q)) {
@@ -126,7 +126,7 @@ func (d *DB) LegacySearch(ctx context.Context, collection string, q, year string
 		}
 	}
 	if len(words) > 12 {
-		return nil, 0, fmt.Errorf("query too long")
+		return nil, 0, fmt.Errorf("%w: query too long", ErrInvalidInput)
 	}
 	query := strings.Join(words, " & ")
 	where := d.retainedAudioPredicate(collection) + ` AND show_date IS NOT NULL`
@@ -137,7 +137,7 @@ func (d *DB) LegacySearch(ctx context.Context, collection string, q, year string
 	}
 	if year != "" {
 		if !regexp.MustCompile(`^\d{4}$`).MatchString(year) {
-			return nil, 0, fmt.Errorf("invalid year")
+			return nil, 0, fmt.Errorf("%w: invalid year", ErrInvalidInput)
 		}
 		args = append(args, year)
 		where += fmt.Sprintf(` AND EXTRACT(YEAR FROM show_date)=$%d::int`, len(args))

@@ -50,7 +50,7 @@ func normalize(id, collection string, raw []byte, ownedItem bool) (domain.Episod
 	member := ownedItem && id == collection
 	switch c := m["collection"].(type) {
 	case string:
-		member = c == collection
+		member = member || c == collection
 	case []any:
 		for _, x := range c {
 			if Text(x) == collection {

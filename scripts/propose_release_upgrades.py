@@ -17,7 +17,7 @@ from propose_consumer_upgrade import proposal
 def consumer_test_database(inspected, run, repository, resolve=socket.gethostbyname):
     if inspected['Config']['Labels'].get('arkhiv.upgrade-database') != run:
         raise ValueError('Database belongs to another job')
-    environment = dict(value.split('=', 1) for value in inspected['Config'].get('Env', []))
+    environment = dict(value.split('=', 1) for value in inspected['Config'].get('Env') or [])
     if environment.get('POSTGRES_USER') != 'dev' or environment.get('POSTGRES_PASSWORD') != 'disposable-dev-only':
         raise ValueError('Expected the disposable launcher database identity')
     addresses = [network['IPAddress'] for network in inspected['NetworkSettings']['Networks'].values()]
@@ -25,7 +25,7 @@ def consumer_test_database(inspected, run, repository, resolve=socket.gethostbyn
         raise ValueError('Expected one job-owned database address')
     if resolve('db') != addresses[0]:
         raise ValueError('Launcher database alias resolves outside this job')
-    database = 'upgrade_' + repository.split('/')[-1].replace('-', '_')
+    database = 'upgrade_' + repository.lower().replace('/', '__').replace('-', '_')
     if not re.fullmatch(r'[a-z][a-z0-9_]{0,62}', database):
         raise ValueError('Invalid consumer test database name')
     return database, 'postgres://dev:disposable-dev-only@db:5432/' + database + '?sslmode=disable'
@@ -68,7 +68,7 @@ def main():
                     print(consumer['repository'], 'adoption remains in review; select --adoption-refs for a stacked proposal', flush=True)
                     continue
                 base_ref = consumer['adoption_ref']
-            clone = work / consumer['repository'].split('/')[-1]
+            clone = work / consumer['repository'].replace('/', '__')
             subprocess.run(['git', 'clone', '--quiet', 'https://git.subcult.tv/' + consumer['repository'] + '.git', str(clone)], check=True)
             if base_ref:
                 subprocess.run(['git', 'switch', '--detach', 'origin/' + base_ref], cwd=clone, check=True)
