@@ -58,3 +58,14 @@ func TestAVIImportPreservesSourceWithoutPlaybackApproval(t *testing.T) {
 		t.Fatal("approved original refused")
 	}
 }
+
+func TestOwnedItemWithStringCollectionMembership(t *testing.T) {
+	raw := []byte(`{"metadata":{"identifier":"series","mediatype":"movies","collection":"television","title":"Series"},"files":[{"name":"01 Flight.mp4","size":"30","length":"12"}]}`)
+	c := domain.Collection{ID: "bill-nye", Policy: domain.Local, Budget: 1 << 20, Reserve: 100, SourceItem: "series"}
+	if _, err := ItemFile(c, "series", "01 Flight.mp4", raw); err != nil {
+		t.Fatalf("owned item with a single-collection string rejected: %v", err)
+	}
+	if _, err := ItemFile(c, "other", "01 Flight.mp4", raw); err == nil {
+		t.Fatal("unconfigured source accepted")
+	}
+}

@@ -45,7 +45,7 @@ def main():
         print('Owned restore API/database stopped; independent backup retained');return
     if state.exists():raise RuntimeError('Restore runtime already recorded; inspect and stop explicitly')
     if not (backup/'receipt.json').exists() or not (backup/'metadata.dump').exists() or not (backup/'restored-originals').exists():raise RuntimeError('Complete verified backup required')
-    sockets=root/'sockets';sockets.mkdir(mode=0o777);sockets.chmod(0o777)
+    sockets=root/'sockets';sockets.mkdir(mode=0o777,exist_ok=True);sockets.chmod(0o777)
     run(['docker','run','-d','--name',name,'--network','none','--memory','512m','--cpus','1','--mount',f'type=bind,source={sockets},target=/var/run/postgresql','-e','POSTGRES_HOST_AUTH_METHOD=trust','postgres:17'],stdout=subprocess.DEVNULL)
     try:
         for _ in range(60):

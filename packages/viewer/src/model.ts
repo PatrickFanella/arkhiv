@@ -35,6 +35,11 @@ export function playbackURL(value: Playback): string {
   return url.href;
 }
 export function captionURL(value: Caption, playback: Playback): string {
+  // Processed local video serves its reviewed captions beside the media.
+  if (playback.policy === 'local_preserve' && value.url.startsWith('/api/video-captions/')) {
+    if (value.url.includes('..') || /[\\\0?#]/.test(value.url) || !/^\/api\/video-captions\/[^/]+\/\d+$/.test(value.url)) throw new Error('Invalid local caption URL.');
+    return value.url;
+  }
   const source = new URL(playback.source_url);
   const url = new URL(value.url);
   const item = source.pathname.split('/').at(-1);

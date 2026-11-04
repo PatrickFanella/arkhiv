@@ -1,3 +1,12 @@
+## Unreleased
+
+Accept reviewed captions served beside processed local video (`/api/video-captions/`)
+for `local_preserve` playback; source-streamed captions keep the exact archive.org
+checks. `Compatibility` now follows the reference engine check: an engine bound to
+one collection must match, an engine scoped by a collection list must include the
+brand collection, and an unscoped engine is accepted. The audio player reports its
+initial loading state on mount; that report was previously unreachable.
+
 ## 0.4.4
 
 Fetch audio and video with anonymous CORS so browser volume extensions can route

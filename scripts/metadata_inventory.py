@@ -44,11 +44,12 @@ def main():
             if not final_reconciliation_started:
                 # The source can add/backfill items during a long inventory.
                 # Repeat discovery once before declaring point-in-time coverage.
-                final_reconciliation_started = True
                 result = subprocess.run([str(ROOT / 'bin/vhness'), 'refresh', '--pages', '100', '--items', '0', '--timeout', '10m'], env=environment(), cwd=REPO / 'backend')
                 if result.returncode:
+                    # Coverage is declared only after a successful repeat; retry the refresh.
                     time.sleep(min(30, max(0, deadline-time.monotonic())))
                     continue
+                final_reconciliation_started = True
                 continue
             total = sum(counts.values())
             if total != worker['source_count']: raise RuntimeError('Coverage count differs from source discovery; operator reconciliation needed')

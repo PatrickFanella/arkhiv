@@ -83,7 +83,7 @@ func (s *Server) legacyFacets(w http.ResponseWriter, r *http.Request) {
 }
 func (s *Server) legacyPrintMapping(r *http.Request) bool {
 	var item, rep string
-	err := s.DB.Pool.QueryRow(r.Context(), `SELECT DISTINCT item_id,representation_id FROM `+s.DB.CatalogView()+` WHERE collection_id=$1 AND media='print' AND representation_id=$2`, s.configuredCollection(), r.PathValue("id")).Scan(&item, &rep)
+	err := s.DB.Pool.QueryRow(r.Context(), `SELECT min(item_id),min(representation_id) FROM `+s.DB.CatalogView()+` WHERE collection_id=$1 AND media='print' AND representation_id=$2 HAVING count(DISTINCT (item_id,representation_id))=1`, s.configuredCollection(), r.PathValue("id")).Scan(&item, &rep)
 	if err != nil {
 		return false
 	}

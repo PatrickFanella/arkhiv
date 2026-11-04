@@ -326,3 +326,30 @@ def test_query_edit_resets_cursor_without_discarding_items(workspace):
     )
     assert client.get(f"/api/collections/{collection}/searches").json()[0]["cursor"] is None
     assert client.get(f"/api/collections/{collection}/items").json()["total"] == 1
+
+
+def test_pause_and_resume_keep_schedule_and_last_error(workspace):
+    client, app, _archive, collection, search = workspace
+    saved = next(
+        s for s in client.get(f"/api/collections/{collection}/searches").json() if s["id"] == search
+    )
+    with app.state.database.connect() as db:
+        db.execute(
+            "UPDATE searches SET next_run=?, last_error=? WHERE id=?",
+            (1234.5, "rate limited", search),
+        )
+        db.commit()
+    body = {
+        k: saved[k]
+        for k in ("name", "query", "media_type", "year_from", "year_to", "interval_hours")
+    }
+    paused = client.put(f"/api/searches/{search}", json={**body, "enabled": False}).json()
+    assert not paused["enabled"]
+    assert paused["next_run"] == 1234.5
+    assert paused["last_error"] == "rate limited"
+    resumed = client.put(f"/api/searches/{search}", json={**body, "enabled": True}).json()
+    assert resumed["enabled"] and resumed["next_run"] == 1234.5
+    changed = client.put(f"/api/searches/{search}", json={**body, "interval_hours": 48}).json()
+    assert changed["next_run"] > 1234.5 and changed["last_error"] == "rate limited"
+    requery = client.put(f"/api/searches/{search}", json={**body, "query": "subject:zines"}).json()
+    assert requery["last_error"] is None and requery["cursor"] is None

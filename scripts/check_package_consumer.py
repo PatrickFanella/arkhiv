@@ -26,7 +26,10 @@ def main():
         # application or viewer source. Retain lock resolutions for offline tests.
         dependencies = json.loads((root / 'web/package.json').read_text())['dependencies']
         dependencies['@subcult/archive-viewer'] = 'file:' + str(archive)
-        (consumer / 'package.json').write_text(json.dumps({'private': True, 'type': 'module', 'dependencies': dependencies}))
+        # Pin the workspace package manager so a newer globally installed pnpm
+        # runs the same version for the consumer and accepts the lock below.
+        package_manager = json.loads((root / 'package.json').read_text())['packageManager']
+        (consumer / 'package.json').write_text(json.dumps({'private': True, 'type': 'module', 'packageManager': package_manager, 'dependencies': dependencies}))
         lock = (root / 'pnpm-lock.yaml').read_text()
         begin = lock.index('  web:\n')
         end = lock.index('\npackages:\n')

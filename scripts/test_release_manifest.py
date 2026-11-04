@@ -92,3 +92,15 @@ class ReleaseManifestTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+    def test_reports_missing_package_metadata(self):
+        with tarfile.open(self.package, 'w:gz') as archive:
+            data = b'export const version = "0.1.0";\n'
+            info = tarfile.TarInfo('package/dist/index.js')
+            info.size = len(data)
+            archive.addfile(info, io.BytesIO(data))
+        result = self.run_manifest()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('no package metadata', result.stderr)
+        self.assertNotIn('Traceback', result.stderr)
+

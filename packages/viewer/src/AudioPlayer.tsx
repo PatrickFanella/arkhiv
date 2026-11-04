@@ -41,8 +41,8 @@ function AudioSession({asset,set,initialOffset,autoPlay,station,onRejoin,onEnded
   };
   const names=['playing','pause','waiting','seeked','loadedmetadata','ended'];names.forEach(name=>element.addEventListener(name,update));
   const timer=setInterval(update,1000);
+  update();
   return()=>{clearInterval(timer);names.forEach(name=>element.removeEventListener(name,update));};
-  onPlaybackState?.('loading');
  },[station,end,onPlaybackState,error]);
  function metadataReady() {
   const offset = station ? radioOffset(station.offset,station.receivedAt,station.latency,end,Date.now()) : initialOffset ?? start;

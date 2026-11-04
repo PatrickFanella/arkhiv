@@ -170,7 +170,7 @@ func (s *Server) Handler() http.Handler {
 				return
 			}
 			if r.URL.Path != "/" {
-				if _, err := os.Stat(filepath.Join(s.Web, filepath.Clean(r.URL.Path))); err != nil {
+				if info, err := os.Stat(filepath.Join(s.Web, filepath.Clean(r.URL.Path))); err != nil || info.IsDir() {
 					http.ServeFile(w, r, filepath.Join(s.Web, "index.html"))
 					return
 				}
@@ -370,7 +370,7 @@ func (s *Server) status(w http.ResponseWriter, r *http.Request) {
 	if schedule, err := s.DB.Schedule(r.Context()); err == nil {
 		within, scopeErr := s.DB.ScheduleWithinScope(r.Context(), schedule, domain.CollectionScope{id})
 		entries, err := s.DB.CurrentEntries(r.Context(), schedule, now)
-		if err == nil && scopeErr == nil && within {
+		if err == nil && scopeErr == nil && within && len(schedule.Programs) > 0 {
 			state := schedule.At(now, entries)
 			gaps := 0
 			for i := 1; i < len(schedule.Programs); i++ {

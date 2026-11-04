@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import subprocess
@@ -68,6 +69,15 @@ def validate(release, consumer, current, artifact, core=None):
             raise ValueError('Previously applied migration changed: ' + name)
 
 
+def consumer_environment(environment=None):
+    """Consumer builds and checks keep registry read access but never this job's write credentials."""
+    scrubbed = dict(os.environ if environment is None else environment)
+    for key in list(scrubbed):
+        if key in ('ARCHIVE_UPGRADE_TOKEN', 'ARCHIVE_PACKAGE_TOKEN') or key.startswith('GIT_CONFIG_'):
+            del scrubbed[key]
+    return scrubbed
+
+
 def prepare(root, consumer, release, artifact, run=subprocess.run):
     if subprocess.check_output(['git', 'status', '--porcelain'], cwd=root):
         raise ValueError('Use a clean isolated consumer checkout')
@@ -94,7 +104,7 @@ def prepare(root, consumer, release, artifact, run=subprocess.run):
             receipt.write_text(json.dumps(release, indent=2) + '\n')
             engine_file.write_text('ARCHIVE_ENGINE_IMAGE=' + release['engine_digest'] + '\n')
             for command in consumer['checks']:
-                run(command, cwd=root, check=True)
+                run(command, cwd=root, check=True, env=consumer_environment())
         except BaseException:
             for path, data in original.items():
                 path.write_bytes(data)
@@ -125,9 +135,9 @@ def prepare(root, consumer, release, artifact, run=subprocess.run):
         if engine_file is not None:
             engine_file.write_text('ARCHIVE_ENGINE_IMAGE=' + release['engine_digest'] + '\n')
         # Caller supplies ephemeral registry authentication through npm config.
-        run(['pnpm', 'install', '--lockfile-only', '--ignore-scripts', '--no-frozen-lockfile'], cwd=package_file.parent, check=True)
+        run(['pnpm', 'install', '--lockfile-only', '--ignore-scripts', '--no-frozen-lockfile'], cwd=package_file.parent, check=True, env=consumer_environment())
         for command in consumer['checks']:
-            run(command, cwd=root, check=True)
+            run(command, cwd=root, check=True, env=consumer_environment())
         if any(p.read_bytes() != original[p] for p in retained):
             raise ValueError('Viewer checks changed a retained core pin')
     except BaseException:

@@ -100,6 +100,9 @@ Implicit changes remain rejected.
 checksum calculation, and verifies restored tables and raw source bytes on the
 independent host. `scripts/export_collection.py` derives a product-only dump
 from a disposable restored copy. It does not alter original metadata or media.
+It scopes only the metadata, decision, schedule and snapshot tables; when the
+restored copy has rows in any other table, it refuses and names them rather than
+shipping them unfiltered under a collection-only receipt.
 Keep source/export checksum receipts with release artifacts.
 
 Back up before migrations. Rollback uses the previous verified image and its

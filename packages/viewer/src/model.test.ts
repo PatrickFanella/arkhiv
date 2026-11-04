@@ -34,3 +34,13 @@ describe('playback URL boundary', () => {
     expect(playbackURL({ ...session.playback, policy: 'local_preserve', url: '/api/media/item' })).toBe('/api/media/item');
   });
 });
+
+it('accepts reviewed captions served beside processed local video and nothing else', () => {
+  const local = { ...session.playback, policy: 'local_preserve' as const, url: '/api/media/item' };
+  const caption = { file: 'English.vtt', label: 'English', language: 'en', url: '/api/video-captions/item/0' };
+  expect(captionURL(caption, local)).toBe('/api/video-captions/item/0');
+  expect(() => captionURL(caption, session.playback)).toThrow();
+  for (const url of ['/api/video-captions/item/../0', '/api/video-captions/item/0?x=1', '/api/video-captions/item/a', '/api/media/item', '/api/video-captions/item/0#f']) {
+    expect(() => captionURL({ ...caption, url }, local)).toThrow();
+  }
+});

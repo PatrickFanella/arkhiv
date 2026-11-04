@@ -83,7 +83,7 @@ export default function MixedArchive({brand}: {brand:Brand}) {
   const [page,setPage] = useState(1);
   const [selection,setSelection] = useState<Selection>();
   const [creator,setCreator]=useState(''),[dateFrom,setDateFrom]=useState(''),[dateTo,setDateTo]=useState('');
-  const [layout,setLayout]=useState<'grid'|'table'>('grid'),[focus,setFocus]=useState(false);
+  const [layout,setLayout]=useState<'grid'|'table'>('grid'),[focus,setFocus]=useState(false),[channelsOpen,setChannelsOpen]=useState(false);
   const personal=usePersonal(collection);
   const catalog = useCatalog({collection,media,query,page,creator,dateFrom,dateTo});
   useEffect(()=>{
@@ -100,7 +100,7 @@ export default function MixedArchive({brand}: {brand:Brand}) {
    const esc=(event:KeyboardEvent)=>{if(event.key==='Escape')setFocus(false);};window.addEventListener('keydown',esc);return()=>window.removeEventListener('keydown',esc);
   },[]);
   function select(value:Selection){setSelection(value);history.replaceState(null,'',catalogSelectionURL(location.href,value.collection,value.item.id,value.representation.id));}
-  function close(){setSelection(undefined);setFocus(false);const url=new URL(location.href);url.searchParams.delete('item');url.searchParams.delete('representation');history.replaceState(null,'',url);}
+  function close(){setSelection(undefined);setFocus(false);const url=new URL(location.href);url.searchParams.delete('item');url.searchParams.delete('representation');if(collection)url.searchParams.set('collection',collection);else url.searchParams.delete('collection');history.replaceState(null,'',url);}
   function openFavorite(item:CatalogItem){const rep=item.representations.find(value=>value.collections.includes(collection));if(rep)select({item,representation:rep,collection});}
   function actions(item:CatalogItem){return <>{item.representations.flatMap(rep=>rep.collections.map(member=><button key={`${rep.id}:${member}`} onClick={()=>select({item,representation:rep,collection:member})}>{rep.media === 'print' ? 'Read' : rep.media === 'audio' ? 'Listen' : 'Watch'}{item.representations.filter(other=>other.media===rep.media).length>1 ? ` · ${rep.file}` : ''}{rep.collections.length>1 ? ` · ${member}` : ''}</button>))}{collection && <button aria-pressed={personal.favoriteIDs.includes(catalogFavoriteID(item.id))} disabled={personal.busy} onClick={()=>{void personal.toggle(catalogFavoriteID(item.id));}}>{personal.favoriteIDs.includes(catalogFavoriteID(item.id)) ? 'Remove favorite' : 'Favorite'}</button>}</>;}
 
@@ -127,12 +127,12 @@ export default function MixedArchive({brand}: {brand:Brand}) {
       <div role="group" aria-label="Catalog layout"><button aria-pressed={layout==='grid'} onClick={()=>setLayout('grid')}>Grid</button><button aria-pressed={layout==='table'} onClick={()=>setLayout('table')}>Table</button></div>
       {collectionError && <p role="alert">Collection names are unavailable: {collectionError}</p>}
       {catalog.pending && <p role="status">Loading catalog…</p>}{catalog.error && <p role="alert">{catalog.error} <button onClick={catalog.retry}>Try again</button></p>}
-      {catalog.page && <><p role="status">{catalog.page.total} items · Metadata search</p>{catalog.page.items.length === 0 && <p>No items match these filters.</p>}
+      {catalog.page && <><p role="status">{catalog.page.total} {catalog.page.total === 1 ? 'item' : 'items'} · Metadata search</p>{catalog.page.items.length === 0 && <p>No items match these filters.</p>}
         {layout==='table' ? <div className="catalog-table-wrap"><table><caption>Archive catalog</caption><thead><tr><th scope="col">Item</th><th scope="col">Original date</th><th scope="col">Creator</th><th scope="col">Available formats</th><th scope="col">Actions</th></tr></thead><tbody>{catalog.page.items.map(item=><tr key={item.id}><th scope="row">{item.title}</th><td>{item.date || 'Unknown'}</td><td>{item.creator || 'Unknown'}</td><td>{item.representations.map(rep=>`${rep.media}: ${rep.file}`).join(' · ')}</td><td>{actions(item)}</td></tr>)}</tbody></table></div> : <div className="catalog-items">{catalog.page.items.map(item=><article key={item.id}><p className="eyebrow">{[...new Set(item.representations.map(rep=>rep.media))].join(' / ')}</p><h2>{item.title}</h2><p>{[item.creator,item.date].filter(Boolean).join(' · ')}</p><p className="catalog-description">{item.description}</p>{actions(item)}</article>)}</div>}
         <nav className="catalog-pages" aria-label="Catalog pages"><button disabled={page<=1} onClick={()=>{setPage(value=>value-1);setSelection(undefined);}}>Previous</button><span>Page {page}</span><button disabled={page*24>=catalog.page.total} onClick={()=>{setPage(value=>value+1);setSelection(undefined);}}>Next</button></nav></>}
     </section>
     {collection && <CatalogPersonal key={`${collection}:${personal.user?.id || 'browser'}`} personal={personal} collection={collection} onOpen={openFavorite}/>}
-    {collection && <details><summary>Scheduled programs for this collection</summary><Suspense fallback={<p role="status">Opening channel controls…</p>}><CollectionChannels collection={collection} media={collections.find(c=>c.id===collection)?.media || []}/></Suspense></details>}
+    {collection && <details onToggle={event=>setChannelsOpen(event.currentTarget.open)}><summary>Scheduled programs for this collection</summary>{channelsOpen && <Suspense fallback={<p role="status">Opening channel controls…</p>}><CollectionChannels collection={collection} media={collections.find(c=>c.id===collection)?.media || []}/></Suspense>}</details>}
     {selection && <SelectedItem key={`${selection.item.id}:${selection.representation.id}:${selection.collection}`} selection={selection} onClose={close} focus={focus} onFocus={()=>setFocus(!focus)}/>}
     <footer><span>{brand.title}</span><span>Source metadata retained · Access reviewed per collection</span><a href="https://subcult.tv/support">Support SUBCULT’s archive software</a></footer>
   </main>;

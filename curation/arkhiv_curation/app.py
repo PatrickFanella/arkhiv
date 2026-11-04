@@ -215,13 +215,19 @@ def create_app(db_path=None, archive=None, start_worker=True, core=None):
                     409, "Wait for the current discovery run before editing this search."
                 )
             reset = query_for(previous) != query_for(fields)
+            # Pausing or renaming keeps the existing schedule and last error;
+            # a new query or interval schedules the next run afresh.
+            rescheduled = reset or value.interval_hours != previous["interval_hours"]
             db.execute(
                 f"UPDATE searches SET {','.join(f'{key}=?' for key in fields)},cursor=?,"
-                "next_run=?,last_error=NULL WHERE id=?",
+                "next_run=?,last_error=? WHERE id=?",
                 (
                     *fields.values(),
                     None if reset else previous["cursor"],
-                    time.time() + value.interval_hours * 3600,
+                    time.time() + value.interval_hours * 3600
+                    if rescheduled
+                    else previous["next_run"],
+                    None if reset else previous["last_error"],
                     search_id,
                 ),
             )

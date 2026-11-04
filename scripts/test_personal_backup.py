@@ -17,20 +17,22 @@ class PersonalBackupTests(unittest.TestCase):
             for name, age, corrupt, extra in [('personal-old', 36, False, False),
                                                ('personal-recent', 34, False, False),
                                                ('personal-corrupt', 36, True, False),
-                                               ('personal-extra', 36, False, True)]:
+                                               ('personal-extra', 36, False, True),
+                                               ('personal-other-deployment', 36, False, False)]:
                 directory = root / name
                 directory.mkdir()
                 (directory / 'personal.dump').write_bytes(b'personal fixture')
                 receipt = {'kind': 'arkhiv-personal-backup', 'version': 1,
+                           'deployment': 'other' if name == 'personal-other-deployment' else 'dn',
                            'created_at': (now - dt.timedelta(days=age)).isoformat(),
                            'sha256': 'wrong' if corrupt else hashlib.sha256(b'personal fixture').hexdigest()}
                 (directory / 'receipt.json').write_text(json.dumps(receipt))
                 if extra:
                     (directory / 'original.mp4').write_bytes(b'must retain')
             (root / 'archive-originals').mkdir()
-            self.assertEqual(personal_backup.prune(root, now), 1)
+            self.assertEqual(personal_backup.prune(root, now, 'dn'), 1)
             self.assertFalse((root / 'personal-old').exists())
-            for name in ('personal-recent', 'personal-corrupt', 'personal-extra', 'archive-originals'):
+            for name in ('personal-recent', 'personal-corrupt', 'personal-extra', 'personal-other-deployment', 'archive-originals'):
                 self.assertTrue((root / name).exists())
 
     def test_database_inventory_rejects_archive_and_nonempty_restore(self):

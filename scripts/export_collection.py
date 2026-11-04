@@ -28,6 +28,11 @@ def main():
         else:raise RuntimeError('Owned export database did not become ready')
         with snapshot.open('rb') as stream:run(['docker','exec','-i',name,'pg_restore','-U','postgres','-d','postgres','--exit-on-error','--no-owner','--no-acl'],stdin=stream)
         collection=args.collection
+        # The filter below scopes exactly these tables. Any other populated table
+        # would ship unfiltered, so the export refuses instead of mislabeling it.
+        scoped=['collections','episodes','metadata_queue','worker_state','collection_budget_reviews','schedules','current_schedule','decision_history','preservation_history','observations','snapshots','schema_versions']
+        unscoped=capture(['docker','exec',name,'psql','-U','postgres','-d','postgres','-At','-c',"SELECT string_agg(table_name,',' ORDER BY table_name) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE' AND table_name NOT IN ("+','.join(f"'{t}'" for t in scoped)+") AND (xpath('/row/c/text()',query_to_xml(format('SELECT count(*) AS c FROM %I',table_name),false,true,'')))[1]::text::int>0"],text=True).strip()
+        if unscoped: raise RuntimeError('Collection-only export does not scope these populated tables; extend the filter before exporting: '+unscoped)
         # All removal is confined to this disposable derived copy. The original
         # dump, active databases, source metadata, and media are never altered.
         query=f"""BEGIN;

@@ -197,3 +197,13 @@ class UpgradeTests(unittest.TestCase):
 if __name__ == '__main__':
     unittest.main()
 import base64
+
+
+class ConsumerEnvironmentTests(unittest.TestCase):
+    def test_consumer_checks_never_receive_write_credentials(self):
+        from upgrade_consumer import consumer_environment
+        environment = {'ARCHIVE_UPGRADE_TOKEN': 'secret', 'ARCHIVE_PACKAGE_TOKEN': 'secret', 'GIT_CONFIG_COUNT': '1',
+                       'GIT_CONFIG_KEY_0': 'credential.helper', 'NPM_CONFIG_USERCONFIG': '/tmp/npmrc', 'TEST_DATABASE_URL': 'postgres://db', 'PATH': '/bin'}
+        scrubbed = consumer_environment(environment)
+        self.assertEqual(scrubbed, {'NPM_CONFIG_USERCONFIG': '/tmp/npmrc', 'TEST_DATABASE_URL': 'postgres://db', 'PATH': '/bin'})
+        self.assertIn('ARCHIVE_UPGRADE_TOKEN', environment, 'the caller environment is left intact')
