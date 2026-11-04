@@ -32,7 +32,8 @@ def download(release, output):
         if len(data) > maximum:
             raise ValueError('Package response exceeds the supported limit')
         return data
-    metadata = json.loads(get(REGISTRY + urllib.parse.quote(release['package'], safe=''), 2_000_000))
+    # Gitea answers 404 when the scope's '@' is percent-encoded; only the '/' is escaped.
+    metadata = json.loads(get(REGISTRY + urllib.parse.quote(release['package'], safe='@'), 2_000_000))
     version = metadata['versions'][release['version']]
     if version['name'] != release['package'] or version['version'] != release['version']:
         raise ValueError('Registry package identity mismatch')
