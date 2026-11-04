@@ -14,10 +14,11 @@ The masters live in SUBCULT Studio: `subculture-collective/subcult-tv`, `studio/
 
 | File | Made from | SHA-256 |
 | --- | --- | --- |
-| `favicon.ico` | `mark.svg` rendered with `rsvg-convert` at 16, 32 and 48 px, joined with `magick` | `b04269fce5019e8ef764a5bb56d6e26ac0f2b63bbef2a6ea3ae1b513f9c9bbe9` |
+| `favicon.svg` | `mark.svg` with one `#f3efe4` background rectangle inserted after its title; the mark's own elements are unchanged. The ground keeps the dark ink visible in dark browser tabs | `d697ab73ee4f460ec3df5f56ac6ebcf61e8e720e696eaaf91b8270078cd9f085` |
+| `favicon.ico` | `favicon.svg` rendered with `rsvg-convert` at 16, 32 and 48 px, joined with `magick` | `75f66339d61518b595654e09a37bc118d321e75427aefaf69ffcc4b143be5e96` |
 | `apple-touch-icon.png` | `mark.svg` rendered at 180×180 on the pack background `#f3efe4` | `efd11464f200486a091cfc59ba206ef58bba43cea7ca6af2bd82cbad79bf66ed` |
 | `readme-lockup.png` | `lockup.svg` rendered at 704×256 and centred on `#f3efe4` at 832×384, so the dark ink stays readable on dark README themes | `b25d0c05410ec15522324e755abab598f3ec15568f498fc46f2da170865c4b0c` |
 
 ## Served copies
 
-The public interface serves identical copies from `web/public/`: `favicon.svg` (same bytes as `mark.svg`), `favicon.ico`, `apple-touch-icon.png` and `og.png`. `web/public/site.json` names `/og.png` as the link preview and carries its alt text. Replace both copies together.
+The public interface serves identical copies from `web/public/`: `favicon.svg`, `favicon.ico`, `apple-touch-icon.png` and `og.png`. `web/public/site.json` names `/og.png` as the link preview and carries its alt text. Replace both copies together.
