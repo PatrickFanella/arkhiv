@@ -1,4 +1,4 @@
-## Unreleased
+## 0.4.5
 
 Accept reviewed captions served beside processed local video (`/api/video-captions/`)
 for `local_preserve` playback; source-streamed captions keep the exact archive.org
