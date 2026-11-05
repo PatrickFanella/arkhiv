@@ -1,5 +1,6 @@
 # Arkhiv
 
+
 ![Arkhiv: three stacked, slightly offset sheets with two staple marks, the top sheet outlined in riso red and blue, beside the name Arkhiv](brand/readme-lockup.png)
 
 Arkhiv is the shared archive engine for independent print, audio, and video apps.
@@ -58,3 +59,13 @@ inclusive year range or all years; month/day recording search; and cached artist
 profiles with retained MusicBrainz/Wikipedia/Commons provenance. See the
 [operator and API contracts](docs/reference/source-metadata-catalog.md#artist-and-historical-date-discovery).
 The module is additive and requires a normal core release before consumer adoption.
+
+## Brand assets
+
+The product identity and selected public exports are recorded in [the brand handoff](docs/brand/anarchist-archive/GUIDE.md) and [source hashes](docs/brand/anarchist-archive/export.json). Regenerate from SUBCULT Studio with `python3 studio/scripts/export_remaining_brand.py anarchist-archive /path/to/this/repository`; use `--check` to verify the export without writing.
+
+### Anarchist collection identity
+
+![Anarchist Archive identity](docs/brand/anarchist-archive/readme-lockup.png)
+
+This selected collection pack is distinct from Arkhiv’s default identity. See the [collection deployment note](docs/brand/anarchist-archive/DEPLOYMENT.md).
