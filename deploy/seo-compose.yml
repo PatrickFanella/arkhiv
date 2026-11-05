@@ -1,0 +1,26 @@
+services:
+  web:
+    image: ${ARKHIV_SEO_IMAGE:?Set the qualified immutable SEO image}
+    container_name: arkhiv-seo-web
+    user: "101:101"
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=32m
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 128m
+    memswap_limit: 128m
+    cpus: 0.5
+    pids_limit: 64
+    logging:
+      driver: json-file
+      options:
+        max-file: "3"
+        max-size: 50m
+    labels:
+      com.centurylinklabs.watchtower.enable: "false"
+    networks: [projects]
+networks:
+  projects:
+    external: true
