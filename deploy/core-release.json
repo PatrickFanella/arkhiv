@@ -26,9 +26,9 @@
   "schema_strategy": "checksum-locked-additive-migrations",
   "compatibility_window": "current and previous reviewed release",
   "rollout": "reviewed-per-consumer",
-  "version": "0.4.4",
-  "engine_digest": "git.subcult.tv/subculture-collective/archive-core@sha256:a65d1853b6c48cace898b16e88f06251f0131a48cec6bfbee6fc72bf82d17912",
-  "source_revision": "79a4c0b952045d43ca3278ff56d580425a92d3ab",
+  "version": "0.4.5",
+  "engine_digest": "git.subcult.tv/subculture-collective/archive-core@sha256:757618a645a46c1258d1c25e6fc267ca09e0d6c75eb70f4abbe333854ff7b7bc",
+  "source_revision": "805f702271b6c793179abed2bc5bfd1d62a54168",
   "optional_migrations": {
     "community/0001_personal_chat.sql": "718cc0d07c225d3743c2890bded533bf82fb4866a23b94932faf88c56a619c32",
     "community/0002_media_rooms.sql": "1816b036ed8fdd9fa2c6e5a608b836eabfaea9677e57e33df351e7ab708f7990"
