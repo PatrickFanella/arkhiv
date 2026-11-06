@@ -136,11 +136,11 @@ func TestOCRRebindTextSearchAndLabelsIntegration(t *testing.T) {
 		return w.Code
 	}
 	var hits []domain.PrintHit
-	if code := get("/api/catalog/v1/items/issue/representations/pdf/search?q=strikeword", &hits); code != 200 || len(hits) != 1 || hits[0].Page != 2 || !strings.Contains(hits[0].Snippet, "strikeword") {
+	if code := get("/api/catalog/v1/items/issue/representations/pdf/search?q=strikeword", &hits); code != 200 || len(hits) != 1 || hits[0].Page != 2 || !strings.Contains(hits[0].Snippet, "strikeword") || strings.Contains(hits[0].Snippet, "Sel=") {
 		t.Fatal("OCR search page", code, hits)
 	}
 	var page catalog.CatalogPage
-	if code := get("/api/catalog/v1/items?text=strikeword", &page); code != 200 || page.Total != 1 || len(page.Items[0].TextHits) != 1 || page.Items[0].TextHits[0].Page != 2 || page.SearchCoverage[1] != "text" {
+	if code := get("/api/catalog/v1/items?text=strikeword", &page); code != 200 || page.Total != 1 || len(page.Items[0].TextHits) != 1 || page.Items[0].TextHits[0].Page != 2 || page.SearchCoverage[1] != "text" || strings.Contains(page.Items[0].TextHits[0].Snippet, "Sel=") || !strings.Contains(page.Items[0].TextHits[0].Snippet, "strikeword") {
 		t.Fatal("archive text search", code, page)
 	}
 	if code := get("/api/catalog/v1/items?text=absentword", &page); code != 200 || page.Total != 0 {

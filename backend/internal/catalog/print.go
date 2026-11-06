@@ -53,7 +53,7 @@ func (d *DB) PrintSearch(ctx context.Context, item, representation, file, query 
 	if strings.TrimSpace(query) == "" || len(query) > 200 {
 		return nil, fmt.Errorf("invalid print search")
 	}
-	rows, err := d.Pool.Query(ctx, `SELECT page,left(ts_headline('simple',text,plainto_tsquery('simple',$4),'MaxFragments=2,MaxWords=30,MinWords=12,FragmentDelimiter= … ,StartSel=,StopSel='),350) FROM print_page_text WHERE item_id=$1 AND representation_id=$2 AND file=$3 AND search @@ plainto_tsquery('simple',$4) ORDER BY page LIMIT 50`, item, representation, file, query)
+	rows, err := d.Pool.Query(ctx, `SELECT page,left(ts_headline('simple',text,plainto_tsquery('simple',$4),'MaxFragments=2,MaxWords=30,MinWords=12,FragmentDelimiter=" … ",StartSel="",StopSel=""'),350) FROM print_page_text WHERE item_id=$1 AND representation_id=$2 AND file=$3 AND search @@ plainto_tsquery('simple',$4) ORDER BY page LIMIT 50`, item, representation, file, query)
 	if err != nil {
 		return nil, err
 	}
