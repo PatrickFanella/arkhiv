@@ -47,7 +47,7 @@ func load(p string, v any) error {
 }
 func run() error {
 	if len(os.Args) < 2 {
-		return fmt.Errorf("usage: vhness migrate|collection|review-budget|review-public-video|review-library|plan-replay|import|import-item|import-source|import-source-catalog|import-source-artist|set-source-catalog-listing|edit-source-catalog|review-source-audio|review-source-audio-batch|discover-catalog|refresh-catalog|import-catalog|prepare-curation|retain-legacy|review-transport|index-print|restore-print-index|register-audio|register-video|schedule-audio|renew-public-audio|fetch|inspect|acquire|audit|review|schedule|discover|refresh|report|seed|serve|healthcheck")
+		return fmt.Errorf("usage: vhness migrate|collection|review-budget|review-public-video|review-library|plan-replay|import|import-item|import-source|import-source-catalog|import-source-artist|set-source-catalog-listing|edit-source-catalog|review-source-audio|review-source-audio-batch|discover-catalog|refresh-catalog|import-catalog|prepare-curation|retain-legacy|review-transport|rebind-representation|import-labels|propose-labels|review-labels|index-print|restore-print-index|register-audio|register-video|schedule-audio|renew-public-audio|fetch|inspect|acquire|audit|review|schedule|discover|refresh|report|seed|serve|healthcheck")
 	}
 	cmd := os.Args[1]
 	if cmd == "healthcheck" {
@@ -363,6 +363,45 @@ func run() error {
 			return d.ReviewPublicTransport(ctx, *id, *representation, *collection, input.Review, input.Preservation)
 		}
 		return d.ReviewTransport(ctx, *id, *representation, *collection, input.Review, input.Preservation)
+	case "rebind-representation":
+		var input struct {
+			Representation domain.Representation       `json:"representation"`
+			Review         domain.TransportReview      `json:"review"`
+			Preservation   domain.PreservationApproval `json:"preservation"`
+		}
+		if err := load(*file, &input); err != nil {
+			return err
+		}
+		if input.Representation.ID != *representation {
+			return fmt.Errorf("representation flag and input differ")
+		}
+		return d.RebindRepresentation(ctx, *id, input.Representation, *collection, input.Review, input.Preservation, *approvePublic, *notes)
+	case "import-labels":
+		var labels []domain.Label
+		if err := load(*file, &labels); err != nil {
+			return err
+		}
+		return d.ImportLabels(ctx, labels)
+	case "propose-labels", "review-labels":
+		var n int
+		var err error
+		if cmd == "propose-labels" {
+			var proposals []domain.LabelProposal
+			if err = load(*file, &proposals); err != nil {
+				return err
+			}
+			n, err = d.ProposeLabels(ctx, proposals, *notes)
+		} else {
+			var decisions []domain.LabelDecision
+			if err = load(*file, &decisions); err != nil {
+				return err
+			}
+			n, err = d.ReviewLabels(ctx, decisions, *notes)
+		}
+		if err != nil {
+			return err
+		}
+		return json.NewEncoder(os.Stdout).Encode(map[string]int{"changed": n})
 	case "review-public-video":
 		return d.ReviewPublicVideo(ctx, *id, *approvePublic, *notes)
 	case "migrate":

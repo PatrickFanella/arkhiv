@@ -130,8 +130,24 @@ func Index(ctx context.Context, db *catalog.DB, mediaRoot, derivativeRoot, item,
 					return fmt.Errorf("OCR companion could not be read within bounds")
 				}
 				if strings.TrimSpace(string(data)) != "" {
-					sections[0] = string(data)
-					status = "document-text"
+					// OCR tools such as Tesseract separate pages with form feeds. When
+					// the separators match the PDF's page count, keep page mapping so
+					// search hits open the right page; otherwise index the whole text.
+					parts := strings.Split(string(data), "\f")
+					if len(parts) == pages+1 && strings.TrimSpace(parts[pages]) == "" {
+						parts = parts[:pages]
+					}
+					if len(parts) == pages && pages > 1 {
+						for i, part := range parts {
+							if strings.TrimSpace(part) != "" {
+								sections[i+1] = part
+							}
+						}
+						status = "page-text"
+					} else {
+						sections[0] = string(data)
+						status = "document-text"
+					}
 					textFile, textSHA256 = companion.File, ocr.SHA256
 				}
 				break

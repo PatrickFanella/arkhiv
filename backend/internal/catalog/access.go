@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"git.subcult.tv/subculture-collective/vhness/internal/domain"
+	"github.com/jackc/pgx/v5"
 )
 
 type TransportEntry struct {
@@ -60,14 +61,22 @@ func (d *DB) ReviewPublicTransport(ctx context.Context, item, representation, co
 	return d.reviewTransport(ctx, item, representation, collection, review, approval, true)
 }
 func (d *DB) reviewTransport(ctx context.Context, item, representation, collection string, review domain.TransportReview, approval domain.PreservationApproval, public bool) error {
-	if strings.TrimSpace(review.Notes) == "" || (review.Public && !public) || len(review.Files) > 1000 {
-		return fmt.Errorf("invalid transport review")
-	}
 	tx, err := d.Pool.Begin(ctx)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback(ctx)
+	if err = reviewTransportTx(ctx, tx, item, representation, collection, review, approval, public); err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
+}
+
+func reviewTransportTx(ctx context.Context, tx pgx.Tx, item, representation, collection string, review domain.TransportReview, approval domain.PreservationApproval, public bool) error {
+	if strings.TrimSpace(review.Notes) == "" || (review.Public && !public) || len(review.Files) > 1000 {
+		return fmt.Errorf("invalid transport review")
+	}
+	var err error
 	var c domain.Collection
 	var rep domain.Representation
 	var extension, raw []byte
@@ -109,8 +118,6 @@ func (d *DB) reviewTransport(ctx context.Context, item, representation, collecti
 	if _, err = tx.Exec(ctx, `INSERT INTO representation_transport_reviews(item_id,representation_id,collection_id,review,preservation) VALUES($1,$2,$3,$4,$5) ON CONFLICT(item_id,representation_id,collection_id) DO UPDATE SET review=excluded.review,preservation=excluded.preservation,updated_at=now()`, item, representation, collection, reviewJSON, approvalJSON); err != nil {
 		return err
 	}
-	if _, err = tx.Exec(ctx, `INSERT INTO representation_transport_history(item_id,representation_id,collection_id,review,preservation) VALUES($1,$2,$3,$4,$5)`, item, representation, collection, reviewJSON, approvalJSON); err != nil {
-		return err
-	}
-	return tx.Commit(ctx)
+	_, err = tx.Exec(ctx, `INSERT INTO representation_transport_history(item_id,representation_id,collection_id,review,preservation) VALUES($1,$2,$3,$4,$5)`, item, representation, collection, reviewJSON, approvalJSON)
+	return err
 }

@@ -8,10 +8,16 @@ export type CatalogRepresentation = {
   file: string; collections: string[]; legacy_episode_id?: string;
   extension: { print?: { document_id: string; variant: string; pages: number }; audio?: { recording_id: string; concert_id?: string; credits: Record<string,string>; recording?:Recording }; video?: { episode_id: string } };
 };
-export type CatalogItem = { id: string; title: string; description: string; date: string; creator: string; collections: string[]; representations: CatalogRepresentation[] };
+export type CatalogLabelKind = 'topic' | 'place' | 'organization' | 'person' | 'event';
+/** An accepted label; proposals are never returned by the engine. */
+export type CatalogItemLabel = { id: string; kind: CatalogLabelKind; label: string };
+export type CatalogLabel = CatalogItemLabel & { items: number };
+/** A matching page from archive-wide text search (`text` filter). */
+export type CatalogTextHit = { representation: string; page: number; snippet: string };
+export type CatalogItem = { id: string; title: string; description: string; date: string; creator: string; collections: string[]; representations: CatalogRepresentation[]; labels?: CatalogItemLabel[]; text_hits?: CatalogTextHit[] };
 export type CatalogPage = { items: CatalogItem[]; total: number; page: number; search_coverage: string[] };
 export type CatalogCollection = { id: string; title: string; policy: string; items: number; media: CatalogMedia[] };
-export type CatalogFilter = { collection: string; media: CatalogMedia | ''; query: string; page: number; creator?:string; dateFrom?:string; dateTo?:string };
+export type CatalogFilter = { collection: string; media: CatalogMedia | ''; query: string; page: number; creator?:string; dateFrom?:string; dateTo?:string; label?:string; text?:string };
 export type RepresentationTransport = {media:CatalogMedia;policy:string;url:string;source_url:string;source_provider?:string;file:string};
 
 const providerPattern = /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$/;
@@ -52,7 +58,17 @@ export function catalogURL(filter: CatalogFilter): string {
   if(filter.creator)params.set('creator',filter.creator);
   if(filter.dateFrom)params.set('date_from',filter.dateFrom);
   if(filter.dateTo)params.set('date_to',filter.dateTo);
+  if(filter.label)params.set('label',filter.label);
+  if(filter.text?.trim())params.set('text',filter.text);
   return `/api/catalog/v1/items?${params}`;
+}
+
+/** Accepted labels on items visible in a collection, optionally of one kind. */
+export function catalogLabelsURL(collection: string, kind?: CatalogLabelKind): string {
+  const params = new URLSearchParams();
+  if (collection) params.set('collection', collection);
+  if (kind) params.set('kind', kind);
+  return `/api/catalog/v1/labels${params.size ? `?${params}` : ''}`;
 }
 export async function catalogRequest<T>(url: string, signal: AbortSignal, timeoutMs = 10000): Promise<T> {
   if (!Number.isInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 60000) throw new Error('Invalid request timeout.');

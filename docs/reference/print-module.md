@@ -17,7 +17,21 @@ generated covers. The server can mount both directories read-only after indexing
 Poppler reads the verified original through an inherited file descriptor, with
 time, memory and output limits. Native text retains page numbers. An explicitly
 reviewed OCR companion supplies document text with page zero when its page mapping
-is unknown. A failed cover does not invalidate the original or extracted text.
+is unknown. When the companion separates pages with form feeds (as Tesseract and
+OCRmyPDF sidecars do) and the count matches the PDF's pages, each page keeps its
+number and the index reports `page-text`. Search snippets are centred on the
+matching words.
+
+`vhness rebind-representation --id ITEM --representation REP --collection C
+--file input.json --notes ... [--approve-public]` moves an existing
+representation to a newer snapshot of the same source, for example one that
+adds a derived OCR companion, and applies the given transport review in the same
+transaction. `input.json` holds `representation`, `review` and `preservation`.
+The source, media and primary file cannot change and no companion may be
+dropped. Reviews of the representation in other collections bind the old
+snapshot and stop authorizing access until they are reviewed again. Run
+`index-print` afterwards; until then the previous index is not served because its
+snapshot no longer matches. A failed cover does not invalidate the original or extracted text.
 
 Text and cover responses require the current reading review, source snapshot and
 original hash. Revoked access or a corrupt original denies cached derivatives.

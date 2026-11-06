@@ -10,7 +10,13 @@ distinct from print variants/pages and video episodes/captions.
 `GET /api/catalog/v1/items` returns `items`, `total`, `page` and
 `search_coverage`. Optional `collection`, `media` (`print`, `audio`, `video`),
 `q` and `page` filter the result. Pages contain at most 24 items. Search coverage
-is explicitly `metadata`; no OCR, caption or transcript search is advertised.
+is `metadata` unless `text` is set (core 0.4.6). `text` searches the indexed page
+text of the listed representations, including page-mapped OCR companions; it
+reports `["metadata","text"]` and each item carries up to three `text_hits`
+(`representation`, `page`, `snippet`). Only text indexed for the representation's
+current snapshot matches, so withdrawn or stale editions do not leak through
+search. `label` limits results to items with that accepted label; items list
+their accepted `labels`. Caption and transcript search are not advertised.
 `GET /api/catalog/v1/items/{id}` uses the same collection and representation
 visibility checks. A foreign collection returns 404 under the existing server
 collection scope. An item exposes only representations and membership visible

@@ -74,6 +74,8 @@ type CatalogItem struct {
 	Editorial       json.RawMessage  `json:"editorial,omitempty"`
 	Collections     []string         `json:"collections"`
 	Representations []Representation `json:"representations"`
+	Labels          []ItemLabel      `json:"labels,omitempty"`
+	TextHits        []TextHit        `json:"text_hits,omitempty"`
 }
 
 func (r Representation) Validate() error {

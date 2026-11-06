@@ -1,3 +1,10 @@
+## 0.4.7
+
+Catalog filters accept `label` (an accepted label ID) and `text` (archive-wide
+search of indexed page text). Items may carry `labels` (accepted labels only) and
+`text_hits` (up to three matching pages per item with a snippet).
+`catalogLabelsURL()` builds the accepted-label listing URL. Needs core 0.4.6.
+
 ## 0.4.6
 
 `representationURL` accepts a source page from a provider other than the Internet
