@@ -1,11 +1,32 @@
 # Catalog source imports and module compatibility
 
 `vhness import-source --collection COLLECTION --id SOURCE_ID --file metadata.json`
-stores a complete Internet Archive metadata response for a print, audio, video
-or future source media type. The selected collection must already exist inside
+stores a complete Internet Archive metadata response, or a generic provider
+envelope, for a print, audio, video or future source media type. The selected collection must already exist inside
 the instance's configured scope. The command validates the exact string source
 identifier and an object-based file inventory, with a 32 MiB input limit. It
 retains private entries and unknown fields in the original snapshot bytes.
+
+A source from another provider uses a generic envelope instead of inventing an
+Internet Archive identity:
+
+```json
+{"source": {"provider": "marxists.org", "id": "SOURCE_ID",
+            "url": "https://www.marxists.org/history/usa/pubs/..."},
+ "metadata": {"any": "retained provider fields"},
+ "files": [{"name": "issue.pdf", "size": "123", "sha256": "..."}]}
+```
+
+The provider is a lowercase host name other than `archive.org`; `id` must equal
+`SOURCE_ID`; `url` is the exact reviewed `https` page on the provider's host or
+one of its subdomains, without credentials, port or fragment. A generic envelope
+may not also carry `metadata.identifier`. The engine has no download contract
+for other providers, so their representations are delivered only from reviewed
+local originals: transport review refuses them in a `source_stream` collection.
+Resolution returns the reviewed page as `source_url` and the provider as
+`source_provider`; Internet Archive sources report `archive.org`. Viewer
+`representationURL` accepts a non-archive.org `source_url` only for
+`local_preserve` responses whose host belongs to the named provider.
 
 Importing a snapshot does not list an item, create an episode, acquire media,
 approve reading or playback, register a derivative, or publish content. The

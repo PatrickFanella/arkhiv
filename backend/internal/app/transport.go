@@ -53,7 +53,11 @@ func (s *Server) resolveRepresentation(w http.ResponseWriter, r *http.Request) {
 		write(w, 404, map[string]string{"error": "representation unavailable"})
 		return
 	}
-	source := "https://archive.org/details/" + url.PathEscape(e.Representation.SourceItemID)
+	provider, err := domain.ParseSourceIdentity(e.Representation.SourceItemID, e.Raw)
+	if err != nil {
+		write(w, 404, map[string]string{"error": "representation unavailable"})
+		return
+	}
 	asset := "https://archive.org/download/" + url.PathEscape(e.Representation.SourceItemID) + "/" + url.PathEscape(file)
 	if e.Collection.Policy == domain.Stream && e.Representation.Media == domain.AudioMedia {
 		asset = "https://archive.org/download/" + url.PathEscape(e.Representation.SourceItemID) + "/" + domain.SourceAudioPath(file)
@@ -62,7 +66,7 @@ func (s *Server) resolveRepresentation(w http.ResponseWriter, r *http.Request) {
 		q := url.Values{"collection": {e.Collection.ID}, "action": {string(action)}, "file": {file}}
 		asset = "/api/catalog/v1/items/" + url.PathEscape(r.PathValue("id")) + "/representations/" + url.PathEscape(r.PathValue("representation")) + "/media?" + q.Encode()
 	}
-	write(w, 200, map[string]any{"media": e.Representation.Media, "policy": e.Collection.Policy, "url": asset, "source_url": source, "file": file, "snapshot_sha256": e.Representation.Snapshot})
+	write(w, 200, map[string]any{"media": e.Representation.Media, "policy": e.Collection.Policy, "url": asset, "source_url": provider.URL, "source_provider": provider.Provider, "file": file, "snapshot_sha256": e.Representation.Snapshot})
 }
 
 func representationMIME(media domain.Media, file string) string {

@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import { useCatalog, catalogRequest, representationPath, representationURL, catalogFavoriteID, catalogSelectionURL, type CatalogCollection, type CatalogItem, type CatalogMedia, type CatalogRepresentation } from '@subcult/archive-viewer/catalog';
+import { useCatalog, catalogRequest, representationPath, representationURL, sourceProvider, catalogFavoriteID, catalogSelectionURL, type CatalogCollection, type CatalogItem, type CatalogMedia, type CatalogRepresentation } from '@subcult/archive-viewer/catalog';
 import { AudioPlayer, type AudioAsset } from '@subcult/archive-viewer/audio';
 import { Player, playbackURL, useMediaPreferences, usePersonal, type Playback } from '@subcult/archive-viewer';
 import type { Brand } from './brand';
@@ -8,7 +8,7 @@ const DocumentView = lazy(()=>import('./DocumentView'));
 const CollectionChannels = lazy(()=>import('./CollectionChannels'));
 
 type Selection = {item:CatalogItem;representation:CatalogRepresentation;collection:string};
-type Transport = {media:CatalogMedia;policy:string;url:string;source_url:string;file:string};
+type Transport = {media:CatalogMedia;policy:string;url:string;source_url:string;source_provider?:string;file:string};
 function SelectedItem({selection,onClose,focus,onFocus}: {selection:Selection;onClose:()=>void;focus:boolean;onFocus:()=>void}) {
   const {item,representation,collection} = selection;
   const path = representationPath(item,representation);
@@ -53,7 +53,8 @@ function SelectedItem({selection,onClose,focus,onFocus}: {selection:Selection;on
     })().catch(reason=> {if(!controller.signal.aborted)setError(reason instanceof Error ? reason.message : 'This item is unavailable.');});
     return ()=>controller.abort();
   },[path,collection,representation,attempt]);
-  const source = `https://archive.org/details/${encodeURIComponent(representation.source_item_id)}`;
+  // The resolver names the reviewed source page; other providers are not Internet Archive items.
+  const source = asset && !legacy ? {url: asset.source_url, provider: sourceProvider(asset)} : {url: `https://archive.org/details/${encodeURIComponent(representation.source_item_id)}`, provider: 'archive.org'};
   return <section ref={section} tabIndex={-1} className="catalog-selection" aria-label="Selected archive item">
     <button onClick={onClose}>Close item</button><button aria-pressed={focus} onClick={onFocus}>{focus ? 'Exit focus mode' : 'Focus mode'}</button><p className="eyebrow">{representation.media} · {collection}</p><h2>{item.title}</h2>
     <CatalogShare url={catalogSelectionURL(location.href,collection,item.id,representation.id)} title={item.title}/>
@@ -67,7 +68,7 @@ function SelectedItem({selection,onClose,focus,onFocus}: {selection:Selection;on
     {asset?.media === 'audio' && <NativeMedia key={asset.url} asset={asset} title={item.title} onError={()=>setError('The audio source is unavailable. Try another format or open the source page.')}/>}
     {!audio && representation.extension.audio && <dl>{Object.entries(representation.extension.audio.credits || {}).map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>}
     {download && <p><a href={download} download={representation.file}>Download original PDF</a></p>}
-    <p><a href={source} target="_blank" rel="noreferrer">Source item at Internet Archive</a> · {representation.file}</p>
+    <p><a href={source.url} target="_blank" rel="noreferrer">{source.provider === 'archive.org' ? 'Source item at Internet Archive' : `Source page at ${source.provider}`}</a> · {representation.file}</p>
   </section>;
 }
 function NativeMedia({asset,title,onError}: {asset:Transport;title:string;onError:()=>void}) {

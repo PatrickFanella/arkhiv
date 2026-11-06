@@ -1,3 +1,12 @@
+## 0.4.6
+
+`representationURL` accepts a source page from a provider other than the Internet
+Archive when the resolver names it in `source_provider`, the policy is
+`local_preserve`, and the page is `https` on that provider's host or a subdomain.
+Responses without `source_provider` keep the exact `archive.org/details` check, and
+source streaming stays archive.org-only. `sourceProvider()` returns the provider
+name for labels. Needs core 0.4.5 to receive `source_provider`.
+
 ## 0.4.5
 
 Accept reviewed captions served beside processed local video (`/api/video-captions/`)

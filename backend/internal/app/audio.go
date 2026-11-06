@@ -35,7 +35,9 @@ func (s *Server) audioCollection(r *http.Request) (string, error) {
 }
 func audioPlayback(item, representation, collection string, e catalog.TransportEntry, a domain.AudioAsset) map[string]any {
 	q := url.Values{"collection": {collection}}
-	return map[string]any{"recording": e.Representation.Extension.Audio.Recording, "policy": domain.Local, "url": "/api/catalog/v1/items/" + url.PathEscape(item) + "/representations/" + url.PathEscape(representation) + "/audio/media?" + q.Encode(), "source_url": "https://archive.org/details/" + url.PathEscape(e.Representation.SourceItemID), "snapshot_sha256": a.Snapshot, "sha256": a.SHA256, "duration": a.Duration}
+	// AuthorizeAudioAsset has already validated the retained snapshot.
+	provider, _ := domain.ParseSourceIdentity(e.Representation.SourceItemID, e.Raw)
+	return map[string]any{"recording": e.Representation.Extension.Audio.Recording, "policy": domain.Local, "url": "/api/catalog/v1/items/" + url.PathEscape(item) + "/representations/" + url.PathEscape(representation) + "/audio/media?" + q.Encode(), "source_url": provider.URL, "source_provider": provider.Provider, "snapshot_sha256": a.Snapshot, "sha256": a.SHA256, "duration": a.Duration}
 }
 func (s *Server) audioResolve(w http.ResponseWriter, r *http.Request) {
 	c, err := s.audioCollection(r)

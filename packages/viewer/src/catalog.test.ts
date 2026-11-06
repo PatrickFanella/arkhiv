@@ -1,5 +1,5 @@
 import { afterEach, expect, test, vi } from 'vitest';
-import { catalogFavoriteID, catalogSelectionURL, catalogRequest, catalogURL, representationURL, type RepresentationTransport } from './catalog.js';
+import { catalogFavoriteID, catalogSelectionURL, catalogRequest, catalogURL, representationURL, sourceProvider, type RepresentationTransport } from './catalog.js';
 
 test('metadata queries preserve collection scope and escape user text',()=> {
   const url = new URL(catalogURL({collection:'mixed',media:'print',query:'&collection=other',page:2}),'https://test.invalid');
@@ -18,6 +18,23 @@ test('representation URLs bind source identity, exact file and viewer action',()
     {...asset,url:asset.url.replace('file=paper.pdf','file=other.pdf')},
     {...asset,policy:'source_stream',url:'https://archive.org/download/other/paper.pdf'},
     {...asset,source_url:'https://evil.invalid/details/paper'}
+  ]) expect(()=>representationURL(value)).toThrow();
+});
+
+test('other source providers are accepted only for reviewed local originals within their host',()=> {
+  const generic = {...asset,source_provider:'marxists.org',source_url:'https://www.marxists.org/history/usa/pubs/proletarec/index.htm'};
+  expect(representationURL(generic)).toBe(asset.url);
+  expect(sourceProvider(generic)).toBe('marxists.org');
+  expect(sourceProvider(asset)).toBe('archive.org');
+  for (const value of [
+    {...generic,policy:'source_stream',url:'https://www.marxists.org/history/usa/pubs/proletarec/1910.pdf'},
+    {...generic,source_url:'https://evil.invalid/history/usa/pubs/proletarec/index.htm'},
+    {...generic,source_url:'https://marxists.org.evil.invalid/index.htm'},
+    {...generic,source_url:'http://www.marxists.org/index.htm'},
+    {...generic,source_url:'https://www.marxists.org:8443/index.htm'},
+    {...generic,source_url:'https://user@www.marxists.org/index.htm'},
+    {...generic,source_provider:'ia.archive.org',source_url:'https://ia.archive.org/details/paper'},
+    {...generic,source_provider:'Marxists.org'}
   ]) expect(()=>representationURL(value)).toThrow();
 });
 

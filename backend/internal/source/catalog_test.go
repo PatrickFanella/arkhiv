@@ -15,3 +15,21 @@ func TestCatalogSnapshotIdentityAndCompleteInventory(t *testing.T) {
 		}
 	}
 }
+
+func TestCatalogSnapshotGenericProvider(t *testing.T) {
+	valid := `{"source":{"provider":"marxists.org","id":"issue","url":"https://www.marxists.org/history/usa/pubs/issue.pdf"},"metadata":{"publication":"Proletarec"},"files":[{"name":"issue.pdf","sha256":"x"}]}`
+	if err := CatalogSnapshot("issue", []byte(valid)); err != nil {
+		t.Fatal(err)
+	}
+	for _, raw := range []string{
+		`{"source":{"provider":"marxists.org","id":"issue","url":"https://www.marxists.org/"}}`,
+		`{"source":{"provider":"marxists.org","id":"issue","url":"https://www.marxists.org/"},"files":[null]}`,
+		`{"source":{"provider":"marxists.org","id":"issue","url":"https://www.marxists.org/"},"metadata":{"identifier":"issue"},"files":[]}`,
+		`{"source":{"provider":"marxists.org","id":"other","url":"https://www.marxists.org/"},"files":[]}`,
+		`{"source":{"provider":"archive.org","id":"issue","url":"https://archive.org/details/issue"},"files":[]}`,
+	} {
+		if CatalogSnapshot("issue", []byte(raw)) == nil {
+			t.Fatalf("accepted invalid generic snapshot: %s", raw)
+		}
+	}
+}

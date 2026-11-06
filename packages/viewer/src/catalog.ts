@@ -12,11 +12,27 @@ export type CatalogItem = { id: string; title: string; description: string; date
 export type CatalogPage = { items: CatalogItem[]; total: number; page: number; search_coverage: string[] };
 export type CatalogCollection = { id: string; title: string; policy: string; items: number; media: CatalogMedia[] };
 export type CatalogFilter = { collection: string; media: CatalogMedia | ''; query: string; page: number; creator?:string; dateFrom?:string; dateTo?:string };
-export type RepresentationTransport = {media:CatalogMedia;policy:string;url:string;source_url:string;file:string};
+export type RepresentationTransport = {media:CatalogMedia;policy:string;url:string;source_url:string;source_provider?:string;file:string};
+
+const providerPattern = /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$/;
+
+/** Name of the source provider, for labels such as "Source at marxists.org". */
+export function sourceProvider(asset: Pick<RepresentationTransport,'source_provider'>): string {
+  return asset.source_provider || 'archive.org';
+}
+
+function genericSource(asset: RepresentationTransport): boolean {
+  const provider = sourceProvider(asset);
+  if (provider === 'archive.org') return false;
+  const source = new URL(asset.source_url);
+  // Other providers have no streaming contract: only reviewed local originals are delivered.
+  if (asset.policy !== 'local_preserve' || !providerPattern.test(provider) || provider.endsWith('.archive.org') || source.protocol !== 'https:' || source.port || source.username || source.password || source.hash || (source.hostname !== provider && !source.hostname.endsWith(`.${provider}`))) throw new Error('Invalid source identity.');
+  return true;
+}
 
 export function representationURL(asset: RepresentationTransport, action: 'read' | 'play' | 'download' = asset.media === 'print' ? 'read' : 'play'): string {
   const source = new URL(asset.source_url);
-  if (source.protocol !== 'https:' || source.hostname !== 'archive.org' || source.port || source.username || source.password || source.search || source.hash || !/^\/details\/[A-Za-z0-9][A-Za-z0-9._-]{0,199}$/.test(source.pathname)) throw new Error('Invalid source identity.');
+  if (!genericSource(asset) && (source.protocol !== 'https:' || source.hostname !== 'archive.org' || source.port || source.username || source.password || source.search || source.hash || !/^\/details\/[A-Za-z0-9][A-Za-z0-9._-]{0,199}$/.test(source.pathname))) throw new Error('Invalid source identity.');
   const url = new URL(asset.url,'https://consumer.invalid');
   if (url.username || url.password || url.hash || /\\/.test(asset.url) || (!(asset.media === 'audio' && asset.policy === 'source_stream') && /\.\./.test(asset.url))) throw new Error('Invalid media URL.');
   const prefix = `/download/${source.pathname.slice(9)}/`;
