@@ -190,7 +190,7 @@ func (d *DB) Catalog(ctx context.Context, q CatalogQuery) (CatalogPage, error) {
  FROM (SELECT representation_id,media,source_item_id,source_hash,file,extension,legacy_episode_id,jsonb_agg(DISTINCT collection_id ORDER BY collection_id) AS collections FROM filtered f WHERE f.item_id=s.item_id GROUP BY representation_id,media,source_item_id,source_hash,file,extension,legacy_episode_id) r) AS representations,
  (SELECT jsonb_agg(jsonb_build_object('id',l.id,'kind',l.kind,'label',l.label) ORDER BY l.kind,l.label) FROM catalog_label_assignments a JOIN catalog_labels l ON l.id=a.label_id WHERE a.item_id=s.item_id AND a.state='accepted') AS labels,
  CASE WHEN trim($11)='' THEN NULL ELSE (SELECT jsonb_agg(jsonb_build_object('representation',h.representation_id,'page',h.page,'snippet',h.snippet) ORDER BY h.representation_id,h.page) FROM (
-  SELECT t.representation_id,t.page,ts_headline('simple',t.text,plainto_tsquery('simple',$11),'MaxFragments=1,MaxWords=30,MinWords=12,StartSel=,StopSel=') AS snippet
+  SELECT t.representation_id,t.page,ts_headline('simple',t.text,plainto_tsquery('simple',$11),'MaxFragments=1,MaxWords=30,MinWords=12,StartSel="",StopSel=""') AS snippet
   FROM print_page_text t JOIN print_indexes x ON x.item_id=t.item_id AND x.representation_id=t.representation_id AND x.file=t.file
   WHERE t.item_id=s.item_id AND t.search @@ plainto_tsquery('simple',$11)
   AND EXISTS(SELECT 1 FROM filtered f WHERE f.item_id=t.item_id AND f.representation_id=t.representation_id AND f.source_hash=x.snapshot_sha256)
