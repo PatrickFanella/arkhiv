@@ -441,6 +441,34 @@
         "source_artist_media": "1"
       },
       "merge_revision": "a9ee2892f2a52c0ffa15f0681d1d73ef6a1f2891"
+    },
+    {
+      "repository": "subculture-collective/chicago-labor-archive",
+      "media": [
+        "print"
+      ],
+      "adoption": "package",
+      "mode": "viewer",
+      "rollout": "reviewed-pr",
+      "package_file": "web/package.json",
+      "lock_file": "web/pnpm-lock.yaml",
+      "release_file": "deploy/viewer-release.json",
+      "checks": [
+        [
+          "make",
+          "verify"
+        ]
+      ],
+      "adoption_status": "merged",
+      "adoption_ref": "main",
+      "adoption_revision": "f76b291021ef8c80552cf88c056564a91698fe21",
+      "merge_revision": "f76b291021ef8c80552cf88c056564a91698fe21",
+      "core_file": "deploy/core-release.json",
+      "core_engine_file": "deploy/archive-core.env",
+      "modules": {
+        "catalog": "1",
+        "print": "1"
+      }
     }
   ]
 }

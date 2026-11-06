@@ -25,7 +25,11 @@ func (s *Server) mixedCatalog(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	scope := []string(s.collectionScope())
-	result, err := s.DB.Catalog(r.Context(), catalog.CatalogQuery{Scope: scope, Collection: q.Get("collection"), Media: media, Search: q.Get("q"), ID: r.PathValue("id"), Page: page, Creator: q.Get("creator"), DateFrom: q.Get("date_from"), DateTo: q.Get("date_to")})
+	if len(q.Get("text")) > 200 || (q.Get("label") != "" && !domain.ValidLabelID(q.Get("label"))) {
+		write(w, 400, map[string]string{"error": "invalid catalog filter"})
+		return
+	}
+	result, err := s.DB.Catalog(r.Context(), catalog.CatalogQuery{Scope: scope, Collection: q.Get("collection"), Media: media, Search: q.Get("q"), ID: r.PathValue("id"), Page: page, Creator: q.Get("creator"), DateFrom: q.Get("date_from"), DateTo: q.Get("date_to"), Label: q.Get("label"), Text: q.Get("text")})
 	if err != nil {
 		write(w, 503, map[string]string{"error": "catalog unavailable"})
 		return
@@ -48,4 +52,19 @@ func (s *Server) mixedCollections(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	write(w, 200, collections)
+}
+
+func (s *Server) mixedLabels(w http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query()
+	collection := q.Get("collection")
+	if collection != "" && !s.allowsCollection(collection) {
+		write(w, 404, map[string]string{"error": "collection unavailable"})
+		return
+	}
+	labels, err := s.DB.CatalogLabels(r.Context(), s.collectionScope(), collection, q.Get("kind"))
+	if err != nil {
+		write(w, 400, map[string]string{"error": "invalid label query"})
+		return
+	}
+	write(w, 200, labels)
 }

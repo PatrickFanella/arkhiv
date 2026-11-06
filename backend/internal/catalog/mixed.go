@@ -105,6 +105,8 @@ type CatalogQuery struct {
 	Creator    string
 	DateFrom   string
 	DateTo     string
+	Label      string // accepted label only
+	Text       string // indexed page text of the listed representations
 }
 type CatalogPage struct {
 	Items          []domain.CatalogItem `json:"items"`
@@ -157,8 +159,11 @@ func ValidateCatalogFilters(creator, from, to string) error {
 
 func (d *DB) Catalog(ctx context.Context, q CatalogQuery) (CatalogPage, error) {
 	p := CatalogPage{Items: []domain.CatalogItem{}, Page: q.Page, SearchCoverage: []string{"metadata"}}
-	if q.Page < 1 || q.Page > 100000 || (q.Media != "" && !q.Media.Valid()) || len(q.Search) > 1000 {
+	if q.Page < 1 || q.Page > 100000 || (q.Media != "" && !q.Media.Valid()) || len(q.Search) > 1000 || len(q.Text) > 200 || (q.Label != "" && !domain.ValidLabelID(q.Label)) {
 		return p, fmt.Errorf("invalid catalog query")
+	}
+	if strings.TrimSpace(q.Text) != "" {
+		p.SearchCoverage = []string{"metadata", "text"}
 	}
 	if err := ValidateCatalogFilters(q.Creator, q.DateFrom, q.DateTo); err != nil {
 		return p, err
@@ -166,13 +171,15 @@ func (d *DB) Catalog(ctx context.Context, q CatalogQuery) (CatalogPage, error) {
 	var raw []byte
 	err := d.Pool.QueryRow(ctx, `
  WITH filtered AS MATERIALIZED (
- SELECT * FROM `+d.catalogView()+`
+ SELECT * FROM `+d.catalogView()+` v
  WHERE ($1::text[] IS NULL OR collection_id=ANY($1))
  AND ($2='' OR collection_id=$2) AND ($3='' OR media=$3)
  AND ($4='' OR position(lower($4) in lower(title||' '||description))>0)
  AND ($5='' OR item_id=$5)
  AND ($7='' OR position(lower($7) in lower(creator))>0)
  AND (($8='' AND $9='') OR (date ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' AND ($8='' OR date>=$8) AND ($9='' OR date<=$9)))
+ AND ($10='' OR EXISTS(SELECT 1 FROM catalog_label_assignments a WHERE a.item_id=v.item_id AND a.label_id=$10 AND a.state='accepted'))
+ AND (trim($11)='' OR EXISTS(SELECT 1 FROM print_page_text t JOIN print_indexes x ON x.item_id=t.item_id AND x.representation_id=t.representation_id AND x.file=t.file AND x.snapshot_sha256=v.source_hash WHERE t.item_id=v.item_id AND t.representation_id=v.representation_id AND t.search @@ plainto_tsquery('simple',$11)))
  ), keys AS (
  SELECT item_id,title,description,date,creator FROM filtered GROUP BY item_id,title,description,date,creator
  ), selected AS (
@@ -180,9 +187,16 @@ func (d *DB) Catalog(ctx context.Context, q CatalogQuery) (CatalogPage, error) {
  ), result AS (
  SELECT s.*, (SELECT jsonb_agg(DISTINCT collection_id ORDER BY collection_id) FROM filtered f WHERE f.item_id=s.item_id) AS collections,
  (SELECT jsonb_agg(jsonb_build_object('id',r.representation_id,'media',r.media,'source_item_id',r.source_item_id,'snapshot_sha256',r.source_hash,'file',r.file,'extension',r.extension,'legacy_episode_id',r.legacy_episode_id,'collections',r.collections,'search_coverage',jsonb_build_array('metadata')) ORDER BY r.media,r.representation_id)
- FROM (SELECT representation_id,media,source_item_id,source_hash,file,extension,legacy_episode_id,jsonb_agg(DISTINCT collection_id ORDER BY collection_id) AS collections FROM filtered f WHERE f.item_id=s.item_id GROUP BY representation_id,media,source_item_id,source_hash,file,extension,legacy_episode_id) r) AS representations
+ FROM (SELECT representation_id,media,source_item_id,source_hash,file,extension,legacy_episode_id,jsonb_agg(DISTINCT collection_id ORDER BY collection_id) AS collections FROM filtered f WHERE f.item_id=s.item_id GROUP BY representation_id,media,source_item_id,source_hash,file,extension,legacy_episode_id) r) AS representations,
+ (SELECT jsonb_agg(jsonb_build_object('id',l.id,'kind',l.kind,'label',l.label) ORDER BY l.kind,l.label) FROM catalog_label_assignments a JOIN catalog_labels l ON l.id=a.label_id WHERE a.item_id=s.item_id AND a.state='accepted') AS labels,
+ CASE WHEN trim($11)='' THEN NULL ELSE (SELECT jsonb_agg(jsonb_build_object('representation',h.representation_id,'page',h.page,'snippet',h.snippet) ORDER BY h.representation_id,h.page) FROM (
+  SELECT t.representation_id,t.page,ts_headline('simple',t.text,plainto_tsquery('simple',$11),'MaxFragments=1,MaxWords=30,MinWords=12,StartSel=,StopSel=') AS snippet
+  FROM print_page_text t JOIN print_indexes x ON x.item_id=t.item_id AND x.representation_id=t.representation_id AND x.file=t.file
+  WHERE t.item_id=s.item_id AND t.search @@ plainto_tsquery('simple',$11)
+  AND EXISTS(SELECT 1 FROM filtered f WHERE f.item_id=t.item_id AND f.representation_id=t.representation_id AND f.source_hash=x.snapshot_sha256)
+  ORDER BY t.representation_id,t.page LIMIT 3) h) END AS text_hits
  FROM selected s
- ) SELECT (SELECT count(*) FROM keys),COALESCE(jsonb_agg(jsonb_build_object('id',item_id,'title',title,'description',description,'date',date,'creator',creator,'collections',collections,'representations',representations) ORDER BY date DESC,item_id),'[]'::jsonb) FROM result`, q.Scope, q.Collection, string(q.Media), q.Search, q.ID, (q.Page-1)*24, q.Creator, q.DateFrom, q.DateTo).Scan(&p.Total, &raw)
+ ) SELECT (SELECT count(*) FROM keys),COALESCE(jsonb_agg(jsonb_build_object('id',item_id,'title',title,'description',description,'date',date,'creator',creator,'collections',collections,'representations',representations,'labels',labels,'text_hits',text_hits) ORDER BY date DESC,item_id),'[]'::jsonb) FROM result`, q.Scope, q.Collection, string(q.Media), q.Search, q.ID, (q.Page-1)*24, q.Creator, q.DateFrom, q.DateTo, q.Label, q.Text).Scan(&p.Total, &raw)
 	if err != nil {
 		return p, err
 	}
