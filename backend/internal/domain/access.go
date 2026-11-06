@@ -168,6 +168,13 @@ func AuthorizeTransport(collection Collection, rep Representation, raw []byte, r
 	if !present {
 		return fmt.Errorf("source file absent or restricted")
 	}
+	provider, err := ParseSourceIdentity(rep.SourceItemID, raw)
+	if err != nil {
+		return err
+	}
+	if provider.Generic() && collection.Policy != Local {
+		return fmt.Errorf("non-Internet Archive sources require reviewed local originals")
+	}
 	democracy, err := DemocracyIdentity(collection, rep, raw)
 	if err != nil {
 		return err

@@ -20,9 +20,20 @@ func CatalogSnapshot(id string, raw []byte) error {
 	if err := json.Unmarshal(raw, &payload); err != nil {
 		return err
 	}
-	var identity string
-	if err := json.Unmarshal(payload.Metadata["identifier"], &identity); err != nil || identity != id || payload.Files == nil {
-		return fmt.Errorf("source identity or file inventory mismatch")
+	provider, err := domain.ParseSourceIdentity(id, raw)
+	if err != nil {
+		return err
+	}
+	if provider.Generic() {
+		// A generic envelope cannot also claim an Internet Archive identity.
+		if _, ok := payload.Metadata["identifier"]; ok || payload.Files == nil {
+			return fmt.Errorf("source identity or file inventory mismatch")
+		}
+	} else {
+		var identity string
+		if err := json.Unmarshal(payload.Metadata["identifier"], &identity); err != nil || identity != id || payload.Files == nil {
+			return fmt.Errorf("source identity or file inventory mismatch")
+		}
 	}
 	for _, file := range payload.Files {
 		var entry map[string]json.RawMessage

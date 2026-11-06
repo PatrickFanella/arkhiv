@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -127,8 +128,28 @@ func TestPrivatePlaybackAndMediaIntegration(t *testing.T) {
 	if err = d.ReviewTransport(ctx, "multi-talk", "print", c.ID, readReview, localApproval); err != nil {
 		t.Fatal(err)
 	}
-	if w := get(transportPath+"/resolve", nil); w.Code != 200 {
+	if w := get(transportPath+"/resolve", nil); w.Code != 200 || !strings.Contains(w.Body.String(), `"source_url":"https://archive.org/details/multi-source"`) || !strings.Contains(w.Body.String(), `"source_provider":"archive.org"`) {
 		t.Fatal("reviewed print resolution", w.Code, w.Body.String())
+	}
+	// A reviewed local original from another provider resolves to its exact source page.
+	genericRaw := []byte(`{"source":{"provider":"marxists.org","id":"regional-issue","url":"https://www.marxists.org/history/usa/pubs/issue.htm"},"files":[{"name":"talk.pdf"}]}`)
+	if err = d.Snapshot(ctx, "regional-issue", genericRaw, 200, "", "", nil); err != nil {
+		t.Fatal(err)
+	}
+	regional := domain.CatalogItem{ID: "regional-talk", Title: "A regional issue", Collections: []string{c.ID}, Representations: []domain.Representation{{ID: "print", Media: domain.PrintMedia, SourceItemID: "regional-issue", Snapshot: domain.Digest(genericRaw), File: "talk.pdf", Collections: []string{c.ID}, Extension: domain.MediaExtension{Print: &domain.PrintExtension{DocumentID: "regional", Variant: "Original PDF"}}}}}
+	if err = d.InsertCatalog(ctx, regional, "Synthetic generic provider mapping"); err != nil {
+		t.Fatal(err)
+	}
+	genericApproval := localApproval
+	genericApproval.Snapshot = domain.Digest(genericRaw)
+	if err = d.ReviewTransport(ctx, "regional-talk", "print", c.ID, domain.TransportReview{Snapshot: domain.Digest(genericRaw), Files: []string{"talk.pdf"}, Read: true, Notes: "Synthetic generic provider review"}, genericApproval); err != nil {
+		t.Fatal(err)
+	}
+	if w := get("/api/catalog/v1/items/regional-talk/representations/print/resolve", nil); w.Code != 200 || !strings.Contains(w.Body.String(), `"source_url":"https://www.marxists.org/history/usa/pubs/issue.htm"`) || !strings.Contains(w.Body.String(), `"source_provider":"marxists.org"`) {
+		t.Fatal("generic provider resolution", w.Code, w.Body.String())
+	}
+	if w := get("/api/catalog/v1/items/regional-talk/representations/print/media", nil); w.Code != 200 || w.Body.String() != string(pdf) {
+		t.Fatal("generic provider original", w.Code)
 	}
 	if w := get(transportPath+"/media", map[string]string{"Range": "bytes=2-6"}); w.Code != 206 || w.Body.String() != string(pdf[2:7]) {
 		t.Fatal("reviewed print range", w.Code, w.Body.String())
